@@ -146,4 +146,12 @@ class ConfigService {
                 nameSpace             : nameSpace
         ]
     }
+
+    static String getShardGroupName() {
+        return getShardConfigOrfail('shard group name')
+    }
+
+    static String getShardsForSPARQL() {
+        return getShardConfigOrfail('shards for SPARQL')
+    }
 }

@@ -3,14 +3,14 @@
 <html>
 <head>
   <meta name="layout" content="main"/>
-  <title>NSL Services</title>
+  <title>${ConfigService.shardGroupName} Services</title>
 
 </head>
 
 <body>
 
 <div id="page-body" role="main" class="container">
-  <h1 class="header">${ConfigService.bannerText} NSL Services</h1>
+  <h1 class="header">${ConfigService.bannerText} ${ConfigService.shardGroupName} Services</h1>
 
   <div class="card horizontal">
 

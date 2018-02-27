@@ -22,7 +22,7 @@
     a classification, such as common names.
     </p>
     <p>
-      The SPARQL search works across all datasets in the NSL.
+      The SPARQL search works across all datasets in the ${ConfigService.shardsForSPARQL}.
     </p>
   </div>
 </g:else>

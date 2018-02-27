@@ -1,4 +1,4 @@
-<%@ page import="au.org.biodiversity.nsl.Instance; au.org.biodiversity.nsl.Name" %>
+<%@ page import="au.org.biodiversity.nsl.Instance; au.org.biodiversity.nsl.Name; au.org.biodiversity.nsl.ConfigService" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<h2>NSL Simple Name Representation
+<h2>${ConfigService.shardGroupName} Simple Name Representation
   <help>
     <i class="fa fa-info-circle"></i>
 

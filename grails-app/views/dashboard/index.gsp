@@ -2,17 +2,17 @@
   User: pmcneil
   Date: 15/09/14
 --%>
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page import="au.org.biodiversity.nsl.ConfigService" contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
   <meta name="layout" content="main">
-  <title>NSL Dashboard</title>
+  <title>${ConfigService.shardGroupName} Dashboard</title>
 </head>
 
 <body>
 <div class="container">
 
-  <h2>APNI NSL statistics</h2>
+  <h2>APNI ${ConfigService.shardGroupName} statistics</h2>
   <ul>
     <li>Services Version: <g:meta name="app.version"/></li>
     <g:each in="${stats}" var="info">
@@ -20,8 +20,8 @@
     </g:each>
   </ul>
 
-  <h2>NSL Vocabulary</h2>
-  <a href="${createLink(action: 'downloadVocabularyTerms')}">Download NSL RDF Vocabulary</a>
+  <h2>${ConfigService.shardGroupName} Vocabulary</h2>
+  <a href="${createLink(action: 'downloadVocabularyTerms')}">Download ${ConfigService.shardGroupName} RDF Vocabulary</a>
 
   <h2>Audit</h2>
   <ul>

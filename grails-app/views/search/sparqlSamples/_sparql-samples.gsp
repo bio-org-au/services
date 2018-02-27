@@ -1,3 +1,4 @@
+<%@ page import="au.org.biodiversity.nsl.ConfigService" %>
 <div class="panel-title">Sample Queries</div>
 
 
@@ -132,7 +133,7 @@
 
   <div class="panel panel-default">
     <div class="panel-heading panel-title">
-      <a data-toggle="collapse" data-parent="#sample-queries-accordion" href="#NSLSampleQueries">NSL Sample queries</a>
+      <a data-toggle="collapse" data-parent="#sample-queries-accordion" href="#NSLSampleQueries">${ConfigService.shardGroupName} Sample queries</a>
     </div>
 
     <div id="NSLSampleQueries" class="panel-collapse collapse panel-body container-fluid panel-group"
@@ -140,12 +141,12 @@
       <div class="panel panel-default">
         <div class="panel-heading panel-title">
           <a data-toggle="collapse" data-parent="#nsl-queries-accordion"
-             href="#sampleQueryNSLName">Find a name in NSL</a>
+             href="#sampleQueryNSLName">Find a name in ${ConfigService.shardGroupName}</a>
         </div>
 
         <div id="sampleQueryNSLName" class="panel-collapse collapse panel-body container-fluid">
           <p>
-            Find 'Doodia aspera' in NSL using the boa 'nameComplete' property, and display all properties.
+            Find 'Doodia aspera' in ${ConfigService.shardGroupName} using the boa 'nameComplete' property, and display all properties.
           </p>
           <pre>
 <g:render template="/search/sparqlSamples/findNameCode"/>
@@ -158,12 +159,12 @@
       <div class="panel panel-default">
         <div class="panel-heading panel-title">
           <a data-toggle="collapse" data-parent="#nsl-queries-accordion"
-             href="#sampleQueryNSLInstance">Find name instances in NSL</a>
+             href="#sampleQueryNSLInstance">Find name instances in ${ConfigService.shardGroupName}</a>
         </div>
 
         <div id="sampleQueryNSLInstance" class="panel-collapse collapse panel-body container-fluid">
           <p>
-            Find 'Doodia aspera' in NSL using the boa 'simpleName' property. Then find all instances, and display the reference and instance type, and the related name if any.
+            Find 'Doodia aspera' in ${ConfigService.shardGroupName} using the boa 'simpleName' property. Then find all instances, and display the reference and instance type, and the related name if any.
           </p>
 
           <p>

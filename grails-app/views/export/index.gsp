@@ -6,7 +6,7 @@
 <html>
 <head>
   <meta name="layout" content="main">
-  <title>NSL Export</title>
+  <title>${ConfigService.shardGroupName} Export</title>
 </head>
 
 <body>

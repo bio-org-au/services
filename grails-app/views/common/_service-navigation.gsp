@@ -22,7 +22,7 @@
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="${createLink(uri: '/')}">
-        NSL
+        ${ConfigService.shardGroupName}
       </a>
     </div>
 
