@@ -438,8 +438,9 @@ class JsonRendererService {
                                 simpleName      : treeElement.simpleName,
                                 namePath        : treeVersionElement.namePath,
                                 treePath        : treeVersionElement.treePath,
-                                displayString   : treeElement.displayHtml,
+                                displayHtml     : treeElement.displayHtml,
                                 sourceShard     : treeElement.sourceShard,
+                                synonymsHtml    : treeElement.synonymsHtml,
                                 synonyms        : treeElement.synonyms,
                                 profile         : treeElement.profile,
                                 children        : treeElementChildren(treeVersionElement),
@@ -455,20 +456,21 @@ class JsonRendererService {
         treeElement = initializeAndUnproxy(treeElement)
         return [treeElement:
                         [
-                                class        : treeElement.class.name,
-                                _links       : [
+                                class       : treeElement.class.name,
+                                _links      : [
                                         elementLink      : linkService.getPreferredLinkForObject(treeElement),
                                         nameLink         : treeElement.nameLink,
                                         instanceLink     : treeElement.instanceLink,
                                         sourceElementLink: treeElement.sourceElementLink,
                                 ],
-                                simpleName   : treeElement.simpleName,
-                                displayString: treeElement.displayHtml,
-                                sourceShard  : treeElement.sourceShard,
-                                synonyms     : treeElement.synonyms,
-                                profile      : treeElement.profile,
-                                updatedBy    : treeElement.updatedBy,
-                                updatedAt    : treeElement.updatedAt
+                                simpleName  : treeElement.simpleName,
+                                displayHtml : treeElement.displayHtml,
+                                sourceShard : treeElement.sourceShard,
+                                synonymsHtml: treeElement.synonymsHtml,
+                                synonyms    : treeElement.synonyms,
+                                profile     : treeElement.profile,
+                                updatedBy   : treeElement.updatedBy,
+                                updatedAt   : treeElement.updatedAt
                         ],
                 NOTE       : 'You probably want a TreeVersionElement'
         ]

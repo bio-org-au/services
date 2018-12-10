@@ -67,6 +67,10 @@ div.tr synonyms syn {
     white-space: normal;
 }
 
+div.tr synonyms oth {
+    display: none;
+}
+
 div.tr synonyms syn:before {
     content: '≜';
     padding-right: 0.3em;
