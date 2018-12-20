@@ -408,7 +408,7 @@ WHERE tve.tree_version_id = :versionId
     @Transactional(readOnly = true)
     List<DisplayElement> displayElementsToLimit(TreeVersion treeVersion, String prefix, Integer limit) {
         mustHave(treeVersion: treeVersion, limit: limit)
-        int depth = 11 //pick a maximum depth - current APC has 10
+        int depth = 15 //pick a maximum depth - current APC has 10
         int count = countElementsAtDepth(treeVersion, prefix, depth)
         while (depth > 0 && count > limit) {
             depth--

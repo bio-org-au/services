@@ -61,7 +61,7 @@ class SearchController implements RequestUtil {
 
         if (tree) {
             params.tree = [id: tree.id]
-            params.display = 'apc'
+            params.display = params.display ?: 'apc'
             if (productName != tree.name && !SecurityUtils.subject?.authenticated) {
                 params.product = tree.name
             }
