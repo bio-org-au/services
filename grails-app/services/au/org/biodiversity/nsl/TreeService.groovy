@@ -1998,6 +1998,12 @@ and tve.element_link not in ($excludedLinks)
         TreeElement.findByNameId(name.id) != null
     }
 
+    List<TreeVersionElement> nameInAnyCurrentTree(Name name) {
+        TreeVersionElement.executeQuery("""from TreeVersionElement tve 
+            where (tve.treeVersion.published = false or tve.treeVersion = tve.treeVersion.tree.currentTreeVersion)
+                and tve.treeElement.nameId = :id""", [id: name.id])
+    }
+
     boolean isInstanceInAnyTree(Instance instance) {
         !findTreesByInstance(instance).empty
     }

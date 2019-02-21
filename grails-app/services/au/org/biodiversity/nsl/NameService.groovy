@@ -127,8 +127,16 @@ class NameService {
         if (!reason) {
             errors << 'You need to supply a reason for deleting this name.'
         }
-        if (treeService.isNameInAnyTree(name)) {
-            errors << "This name is in a tree."
+        List<TreeVersionElement> currentTves = treeService.nameInAnyCurrentTree(name)
+        if (currentTves.size()) {
+            List<String> trees = currentTves.collect { tve ->
+                if(tve.treeVersion.published) {
+                    "Currently published tree $tve.treeVersion.tree.name"
+                } else {
+                    "Draft $tve.treeVersion.tree.name: $tve.treeVersion.draftName."
+                }
+            } as List<String>
+            errors << "This name is in ${trees.join(', ')}.".toString()
         }
         if (name.instances.size() > 0) {
             errors << 'There are instances that refer to this name'
