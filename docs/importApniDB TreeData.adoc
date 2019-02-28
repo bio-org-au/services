@@ -1,0 +1,215 @@
+= Import APNI db structure Tree
+v1.0, August 2017
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: New tree structure documentation
+:keywords: documentation, NSL, APNI, API, APC, tree
+:links:
+:numbered:
+
+This documents the process of merging a version of the tree with another version
+
+== Description
+
+Some scripts used to import from an old APNI structured database tree into a new NSL tree structrue.
+
+* Use the postgres_fdw extension to mount the apni db (postgres) db as a local schema.
+* this gets the distribution from instance notes, because in this case the distribution wasn't in the apc_concept table.
+* create the tree and a draft version first
+* this creates the tree elements then tree version elements then links the parents
+* old APNI structure has few constraints so bt_pnr_id may not actually be in the apc_concept table.
+* uses the source_element_link as a spot to put the source discriminator while importing, good idea to clear that.
+
+[source]
+.import-tree.sql
+----
+CREATE EXTENSION postgres_fdw;
+
+CREATE SERVER apni_server
+  FOREIGN DATA WRAPPER postgres_fdw
+  OPTIONS (host '127.0.0.1', port '5432', dbname 'apni');
+
+CREATE USER MAPPING FOR nsl
+  SERVER apni_server
+  OPTIONS (user 'nsl', password 'nsl');
+
+create schema apni;
+
+import foreign schema public from server apni_server into apni;
+
+
+-- update instance set cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>');
+
+select count(*)
+from apni.apc_concept apc
+       join public.instance i on i.source_system = 'FW_APNI-PLANT_NAME_REFERENCE' and i.source_id = apc.pnr_id
+       join public.instance p on p.source_system = 'FW_APNI-PLANT_NAME_REFERENCE' and p.source_id = apc.bt_pnr_id
+where apc.apc_end is null
+;
+
+select distinct source_system
+from instance;
+
+--
+
+drop function if exists get_dist_note(bigint);
+create function get_dist_note(inst_id bigint)
+  RETURNS table
+          (
+            value      TEXT,
+            updated_at TIMESTAMP with time zone,
+            updated_by TEXT
+          )
+  LANGUAGE SQL
+AS
+$$
+select note.value, note.updated_at, note.updated_by
+from instance i
+       join instance_note note on i.id = note.instance_id
+       join instance_note_key ink on note.instance_note_key_id = ink.id
+where ink.name = 'Distribution'
+  and i.source_system = 'FW_APNI-PLANT_NAME_REFERENCE'
+  and i.id = inst_id
+limit 1;
+$$;
+
+INSERT INTO public.tree_element (display_html,
+                                 excluded,
+                                 instance_id,
+                                 instance_link,
+                                 name_element,
+                                 name_id,
+                                 name_link,
+                                 previous_element_id,
+                                 profile,
+                                 rank,
+                                 simple_name,
+                                 source_element_link,
+                                 source_shard,
+                                 synonyms,
+                                 synonyms_html,
+                                 updated_at,
+                                 updated_by)
+  (select '<data>' || n.full_name_html ||
+       '<name-status class="' || ns.name || '">, ' || ns.name || '</name-status> <citation>' || r.citation_html ||
+       '</citation></data>',
+       false,
+       i.id,
+       t.host_name || '/' || i.uri,
+       n.name_element,
+       n.id,
+       t.host_name || '/' || n.uri,
+       null,
+       jsonb_build_object('Comment',
+                          jsonb_build_object('value', apc.apc_comment,
+                                             'created_at', apc.apc_start,
+                                             'created_by', apc.start_by,
+                                             'updated_at', apc.apc_start,
+                                             'updated_by', apc.start_by
+                            ),
+                          'Dist.',
+                          jsonb_build_object('value', dist.value,
+                                             'created_at', dist.updated_at,
+                                             'created_by', dist.updated_by,
+                                             'updated_at', dist.updated_at,
+                                             'updated_by', dist.updated_by)),
+       rank.name,
+       n.simple_name,
+       'fw', -- wipe later
+       'algae',
+       synonyms_as_jsonb(i.id, t.host_name),
+       i.cached_synonymy_html,
+       apc.apc_start :: timestamp with time zone,
+       apc.start_by
+from apni.apc_concept apc
+       join public.instance i on i.source_system = 'FW_APNI-PLANT_NAME_REFERENCE' and i.source_id = apc.pnr_id
+       join name n on i.name_id = n.id
+       join name_rank rank on n.name_rank_id = rank.id
+       join name_status ns on n.name_status_id = ns.id
+       join reference r on i.reference_id = r.id
+       left outer join get_dist_note(i.id) dist on true,
+     tree t
+where apc.apc_end is null
+  and t.name = 'Fresh Water')
+;
+
+INSERT INTO public.tree_version_element (element_link,
+                                         depth,
+                                         name_path,
+                                         parent_id,
+                                         taxon_id,
+                                         taxon_link,
+                                         tree_element_id,
+                                         tree_path,
+                                         tree_version_id,
+                                         updated_at,
+                                         updated_by,
+                                         merge_conflict)
+  (select '/tree/' || t.default_draft_tree_version_id || '/' || te.id,
+        0,
+        te.name_element,
+        null,
+        te.id,
+        '/taxon/algae/' || te.id,
+        te.id,
+        '/' || te.id,
+        t.default_draft_tree_version_id,
+        te.updated_at,
+        te.updated_by,
+        false
+  from tree_element te, tree t
+  where source_element_link = 'fw'
+    and t.name = 'Fresh Water')
+;
+
+-- check what doesn't link up
+select * from apni.apc_concept apc
+where not exists (select * from apni.apc_concept cc where apc.bt_pnr_id = cc.pnr_id);
+
+
+update tree_version_element tve set parent_id = ptve.element_link
+from apni.apc_concept apc
+       join instance i on i.source_system = 'FW_APNI-PLANT_NAME_REFERENCE' and i.source_id = apc.pnr_id
+       join instance p on p.source_system = 'FW_APNI-PLANT_NAME_REFERENCE' and p.source_id = apc.bt_pnr_id
+       join tree_element ce on ce.instance_id = i.id and ce.source_element_link = 'fw'
+       join tree_element pe on pe.instance_id = p.id and pe.source_element_link = 'fw'
+       join tree_version_element ptve on pe.id = ptve.tree_element_id
+where apc.apc_end is null
+and tve.tree_element_id = ce.id
+;
+
+with recursive walk(element_link, tree_path, name_path, level) as (
+  select tve.element_link as parent_link,
+         '/' || tve.tree_element_id,
+         te.name_element :: text,
+         0
+  from tree_version_element tve
+    join tree_element te on tve.tree_element_id = te.id
+    join tree t on t.default_draft_tree_version_id = tve.tree_version_id and t.name = 'Fresh Water'
+  where tve.parent_id is null
+  union all
+  select
+    tve.element_link as parent_link,
+    walk.tree_path || '/' || tve.tree_element_id,
+    walk.name_path || '/' || te.name_element :: text,
+    walk.level + 1
+  from walk
+    join tree_version_element tve on parent_id = walk.element_link
+    join tree_element te on tve.tree_element_id = te.id
+) update tree_version_element tve set tree_path = walk.tree_path, name_path = walk.name_path, depth = walk.level
+from walk
+where tve.element_link = walk.element_link;
+
+select * from tree_version_element tve
+join tree t on tve.tree_version_id = t.default_draft_tree_version_id and t.name = 'Fresh Water'
+-- where parent_id is null
+order by name_path;
+
+----
+
