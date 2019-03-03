@@ -28,7 +28,10 @@ class SearchController implements RequestUtil {
     def searchService
     FlatViewService flatViewService
 
-    def search(Integer max) {
+    def search(Integer max, String product) {
+
+        log.debug "Product set to $product"
+
         String referer = request.getHeader('Referer')
         String remoteIP = remoteAddress(request)
         log.info "Search params $params, Referer: ${referer}, Remote: ${remoteIP}"
@@ -38,18 +41,18 @@ class SearchController implements RequestUtil {
         String lowerProductName = (params.product as String)?.toLowerCase()
         String defaultProduct = configService.nameTreeName
 
-        Map validProducts = [:]
-        validProducts.put(defaultProduct.toLowerCase(), defaultProduct)
+        Map treeProducts = [:]
         Tree.list().each { Tree t ->
-            validProducts.put(t.name.toLowerCase(), t.name)
+            treeProducts.put(t.name.toLowerCase(), t.name)
         }
 
-        Boolean knownProduct = validProducts.keySet().contains(lowerProductName)
+        Boolean knownTreeProduct = treeProducts.keySet().contains(lowerProductName)
 
-        params.display = params.display ?: 'apni' //if not set set it to apni by default
+        // this is quick fix - ultimate fix is split the search into taxonomic and name
+        params.display = params.display ?: (knownTreeProduct ? 'apc' : 'apni') //if not set and not a tree0 'product' set it to apni by default
 
-        if (knownProduct) {
-            params.product = validProducts[lowerProductName] //preserve case ??
+        if (knownTreeProduct) {
+            params.product = treeProducts[lowerProductName] //preserve case ??
         } else {
             if (!SecurityUtils.subject?.authenticated) {
                 params.product = defaultProduct
