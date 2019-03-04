@@ -42,7 +42,8 @@ class FlatViewService implements WithSql {
 
 
     Closure nameView = { namespace ->
-        return """  
+        return """
+DROP materialized view if exists name_view;
 DROP FUNCTION IF EXISTS find_rank( BIGINT, INT );
 
 CREATE FUNCTION find_rank(name_id BIGINT, rank_sort_order INT)
@@ -246,7 +247,8 @@ ORDER BY n.sort_name;
     }
 
     Closure taxonView = { namespace ->
-        return """   
+        return """  
+DROP MATERIALIZED VIEW if exists taxon_view; 
 DROP FUNCTION IF EXISTS find_tree_rank( TEXT, INT );
 -- this function is a little slow, but it works for now.
 CREATE FUNCTION find_tree_rank(tve_id TEXT, rank_sort_order INT)
