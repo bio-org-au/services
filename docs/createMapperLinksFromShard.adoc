@@ -195,4 +195,154 @@ drop schema fungi cascade;
 -----------8<----------
 ----
 
+== If you don't have prostgres_fdw
+If for some reason postgres_fdw isn't available you need to create an insert statement for all the objects you want to
+put in the mapper then run the resulting script on the mapper database. The following code creates an insert statement
+that is pretty efficient on postgresql.
 
+[source]
+.make insert.sql
+----
+-- insert name identifiers
+copy (
+select stmt from (
+select 'INSERT INTO mapper.identifier (id, id_number, version_number, name_space, object_type, deleted, reason_deleted, updated_at, updated_by, preferred_uri_id) values ' stmt, 1 pri
+union
+SELECT '( nextval(''mapper.mapper_sequence''), '|| id || ', null, ''fungi'', ''name'', FALSE, NULL, now(), ''import'', NULL),' stmt, 2 pri
+FROM name
+union
+SELECT '( nextval(''mapper.mapper_sequence''), '|| id || ', null, ''fungi'', ''instance'', FALSE, NULL, now(), ''import'', NULL),' stmt, 3 pri
+FROM instance
+union
+SELECT '( nextval(''mapper.mapper_sequence''), '|| id || ', null, ''fungi'', ''author'', FALSE, NULL, now(), ''import'', NULL),' stmt, 4 pri
+FROM author
+union
+SELECT '( nextval(''mapper.mapper_sequence''), '|| id || ', null, ''fungi'', ''reference'', FALSE, NULL, now(), ''import'', NULL),' stmt, 5 pri
+FROM reference
+union
+SELECT '( nextval(''mapper.mapper_sequence''), '|| tree_element_id || ', ' || tree_version_id || ', ''fungi'', ''treeElement'', FALSE, NULL, now(), ''import'', NULL),' stmt, 6 pri
+FROM tree_version_element
+                 ) ins
+order by pri) to '/tmp/fungi-ids.txt'
+;
+
+----
+
+That will create a largish file in /tmp that looks like this:
+
+[source]
+.fungi-ids.txt
+----
+INSERT INTO mapper.identifier (id, id_number, version_number, name_space, object_type, deleted, reason_deleted, updated_at, updated_by, preferred_uri_id) values
+( nextval('mapper.mapper_sequence'), 60019008, null, 'fungi', 'name', FALSE, NULL, now(), 'import', NULL),
+( nextval('mapper.mapper_sequence'), 60016872, null, 'fungi', 'name', FALSE, NULL, now(), 'import', NULL),
+( nextval('mapper.mapper_sequence'), 60013684, null, 'fungi', 'name', FALSE, NULL, now(), 'import', NULL),
+( nextval('mapper.mapper_sequence'), 60029262, null, 'fungi', 'name', FALSE, NULL, now(), 'import', NULL),
+( nextval('mapper.mapper_sequence'), 60027522, null, 'fungi', 'name', FALSE, NULL, now(), 'import', NULL),
+...
+----
+
+You will need to edit the resulting file and replace the final comma with a semicolon. Run that `fungi-ids.txt` file on
+the mapper database
+
+e.g. `psql -f fungi-ids.txt --host=pgsql-test1-ibis.it.csiro.au -U nsl apni`
+
+Then on the mapper database finish the process by running the following sql.
+
+WARNING: obviously this code is for an example shard and namespace called 'fungi' **replace 'fungi' with your namespace.**
+
+[source]
+.connectlinks.sql
+----
+create index if not exists identifier_type_space_idx on mapper.identifier (object_type, name_space);
+
+-- make a temp column on match to link back to the identifier
+alter table mapper.match add column temp bigint;
+
+-- make urls
+INSERT INTO mapper.match (id, uri, deprecated, updated_at, updated_by, temp)
+SELECT nextval('mapper.mapper_sequence'), (object_type || '/fungi/' || id_number :: TEXT), FALSE,
+       now(), 'pmcneil', i.id
+FROM mapper.identifier i
+WHERE i.name_space = 'fungi'
+  and i.version_number is null
+  and not exists (select 1 from mapper.match where uri = (object_type || '/fungi/' || id_number :: TEXT));
+
+-- make treeElement urls
+INSERT INTO mapper.match (id, uri, deprecated, updated_at, updated_by, temp)
+SELECT nextval('mapper.mapper_sequence'), ('tree/' || version_number || '/' || id_number :: TEXT), FALSE,
+       now(), 'pmcneil', i.id
+FROM mapper.identifier i
+WHERE i.object_type = 'treeElement'
+  AND i.name_space = 'fungi'
+  and not exists (select 1 from mapper.match where uri = ('tree/' || version_number || '/' || id_number :: TEXT));
+
+--set the preferred uris of the identifiers
+create index match_temp_idx on mapper.match (temp);
+UPDATE mapper.identifier i
+SET preferred_uri_id = m.id
+FROM mapper.match m
+WHERE i.preferred_uri_id is null
+  AND i.name_space = 'fungi'
+  AND m.updated_at > now() - interval '20 minutes'
+  AND m.temp = i.id;
+
+-- insert identifier_identities
+INSERT INTO
+  mapper.identifier_identities (match_id, identifier_id)
+SELECT m.id, i.id
+FROM mapper.identifier i
+       JOIN mapper.match m ON i.preferred_uri_id = m.id
+WHERE i.name_space = 'fungi'
+  and m.temp is not null
+  AND NOT exists(SELECT 1
+                 FROM mapper.identifier_identities ii
+                 WHERE ii.identifier_id = i.id AND ii.match_id = m.id);
+
+-- and add the default hosts
+INSERT INTO mapper.match_host (match_hosts_id, host_id)
+SELECT m.id, (SELECT h.id FROM mapper.host h WHERE h.preferred)
+FROM mapper.match m
+WHERE m.temp is not null
+  and NOT exists(SELECT 1
+                 FROM mapper.match_host mh
+                 WHERE mh.match_hosts_id = m.id);
+
+-- remove any duplicate identifiers
+delete from mapper.identifier
+where name_space = 'fungi'
+  and preferred_uri_id is null;
+
+drop index mapper.match_temp_idx;
+alter table mapper.match drop column temp;
+----
+
+
+
+
+== Host names
+
+when moving data from test to prod or from one environment sometimes you'll need to change the hosts. This is an update
+script I use when I run a production db locally:
+
+[source]
+.update hosts.sql
+----
+update mapper.host set host_name = 'localhost:7070/nsl-mapper' where preferred = true;
+
+update tree set host_name = 'http://localhost:7070/nsl-mapper';
+
+update tree_element set instance_link = regexp_replace(instance_link, 'https://id.biodiversity.org.au', 'http://localhost:7070/nsl-mapper'), name_link = regexp_replace(name_link, 'https://id.biodiversity.org.au', 'http://localhost:7070/nsl-mapper');
+
+update tree_element set instance_link = regexp_replace(instance_link, 'https://test-id.biodiversity.org.au', 'http://localhost:7070/nsl-mapper'), name_link = regexp_replace(name_link, 'https://test-id.biodiversity.org.au', 'http://localhost:7070/nsl-mapper');
+
+update shard_config set value = 'http://localhost:7070/nsl-mapper/' where name = 'mapper host';
+
+----
+
+WARNING: Obviously the above is what I use locally. You will need to replace `localhost:7070/nsl-mapper` with what ever
+you need. This also is *from* production or test *to* a local host, if you want to go to production you'll need to swap
+the links in the tree_element lines.
+
+TIP: Ihave a script that runs these every time I start up my local dev environment to work on the NSL. That script also
+runs the mapper and LDAP.
