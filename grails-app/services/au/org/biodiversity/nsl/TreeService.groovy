@@ -2025,7 +2025,7 @@ and tve.element_link not in ($excludedLinks)
         if (report.from == draftVersion.tree.currentTreeVersion && report.to == draftVersion) {
             return doMerge(draftVersion, report, userName)
         } else {
-            return [message: "Merge report may is out of date. From and To versions don't match", merged: 0, complete: true, report: []]
+            return [message: "Merge report is out of date. From and To versions don't match", merged: 0, complete: true, report: []]
         }
     }
 

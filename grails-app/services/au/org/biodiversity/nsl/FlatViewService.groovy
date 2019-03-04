@@ -73,6 +73,7 @@ SELECT
   w.sort_order
 FROM walk w
 WHERE w.sort_order = rank_sort_order
+limit 1
 \$\$;
 
 CREATE MATERIALIZED VIEW name_view AS
@@ -281,6 +282,7 @@ SELECT
   w.sort_order
 FROM walk w
 WHERE w.sort_order = rank_sort_order
+limit 1
 \$\$;
 
 CREATE MATERIALIZED VIEW taxon_view AS
