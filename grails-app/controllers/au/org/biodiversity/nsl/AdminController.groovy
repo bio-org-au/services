@@ -173,19 +173,9 @@ class AdminController {
     refreshViews() {
         log.debug "Refreshing views."
         String namespaceName = configService.nameSpace.name.toLowerCase()
-        flatViewService.refreshTaxonView(namespaceName)
-        flatViewService.refreshNameView(namespaceName)
+        flatViewService.refreshTaxonView()
+        flatViewService.refreshNameView()
         log.debug "Refreshed views."
-        redirect(action: 'index')
-    }
-
-    @RequiresRoles('admin')
-    recreateViews() {
-        log.debug "Recreating views."
-        String namespaceName = configService.nameSpace.name.toLowerCase()
-        flatViewService.createTaxonView(namespaceName)
-        flatViewService.createNameView(namespaceName)
-        log.debug "Recreated views."
         redirect(action: 'index')
     }
 

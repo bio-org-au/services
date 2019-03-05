@@ -206,12 +206,6 @@
                   Refresh all views
                 </a>
               </li>
-              <li>
-                <a class=""
-                   href="${g.createLink(controller: "admin", action: "recreateViews")}">
-                  Recreate all views
-                </a>
-              </li>
             </ul>
           </div>
         </div>

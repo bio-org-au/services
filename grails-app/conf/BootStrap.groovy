@@ -52,7 +52,6 @@ class BootStrap {
         searchService.registerSuggestions()
         jsonRendererService.registerObjectMashallers()
         // recreate the name and taxon views in the background on startup.
-        flatViewService.bgRecreateViews()
         if (shiroSecurityManager) {
             shiroSecurityManager.setSubjectDAO(shiroSubjectDAO)
             println "Set subject DAO on security manager."
