@@ -80,22 +80,21 @@ class FlatViewService implements WithSql {
     }
 
     File exportTaxonToCSV() {
-        exportToCSV(TAXON_VIEW, "${configService.classificationTreeName}-taxon", taxonView)
+        exportToCSV(TAXON_VIEW, "${configService.classificationTreeName}-taxon")
     }
 
     File exportNamesToCSV() {
-        exportToCSV(NAME_VIEW, "${configService.nameTreeName}-names", nameView)
+        exportToCSV(NAME_VIEW, "${configService.nameTreeName}-names")
     }
 
-    private File exportToCSV(String viewName, String namePrefix, Closure viewDefn) {
+    private File exportToCSV(String viewName, String namePrefix) {
         Date date = new Date()
         String tempFileDir = configService.tempFileDir
         String fileName = "$namePrefix-${date.format('yyyy-MM-dd-mmss')}.csv"
         File outputFile = new File(tempFileDir, fileName)
         withSql { Sql sql ->
             if (!viewExists(sql, viewName)) {
-                log.debug "creating $viewName view for export."
-                createView(configService.nameSpace.name.toLowerCase(), viewName, sql, viewDefn)
+                throw new Exception("$viewName doesn't exist.")
             }
             DataExportService.sqlCopyToCsvFile("SELECT * FROM $viewName", outputFile, sql)
         }
