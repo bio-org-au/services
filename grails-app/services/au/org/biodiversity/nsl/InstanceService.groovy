@@ -114,7 +114,12 @@ class InstanceService {
             errors << "There are ${instance.comments.size()} comments for this instance.".toString()
         }
         if (instance.resources) {
-            errors << "There are ${instance.resources.size()} resources for this instance.".toString()
+            String resources = (instance.resources.collect { it.resourceType.name } as Set).join('and ')
+            if(instance.resources.size() == 1){
+                errors << "There is a ${resources} resource for this instance.".toString()
+            } else {
+                errors << "There are ${resources} resources for this instance.".toString()
+            }
         }
 
         if (errors.size() > 0) {
