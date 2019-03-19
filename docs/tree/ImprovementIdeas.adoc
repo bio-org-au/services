@@ -1,0 +1,109 @@
+= New tree structure
+v1.0, June 2017
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: New tree structure documentation
+:keywords: documentation, NSL, APNI, API, APC, tree
+:links:
+:numbered:
+
+
+The current (V2.0) tree structure and associated services are working quite well, but there is always room for improvement.
+This document is meant as a place to record observations and ideas for improving certain aspects of the tree structure and
+operation.
+
+== Issues
+
+1. The size of the TreeVersionElement table and index is getting rather large (9GB).
+2. Speed of making a new version can be a bit slow.
+3. The number of links in the mapper is large.
+
+== Ideas
+
+=== Issue 1 - size of TVE table
+Archiving of older versions would give us a way of reducing the burden of older versions on the DB, however an observation
+about Tree Version Elements may lead to a better way.
+
+Tree Version Elements are largely unchanged across versions because large parts of the tree remain unchanged. This leads
+to an opportunity to compress the TVE data much the same way we compress the Tree Element data.
+
+The current structure looks like this:
+
+image::new-tree-overview.svg[]
+
+If we check the changes in the important and large path fields using:
+
+[source]
+.count path redundancy
+----
+select count(name_path) cnt, name_path, tree_path from tree_version_element
+group by name_path, tree_path
+order by cnt desc
+;
+----
+
+We see that there is a large redundancy in the data (in fact the the top 2000 entries in the data are repeated 337 times
+meaning they have never changed). infact there are only 49288 distinct paths out of 11.9M tree version elements, representing
+an opportunity to reduce the data by ~ 240 times.
+
+We can also note by observation that the element_link (PK) and parent can be calculated if required.
+
+The Copying of Tree Version Elements is very useful for editing the draft tree, but once published the tree does not (really)
+need to be edited, in fact it shouldn't be edited. The parent information is not used in displaying or querying the tree,
+the tree path is, so retaining a quick reference to the parent object is not required.
+
+==== The idea
+
+The idea would be to change the tree version element to contain an array of versions and a separate (existing) active
+version. The active version (or just version) is used for the draft and current published tree. When a new draft is made
+current trees TVEs are copied with the current version being pushed into the version array and the active version being
+replaced by the draft version.
+
+The parent would simply be the parent TreeElement id combined with the version, and we'd replace the PK with a simple sequence
+ID that is only used for editing purposes.
+
+When we edit a branch of the tree (effectively changing the path) we do what we currently do, create a new TVE for
+everything under that point with a new path, *but* we leave the version array blank, this effectively archives off that
+branch of the tree.
+
+When you publish the tree, we simply set the version to published as before.
+
+When we want to reference older tree versions we need to modify the way we find them and use the versions array instead
+of the version field. The version field will effectively give you the most recent version this taxon exists in.
+
+==== Challenges
+
+* The Tree VersionElement element_link is no longer directly stored and must be generated, e.g. "tree/versionId/elementId"
+* Old taxonIds changed more than current ones. Current TaxonIds are effectively the TVE id in this case, ie. they represent
+when the tve effectively changes (a new TVE) not the synthetic PK.
+
+=== Issue 2 & 3 - Speed and links
+
+One of the slow bits of creating a new version is inserting new links for all the (36k) new TVEs in a tree. This is also
+problem 3, lost of new links to index in the mapper.
+
+==== The idea
+
+We could simply use the tree version as the discriminator in the mapper and implement a synthetic link process.
+
+The tree version gets a new link which identifies the service/shard that the tree belongs to. That can be combined with
+an algorithm to provide the redirection link e.g. match '(tree/[0-9]*)' to identifier to get the shard. Then construct
+the redirect from config rules e.g. "$host/$context/${url.replaceAll('tree', 'treeElement')"
+
+This has the advantage that we do not need to create tree element (TVE) links in the mapper, they'll just work, thus
+making version creation much quicker and saving database resources for the mapper. We won't have to worry about missing
+links and imports will be easier (small win).
+
+==== Challenges
+
+* Maintaining the id links will now require two methods
+* We need a way to define calculated redirects using an associated identity from a portion of a link
+* Links now contain information in a particular format. We can partially fix this by making it a partial match, e.g.
+if the link doesn't match anything, then find a single link that starts with that link. *BUT* This would be slower than adding
+a rule that matches a configured pattern ( ^tree/[0-9]/[0-9] )
