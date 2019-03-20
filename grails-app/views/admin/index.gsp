@@ -116,6 +116,12 @@
                 </a>
               </li>
               <li>
+                <a class=""
+                   href="${g.createLink(controller: "admin", action: "deduplicateMarkedNames")}">
+                  Deduplicate marked names
+                </a>
+              </li>
+              <li>
                 Deleted names:
                 <ul>
                   <g:each in="${stats.deletedNames}" var="name">

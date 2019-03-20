@@ -158,6 +158,14 @@ class AdminController {
     }
 
     @RequiresRoles('admin')
+    deduplicateMarkedNames() {
+        String user = SecurityUtils.subject.principal.toString()
+        ResultObject results = new ResultObject(nameService.deduplicateMarked(user))
+        //noinspection GroovyAssignabilityCheck
+        respond(results, [status: OK, view: '/common/serviceResult', model: [data: results,]])
+    }
+
+    @RequiresRoles('admin')
     setAdminModeOn() {
         adminService.enableServiceMode(true)
         redirect(action: 'index')

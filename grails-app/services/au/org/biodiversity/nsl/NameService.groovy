@@ -58,7 +58,7 @@ class NameService {
             log.info "seen note, skipping $note"
             return
         }
-        if(!name.uri) {
+        if (!name.uri) {
             name.uri = linkService.getPreferredLinkForObjectSansHost(name)
             name.save()
         }
@@ -130,7 +130,7 @@ class NameService {
         List<TreeVersionElement> currentTves = treeService.nameInAnyCurrentTree(name)
         if (currentTves.size()) {
             List<String> trees = currentTves.collect { tve ->
-                if(tve.treeVersion.published) {
+                if (tve.treeVersion.published) {
                     "Currently published tree $tve.treeVersion.tree.name"
                 } else {
                     "Draft $tve.treeVersion.tree.name: $tve.treeVersion.draftName."
@@ -158,6 +158,137 @@ class NameService {
             return [ok: false, errors: errors]
         }
         return [ok: true]
+    }
+
+    Map deduplicateMarked(String user) {
+        Map report = [
+                namesDeduplicated: new HashSet<Name>(),
+                errors: []
+        ]
+
+        //remove nested duplicates first
+        Name.findAllByDuplicateOfIsNotNull().each { Name name ->
+            int depth = 0
+            while (name.duplicateOf.duplicateOf && depth++ < 6) {
+                name.duplicateOf = name.duplicateOf.duplicateOf
+                name.save(flush: true)
+            }
+        }
+
+        List<Name> namesMarkedAsDuplicates = Name.findAllByDuplicateOfIsNotNull()
+        log.debug "duplicate names: $namesMarkedAsDuplicates"
+        namesMarkedAsDuplicates.each { Name name ->
+            report.namesDeduplicated.add(name.duplicateOf)
+            Map result = dedup(name, name.duplicateOf, user)
+            if (!result.success) {
+                report.errors.add(result.error)
+            }
+        }
+        if (report.errors.size()) {
+            log.error 'Error deduplicating marked names:\n\n' + report.errors.join('\n\n')
+        }
+        log.info "Deduplication of marked names complete"
+        return report
+    }
+
+    @RoleRequired('admin')
+    Map deduplicate(Name duplicate, Name target, String user) {
+        if (!user) {
+            return [success: false, errors: ['You must supply a user.']]
+        }
+        Map results = dedup(duplicate, target, user)
+        return results
+    }
+
+    private Map dedup(Name dupe, Name target, String user) {
+        Map result = [:]
+        Boolean success = true
+        if (dupe != target) {
+            Name.withTransaction { tx ->
+                try {
+                    rewireDuplicateTo(target, dupe, user)
+                    result.rewired = true
+
+                    log.debug "move links to $target from $dupe"
+
+                    Map linkResult = linkService.moveTargetLinks(dupe, target)
+                    if (!linkResult.success) {
+                        throw new Exception("relinking [$dupe] failed. Linker error: ($linkResult.errors)")
+                    }
+
+                    result.relinked = true
+                    log.info "About to delete $dupe"
+                    Map canDelete = canDelete(dupe, 'duplicate')
+                    if (canDelete.ok) {
+                        dupe.delete()  //don't use delete name, we've already moved the links
+                        target.duplicateOf = null
+                        target.save()
+                    } else {
+                        result.error = "Can't delete $dupe.simpleName, $dupe.id after rewiring: ${canDelete.errors.join('\n')}"
+                        success = false
+                        log.error "$result.errors"
+                    }
+                } catch (e) {
+                    result.error = "Name deduplication failed: ($e.message)"
+                    log.error(result.error)
+                    e.printStackTrace()
+                    tx.setRollbackOnly()
+                    success = false
+                }
+            }
+        } else {
+            result.error = "Duplicate ($dupe) = Target ($target)"
+            success = false
+        }
+        result.success = success
+        return result
+    }
+
+    @SuppressWarnings("GrMethodMayBeStatic")
+    private rewireDuplicateTo(Name target, Name duplicate, String user) {
+        log.debug "rewiring associations from $duplicate to $target"
+        Timestamp now = new Timestamp(System.currentTimeMillis())
+
+        Name.findByParent(duplicate).each { Name child ->
+            child.parent = target
+            child.updatedAt = now
+            child.updatedBy = user
+            child.save()
+        }
+
+        Name.findBySecondParent(duplicate).each { Name child ->
+            child.secondParent = target
+            child.updatedAt = now
+            child.updatedBy = user
+            child.save()
+        }
+
+        Name.findByDuplicateOf(duplicate).each { Name child ->
+            child.duplicateOf = target
+            child.updatedAt = now
+            child.updatedBy = user
+            child.save()
+        }
+
+        Instance.findByName(duplicate).each { Instance instance ->
+            instance.name = target
+            instance.updatedAt = now
+            instance.updatedBy = user
+            instance.save()
+        }
+
+        TreeElement.findByNameId(duplicate.id).each { TreeElement te ->
+            te.nameId = target.id
+            te.simpleName = target.simpleName
+            te.updatedAt = now
+            te.updatedBy = user
+            te.save()
+        }
+
+        Name.withSession {
+            it.flush()
+        }
+
     }
 
     /**

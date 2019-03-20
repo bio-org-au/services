@@ -15,7 +15,6 @@ class RefreshViewsJob {
 
     def execute() {
         Name.withTransaction {
-            String namespaceName = configService.nameSpace.name.toLowerCase()
             flatViewService.refreshNameView()
             flatViewService.refreshTaxonView()
             photoService.refresh()
