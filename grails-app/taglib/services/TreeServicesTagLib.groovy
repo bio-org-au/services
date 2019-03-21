@@ -178,7 +178,11 @@ class TreeServicesTagLib {
 
             // split synonyms onto new lines
             ABPair input = new ABPair(splitSynonyms(synA), splitSynonyms(synB))
-            ABPair output = input.markUpNameChanges().markUpTypeChanges().markUpCitationChanges()
+            ABPair output = input.markUpTagChanges('name')
+                                 .markUpTagChanges('type')
+                                 .markUpTagChanges('year')
+                                 .markUpTagChanges('citation')
+                                 .markUpTagChanges('name-status')
 
             String diffA = '<synonyms>' + output.a.join('\n') + '</synonyms>'
             String diffB = '<synonyms>' + output.b.join('\n') + '</synonyms>'

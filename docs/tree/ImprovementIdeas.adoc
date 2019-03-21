@@ -93,13 +93,48 @@ we wish to merge and the draft version. The would be quick and simple, but if th
 copy/create new TVEs with the parent path replaced.
 * lookups of older versions are trivial.
 * we may even be able to drop the direct version field.
+* parents can just be the TVE id now.
 
+image::tve-tv-join.svg[]
 
 ==== Challenges
 
 * The Tree VersionElement element_link is no longer directly stored and must be generated, e.g. "tree/versionId/elementId"
 * Old taxonIds changed more than current ones. Current TaxonIds are effectively the TVE id in this case, ie. they represent
 when the tve effectively changes (a new TVE) not the synthetic PK.
+* we need to maintain a taxon_id which changes for all parents above a change. Using a join table would not maintain the
+taxon_id, therefore we need to handle the taxon_id separately. If we use the technique we originally used with TVE of
+storing data - the TVE/TV join table could hold the taxonID. This leads to a separation of the handling.
+
+Taxon_ID use cases:
+
+* get the taxon representation of this ID (the branch from this point down)
+* get how long that taxon id has existed - first to last version.
+* is the taxon id of this taxon == the taxon_id of that taxon
+* when did the this branch change
+
+the above use cases would be satified by putting taxon_id in the tree version element to tree version joining entity:
+
+[source]
+.jointable.sql
+----
+create table (
+   tree_version_id BIGINT,
+   tree_version_element_id BIGINT,
+   taxon_id BIGINT
+)
+----
+
+Note the TVE:TV join table with taxon_id should take up around 24 x 12000000 ~ 300MB plus indexes. The mapper
+has a 16.7M item join table that is 705MB with 1.2GB of indexes so that would be a good guide.
+
+==== Conclusion
+
+I think this would be worth while. It is a fair bit of work to test and convert and we should really change the names of
+some of the entities involved.
+
+It is worth starting this before the size of the data becomes a problem. I estimate we'll reduce the ~ 10GB of space used
+to around 1.04GB and speed up some of the longer tree operations significantly.
 
 === Issue 2 & 3 - Speed and links
 

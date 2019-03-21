@@ -248,7 +248,7 @@ tr.titleRow {
 }
 
 .target {
-    display: inline-block;
+    display: inline-block !important;
     font-weight: bold;
     background-color: RGBA(256, 256, 0, 0.30) !important;
     padding: 2px 10px 0 10px;
@@ -257,7 +257,7 @@ tr.titleRow {
 }
 
 .targetHighlight {
-    display: inline-block;
+    display: inline-block !important;
     font-weight: bold;
     background-color: RGBA(256, 256, 0, 0.30) !important;
     border-bottom: 1px solid red;
