@@ -72,10 +72,19 @@ When we edit a branch of the tree (effectively changing the path) we do what we 
 everything under that point with a new path, *but* we leave the version array blank, this effectively archives off that
 branch of the tree.
 
-When you publish the tree, we simply set the version to published as before.
+When you publish the tree, we simply set the version to published as before. In the background the old TVE's are removed
+if they are in the current tree version, thus cleaning up.
+
+.cleanup logic
+----
+delete from tree_version_element where version = previous version and emement_id in current version
+----
 
 When we want to reference older tree versions we need to modify the way we find them and use the versions array instead
 of the version field. The version field will effectively give you the most recent version this taxon exists in.
+
+NOTE: Since https://www.postgresql.org/docs/9.6/arrays.html[arrays are not sets] we are probably be better off using a simple
+join table of Version to TVE.
 
 ==== Challenges
 

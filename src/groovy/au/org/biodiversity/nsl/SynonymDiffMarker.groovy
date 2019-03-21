@@ -24,15 +24,9 @@ class SynonymDiffMarker {
         }
     }
 
-    static ABPair markUpTypeChanges(ABPair input) {
-        markUpChanges(input, false, { extractTypeFromHtml(it) }) { String line ->
-            line.replaceFirst('<type>', '<type class="target">')
-        }
-    }
-
-    static ABPair markUpCitationChanges(ABPair input) {
-        markUpChanges(input, false, { extractCitationFromHtml(it) }) { String line ->
-            line.replaceFirst('<citation>', '<citation class="target">')
+    static ABPair markUpTagChanges(ABPair input, String tag) {
+        markUpChanges(input, false, { extractTagFromHtml(it, tag) }) { String line ->
+            line.replaceFirst("<$tag>", "<$tag class='target'>")
         }
     }
 
@@ -108,6 +102,10 @@ class SynonymDiffMarker {
 
     static String extractCitationFromHtml(String synonymHtml) {
         synonymHtml.replaceAll('.*<citation>(.*)</citation>.*', '$1')
+    }
+
+    static String extractTagFromHtml(String synonymHtml, String tag) {
+        synonymHtml.replaceAll(".*<$tag>(.*)</$tag>.*", '$1')
     }
 
 }
