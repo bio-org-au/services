@@ -60,7 +60,7 @@ the tree path is, so retaining a quick reference to the parent object is not req
 
 ==== The idea
 
-The idea would be to change the tree version element to contain an array of versions and a separate (existing) active
+The idea would be to change the tree version element to contain an "array of versions" and a separate (existing) active
 version. The active version (or just version) is used for the draft and current published tree. When a new draft is made
 current trees TVEs are copied with the current version being pushed into the version array and the active version being
 replaced by the draft version.
@@ -72,19 +72,28 @@ When we edit a branch of the tree (effectively changing the path) we do what we 
 everything under that point with a new path, *but* we leave the version array blank, this effectively archives off that
 branch of the tree.
 
-When you publish the tree, we simply set the version to published as before. In the background the old TVE's are removed
-if they are in the current tree version, thus cleaning up.
-
-.cleanup logic
-----
-delete from tree_version_element where version = previous version and emement_id in current version
-----
+When you publish the tree, we simply set the version to published as before.
 
 When we want to reference older tree versions we need to modify the way we find them and use the versions array instead
 of the version field. The version field will effectively give you the most recent version this taxon exists in.
 
-NOTE: Since https://www.postgresql.org/docs/9.6/arrays.html[arrays are not sets] we are probably be better off using a simple
-join table of Version to TVE.
+==== Insight - a better way
+
+Since https://www.postgresql.org/docs/9.6/arrays.html[arrays are not sets] we are better off using a simple
+join table of Version to TVE, and once you get to this point you realise that we can make this even simpler!
+
+Using a join table means:
+
+* To make a new draft, we just add the join table entries for the draft version to all TVEs in the current version.
+* when you change an element in draft you create new TVEs and remove the joins to the old TVEs and add the new ones to
+the draft.
+* we don't need to delete an old version after publishing. And there is only ever orphaned entry (tree _element) clean up.
+* we *may* be able to merge in a branch of a tree, if the parent path is the same, by just adding the joins from the TVEs
+we wish to merge and the draft version. The would be quick and simple, but if the parent path is different we'd need to
+copy/create new TVEs with the parent path replaced.
+* lookups of older versions are trivial.
+* we may even be able to drop the direct version field.
+
 
 ==== Challenges
 
