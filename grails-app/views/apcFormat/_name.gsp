@@ -68,7 +68,7 @@
                                                                class="fa fa-book"></i></st:preferredLink>
               <name-status class="${name.nameStatus.name}">${name.nameStatus.name}</name-status>
             </g:else>
-            <g:if test="${synonym.instanceType.proParte}">blah, p.p.</g:if>
+            <g:if test="${synonym.instanceType.proParte}">, p.p.</g:if>
             =
             <accepted-name title='Accepted name'>
               <st:preferredLink target="${synonym.citedBy.name}"
