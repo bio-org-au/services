@@ -269,6 +269,7 @@ image::additive_states.png[additive states from Anna Monro]
 === Implied/Detailed requirements
 
 . define regions with a sort order (geographic co-ordinates not required)
+. regions can only appear once in a distribution.
 . define status (i.e. the modifiers) with
 .. display order
 .. composing rules for display (when creating higher order distributions)
@@ -379,8 +380,9 @@ introduced to new places, they cannot reproduce or spread readily without contin
 * occurrenceRemarks: `Comments or notes about the distribution e.g. "Excluded because of misidentification"`
 * http://rs.tdwg.org/dwc/terms/#datasetID[datasetID] - e.g. http://biodiversity.org.au/nsl/APC **note we don't have a dataset identifier**
 
-
 == Structure
+
+Each tree element will be linked to a set of distribution entries which will contain a region and a set of status entries.
 
 
 
