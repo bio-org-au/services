@@ -236,6 +236,8 @@ ORDER BY earliest asc;
 
 We would ideally like to be able to have a permanent real time query for this data.
 
+We need to be compatible with GBIF distributions http://rs.gbif.org/extension/gbif/1.0/distribution.xml .
+
 === Observations
 
 ==== multiple concerns
@@ -274,8 +276,8 @@ image::additive_states.png[additive states from Anna Monro]
 "naturalised and formerly naturalised"
 
 In Anna's diagram above, it is clear that there is a set of valid or Possible Character States (status). We could just
-each possible state a modifier i.e. have separate state for each combination, but that would make composition at higher
-taxa harder and searching harder e.g.
+have each possible state as a modifier i.e. have separate state for each combination, but that would make composition at
+higher taxa harder and searching harder e.g.
 
 composing: "native and naturalised" + "formerly naturalised" -> just "native and naturalised"
 
@@ -330,6 +332,53 @@ We can't combine:
 
 * native and naturalised and doubtfully naturalised - because naturalised doesn't contain doubtfully naturalised
 * anything with "presumed extinct"
+
+==== GBIF Distribution Extension to Darwin Core
+
+Niels Klazenga pointed out we need to support the http://rs.gbif.org/extension/gbif/1.0/distribution.xml[GBIF Distribution Extension to Darwin Core.]
+
+The relevant fields from that are:
+
+* http://rs.gbif.org/areas/[LocationId] - just map our regions to TDWG maybe? Better still store the geojson shape
+* locality - Long form of region abbreviation e.g. New South Wales
+* countryCode - AU
+* http://rs.gbif.org/vocabulary/gbif/occurrence_status.xml[occurrenceStatus] ...
+** present: `There is at least one well documented record of the taxons presence in the area.`
+** common: `Subclass of present: Species observed frequently in most proper habitat.`
+** rare: `Subclass of present: Species occurs regularly, but in small numbers. Requires careful searching of proper habitat.`
+** irregular: `Subclass of present: May be common in certain years and entirely absent other years.`
+** doubtful: `The taxon is scored as being present in the area but there is some doubt over the evidence. The doubt may
+be of different kinds including taxonomic or geographic imprecision in the records.`
+** absent: `There is evidence to document the absence of a taxon in the area. An extinct organism is absent while its
+establishmentMeans is native.`
+** excluded: `Subclass of absent: The organism is reported insome (gray) literature for a certain region, but is is
+erroneous. Reason for exclusion could be a misidentification, an old report, a simple publishing mistake or any other or unknown reason.`
+* http://rs.gbif.org/vocabulary/iucn/threat_status.xml[threatStatus] ...
+** Extinct
+** Extinct in the Wild
+** Regionally Extinct - **APC current use of presumed extinct?** however this term uses "when there is no reasonable doubt that ..."
+** Critically Endangered
+** Endangered
+** Vulnerable
+** Near Threatened
+** Least Concern
+** Data Deficient
+** Not Applicable
+** Not Evaluated
+* http://rs.gbif.org/vocabulary/gbif/establishment_means.xml[establishmentMeans] ...
+** native: `A species that is a part of the balance of nature that has developed over hundreds or thousands of years in
+a particular region or ecosystem. The word native should always be used with a geographic qualifier (for example, native to New England).`
+** introduced: `A species introduced with human help (intentionally or accidentally) to a new place or new type of habitat
+where it was not previously found. Not all non-native species are invasive. In fact, when many non-native species are
+introduced to new places, they cannot reproduce or spread readily without continued human help (for example, many ornamental plants).`
+** naturalised: `Subclass of introduced: The organism reproduces naturally and forms part of the local ecology.`
+** invasive: `Subclass of introduced: The organism is having a deleterious impact on another organism, multiple organisms or the ecosystem as a whole.`
+** managed: `Subclass of introduced: The organism maintains its presence through intentional cultivation or husbandry.`
+** uncertain: `Origin of organism is uncertain`
+* source: (APC would use CHAH ref?) `Source reference for this distribution record. Can be proper publication citation, a webpage URL, etc.`
+* occurrenceRemarks: `Comments or notes about the distribution e.g. "Excluded because of misidentification"`
+* http://rs.tdwg.org/dwc/terms/#datasetID[datasetID] - e.g. http://biodiversity.org.au/nsl/APC **note we don't have a dataset identifier**
+
 
 == Structure
 
