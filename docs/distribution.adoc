@@ -384,5 +384,6 @@ introduced to new places, they cannot reproduce or spread readily without contin
 
 Each tree element will be linked to a set of distribution entries which will contain a region and a set of status entries.
 
+image::dist_entry.svg[distribution data structure]
 
 
