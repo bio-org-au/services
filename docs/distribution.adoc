@@ -339,7 +339,7 @@ Niels Klazenga pointed out we need to support the http://rs.gbif.org/extension/g
 
 The relevant fields from that are:
 
-* http://rs.gbif.org/areas/[LocationId] - just map our regions to TDWG maybe? Better still store the geojson shape
+* http://rs.gbif.org/areas/[LocationId] - just map our regions to TDWG maybe? Better still store the geojson shape reference.
 * locality - Long form of region abbreviation e.g. New South Wales
 * countryCode - AU
 * http://rs.gbif.org/vocabulary/gbif/occurrence_status.xml[occurrenceStatus] ...
