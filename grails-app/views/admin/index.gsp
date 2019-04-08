@@ -116,6 +116,12 @@
                 </a>
               </li>
               <li>
+                <a class=""
+                   href="${g.createLink(controller: "admin", action: "deduplicateMarkedNames")}">
+                  Deduplicate marked names
+                </a>
+              </li>
+              <li>
                 Deleted names:
                 <ul>
                   <g:each in="${stats.deletedNames}" var="name">
@@ -204,12 +210,6 @@
                 <a class=""
                    href="${g.createLink(controller: "admin", action: "refreshViews")}">
                   Refresh all views
-                </a>
-              </li>
-              <li>
-                <a class=""
-                   href="${g.createLink(controller: "admin", action: "recreateViews")}">
-                  Recreate all views
                 </a>
               </li>
             </ul>

@@ -33,7 +33,7 @@ class CheckNamesJob {
 
     def execute() {
         Name.withTransaction {
-            List<Notification> notifications = Notification.list(max: 100, sort: 'id')
+            List<Notification> notifications = Notification.list(max: 500, sort: 'id')
             notifications.each { Notification note ->
                 Name.withNewTransaction { DefaultTransactionStatus tx ->
                     switch (note.message) {

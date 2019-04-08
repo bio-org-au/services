@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="22cm" height="9cm" viewBox="199 259 425 176" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="300" y="260" width="199.25" height="54"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="300" y="260" width="199.25" height="54"/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="399.625" y="282.9">
+      <tspan x="399.625" y="282.9">Genus 1</tspan>
+      <tspan x="399.625" y="298.9">Vic (native and naturalised)</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="200" y="380" width="83.55" height="54"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="200" y="380" width="83.55" height="54"/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="241.775" y="402.9">
+      <tspan x="241.775" y="402.9">Species 1</tspan>
+      <tspan x="241.775" y="418.9">Vic</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="300" y="380" width="178.85" height="54"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="300" y="380" width="178.85" height="54"/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="389.425" y="402.9">
+      <tspan x="389.425" y="402.9">Species 2</tspan>
+      <tspan x="389.425" y="418.9">Vic (formery natualised)</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="500" y="380" width="122.05" height="54"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="500" y="380" width="122.05" height="54"/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="561.025" y="402.9">
+      <tspan x="561.025" y="402.9">Species 3</tspan>
+      <tspan x="561.025" y="418.9">Vic (naturalised</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="278.54" y1="379.051" x2="355.109" y2="320.841"/>
+    <polygon style="fill: #000000" points="361.08,316.302 356.145,326.335 355.109,320.841 350.093,318.374 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="361.08,316.302 356.145,326.335 355.109,320.841 350.093,318.374 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="391.801" y1="379.051" x2="396.425" y2="324.65"/>
+    <polygon style="fill: #000000" points="397.06,317.177 401.195,327.565 396.425,324.65 391.231,326.718 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="397.06,317.177 401.195,327.565 396.425,324.65 391.231,326.718 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="523.433" y1="379.051" x2="445.03" y2="320.758"/>
+    <polygon style="fill: #000000" points="439.011,316.283 450.019,318.237 445.03,320.758 444.053,326.262 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="439.011,316.283 450.019,318.237 445.03,320.758 444.053,326.262 "/>
+  </g>
+</svg>

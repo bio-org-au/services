@@ -1,6 +1,6 @@
 = New tree structure
 v1.0, June 2017
-:imagesdir: resources/images/
+:imagesdir: tree/archive/resources/images/
 :toc: left
 :toclevels: 4
 :toc-class: toc2
@@ -12,6 +12,12 @@ v1.0, June 2017
 :keywords: documentation, NSL, APNI, API, APC, tree
 :links:
 :numbered:
+
+
+NOTE: This document is about the redevelopment of the tree data structure from the previous structure (Originally developed
+by Paul Murray). This document is still relevant but will not be updated with new developments as it would become too
+confusing while trying to maintaining the history. We will be moving documentation into a structure that shows current
+and archived information.
 
 The current tree structure is over complicated and difficult to validate and maintain going forward. The reasons for this
 are many, but basically come down to changing understanding of requirements.

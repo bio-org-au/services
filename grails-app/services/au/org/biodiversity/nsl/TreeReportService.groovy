@@ -317,24 +317,37 @@ from tree_element te
        join tree_version_element tve on te.id = tve.tree_element_id
        join instance i on te.instance_id = i.id
 where tve.tree_version_id = :versionId 
-      and te.synonyms_html <> i.cached_synonymy_html''',[versionId: treeVersion.id])[0] as Integer
+      and te.synonyms_html <> i.cached_synonymy_html''', [versionId: treeVersion.id])[0] as Integer
 
-        sql.eachRow('''select tve.element_link, te.instance_id, te.instance_link, i.cached_synonymy_html
+        sql.eachRow('''select tve.element_link, te.instance_id, te.instance_link, i.cached_synonymy_html, coalesce(synonyms_as_html(i.id), '<synonyms></synonyms>') calc_syn_html
 from tree_element te
        join tree_version_element tve on te.id = tve.tree_element_id
        join instance i on te.instance_id = i.id
 where tve.tree_version_id = :versionId 
       and te.synonyms_html <> i.cached_synonymy_html''',
                 [versionId: treeVersion.id], 0, limit) { row ->
-            Map d = [
-                    synonymsHtml      : row.cached_synonymy_html,
-                    treeVersionElement: TreeVersionElement.get(row.element_link as String),
-                    instanceLink      : row.instance_link,
-                    instanceId        : row.instance_id
-            ]
-            results.add(d)
+            TreeVersionElement tve = TreeVersionElement.get(row.element_link as String)
+            //double check that the cached value is up to date
+            if (row.cached_synonymy_html != row.calc_syn_html) {
+                Instance i = Instance.get(row.instance_id)
+                i.cachedSynonymyHtml = row.calc_syn_html
+                i.save()
+            }
+            //only add to results if tree is different to calc
+            if (tve.treeElement.synonymsHtml != row.calc_syn_html) {
+                Map d = [
+                        synonymsHtml      : row.calc_syn_html,
+                        treeVersionElement: tve,
+                        instanceLink      : row.instance_link,
+                        instanceId        : row.instance_id
+                ]
+                results.add(d)
+            } else {
+                log.debug "dropped changed synonymy for $tve.treeElement.simpleName"
+                count--
+            }
         }
-        return [count:count, results: results]
+        return [count: count, results: results]
     }
 
 }

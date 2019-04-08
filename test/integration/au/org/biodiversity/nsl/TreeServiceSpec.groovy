@@ -1187,7 +1187,9 @@ class TreeServiceSpec extends IntegrationSpec {
 
     def "test find tree element"() {
         given:
-        TreeElement doodiaDissecta = TreeElement.findBySimpleNameAndUpdatedBy('Doodia dissecta', 'import')
+        Tree tree = Tree.findByName('APC')
+
+        TreeElement blechnumDissectum = treeService.findElementBySimpleName('Blechnum dissectum', tree.currentTreeVersion)?.treeElement
         treeService.linkService.getPreferredLinkForObject(_) >> {
             String url = "http://localhost:7070/nsl-mapper/${it[0].class.simpleName.toLowerCase()}/apni/${it[0].id}"
             println url
@@ -1195,20 +1197,20 @@ class TreeServiceSpec extends IntegrationSpec {
         }
 
         expect:
-        doodiaDissecta
+        blechnumDissectum
 
         when: 'I try finding the element using its data'
-        Map edfe = treeService.comparators(doodiaDissecta)
+        Map edfe = treeService.comparators(blechnumDissectum)
         TreeElement found1 = treeService.findTreeElement(edfe)
 
         then:
         found1
-        found1.id == doodiaDissecta.id
+        found1.id == blechnumDissectum.id
 
         when: 'I compare element data to taxon data it matches'
-        TaxonData taxonData = treeService.elementDataFromInstance(doodiaDissecta.instance)
-        taxonData.excluded = doodiaDissecta.excluded
-        taxonData.profile = doodiaDissecta.profile
+        TaxonData taxonData = treeService.elementDataFromInstance(blechnumDissectum.instance)
+        taxonData.excluded = blechnumDissectum.excluded
+        taxonData.profile = blechnumDissectum.profile
         Map edfi = treeService.comparators(taxonData)
 
         then:
@@ -1228,7 +1230,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         then:
         found2
-        found2.id == doodiaDissecta.id
+        found2.id == blechnumDissectum.id
     }
 
     //TODO re-instate: temporarily commented out while working on synonym ordering
