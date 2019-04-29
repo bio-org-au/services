@@ -181,10 +181,10 @@ class NameController implements WithTarget {
         withTarget(name) { ResultObject result, target ->
             TreeVersionElement tve = treeService.findCurrentElementForName(name, treeService.getAcceptedTree())
             if (tve == null) {
-                result << ["inAPC"   : tve != null,
+                result << ["inAPC"   : false,
                            excluded  : false,
                            operation : params.action,
-                           "nsl-name": name.id,
+                           "nsl-name": name?.id,
                            nameNs    : "",
                            nameId    : linkService.getPreferredLinkForObject(name),
                            taxonNs   : "",
@@ -192,7 +192,7 @@ class NameController implements WithTarget {
                            type      : ""
                 ]
             } else {
-                result << ["inAPC"   : tve != null,
+                result << ["inAPC"   : true,
                            excluded  : tve.treeElement.excluded,
                            operation : params.action,
                            "nsl-name": name.id,
