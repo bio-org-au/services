@@ -438,4 +438,6 @@ where ds.name = 'native'
 
 result: `Acacia baileyana, NSW, native, "WA (naturalised), SA (naturalised), Qld (naturalised), NSW (native and naturalised), ACT (naturalised), Vic (naturalised)"`
 
+=== update and import
 
+see: https://github.com/bio-org-au/nsl-domain-plugin/blob/master/web-app/sql/update-to-32.sql
