@@ -26,10 +26,10 @@ class Synonym {
 
     Synonym(Instance synonymInstance, LinkService linkService) {
         host = linkService.getPreferredHost()
-        nameLink = linkService.getPreferredLinkForObject(synonymInstance.name) ?: '' - host
-        instanceLink = linkService.getPreferredLinkForObject(synonymInstance) ?: '' - host
-        conceptLink = linkService.getPreferredLinkForObject(synonymInstance.cites) ?: '' - host
-        citesLink = linkService.getPreferredLinkForObject(synonymInstance.cites?.reference) ?: '' - host
+        nameLink = (linkService.getPreferredLinkForObject(synonymInstance.name) ?: '') - host
+        instanceLink = (linkService.getPreferredLinkForObject(synonymInstance) ?: '') - host
+        conceptLink = (linkService.getPreferredLinkForObject(synonymInstance.cites) ?: '') - host
+        citesLink = (linkService.getPreferredLinkForObject(synonymInstance.cites?.reference) ?: '') - host
         instance = synonymInstance
         year = instance.cites?.reference?.year
         simpleName = synonymInstance.name.simpleName
@@ -56,7 +56,7 @@ class Synonym {
         year = instance?.cites?.reference?.year
         simpleName = synonymMap.simple_name as String
         type = synonymMap.type as String
-        nameId = synonymMap.name_id
+        nameId = synonymMap.name_id as Long
         fullNameHtml = synonymMap.full_name_html as String
         nom = synonymMap.nom as Boolean
         tax = synonymMap.tax as Boolean
