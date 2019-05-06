@@ -44,7 +44,7 @@ class ReferenceService {
      * @param editor
      * @return
      */
-    String generateReferenceCitation(Reference reference, Author unknownAuthor, RefAuthorRole editor) {
+    static String generateReferenceCitation(Reference reference, Author unknownAuthor, RefAuthorRole editor) {
         use(ReferenceStringCategory) {
 
             List<Reference> parents = parents(reference)
@@ -146,7 +146,7 @@ class ReferenceService {
         }
     }
 
-    private String edition(Reference reference, String volume) {
+    private static String edition(Reference reference, String volume) {
         if (reference.edition) {
             return "Edn. ${reference.edition.trim()}${volume ? ',' : ''}"
         }
@@ -156,7 +156,7 @@ class ReferenceService {
         return ''
     }
 
-    private String ultimateParentTitle(Reference reference) {
+    private static String ultimateParentTitle(Reference reference) {
         if (!reference) {
             return ''
         }
@@ -172,7 +172,7 @@ class ReferenceService {
         }
     }
 
-    private String volume(Reference reference) {
+    private static String volume(Reference reference) {
         if (reference.volume) {
             return reference.volume.trim()
         }
@@ -182,7 +182,7 @@ class ReferenceService {
         return ''
     }
 
-    private String pubDate(Reference reference) {
+    private static String pubDate(Reference reference) {
         use(ReferenceStringCategory) {
             if (reference.year) {
                 return "(${reference.year})"
@@ -430,7 +430,7 @@ class ReferenceService {
                     reference.delete()
                     if (!response.success) {
                         List<String> errors = ["Error deleting link from the mapper"]
-                        errors.addAll(response.errors)
+                        errors.addAll(response.errors as List<String>)
                         t.setRollbackOnly()
                         return [ok: false, errors: errors]
                     }
@@ -457,18 +457,22 @@ class ReferenceService {
         }
 
         if (reference.instances.size() > 0) {
+            //noinspection GroovyAssignabilityCheck
             errors << "There are ${reference.instances.size()} instances for this reference."
         }
 
         if (reference.referencesForParent.size() > 0) {
+            //noinspection GroovyAssignabilityCheck
             errors << "There are ${reference.referencesForParent.size()} children of this reference."
         }
 
         if (reference.comments.size() > 0) {
+            //noinspection GroovyAssignabilityCheck
             errors << "There are ${reference.comments.size()} comments for this reference."
         }
 
         if (reference.referencesForDuplicateOf.size() > 0) {
+            //noinspection GroovyAssignabilityCheck
             errors << "There are ${reference.referencesForDuplicateOf.size()} references that are a duplicate of this reference."
         }
 

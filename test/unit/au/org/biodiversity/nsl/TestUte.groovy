@@ -27,7 +27,7 @@ class TestUte {
 
     /**
      * you need to mock
-     * @mock ( [ NameGroup , NameCategory , NameType , NameStatus , NameRank] )
+     * @mock ([NameGroup,NameCategory,NameType,NameStatus,NameRank])
      *
      * to use in unit tests
      */
@@ -209,32 +209,34 @@ class TestUte {
                     [scientific: false, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 1, name: '[default]', nameGroup: '[n/a]', nameCategory: 'other'],
                     [scientific: false, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 2, name: '[unknown]', nameGroup: '[n/a]', nameCategory: 'other'],
                     [scientific: false, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 3, name: '[n/a]', nameGroup: '[n/a]', nameCategory: 'other'],
-                    [scientific: true, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 4,  name: 'scientific', nameGroup: 'botanical', nameCategory: 'scientific'],
-                    [scientific: true, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 5,  name: 'sanctioned', nameGroup: 'botanical', nameCategory: 'scientific'],
-                    [scientific: true, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 6,  name: 'phrase name', nameGroup: 'botanical', nameCategory: 'phrase name'],
-                    [scientific: true, cultivar: false, formula: true, hybrid: true, autonym: false, connector: 'x', sortOrder: 7,   name: 'hybrid formula parents known', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula'],
-                    [scientific: true, cultivar: false, formula: true, hybrid: true, autonym: false, connector: 'x', sortOrder: 8,   name: 'hybrid formula unknown 2nd parent', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula unknown 2nd parent'],
-                    [scientific: true, cultivar: false, formula: false, hybrid: true, autonym: false, connector: 'x', sortOrder: 9,  name: 'named hybrid', nameGroup: 'botanical', nameCategory: 'scientific'],
-                    [scientific: true, cultivar: false, formula: false, hybrid: true, autonym: true, connector: 'x', sortOrder: 10,  name: 'named hybrid autonym', nameGroup: 'botanical', nameCategory: 'scientific'],
-                    [scientific: true, cultivar: false, formula: false, hybrid: true, autonym: true, connector: 'x', sortOrder: 11,  name: 'hybrid autonym', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula'],
-                    [scientific: true, cultivar: false, formula: true, hybrid: true, autonym: false, connector: '-', sortOrder: 12,  name: 'intergrade', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula'],
-                    [scientific: true, cultivar: false, formula: false, hybrid: false, autonym: true, connector: '', sortOrder: 13,  name: 'autonym', nameGroup: 'botanical', nameCategory: 'scientific'],
+                    [scientific: true, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 4, name: 'scientific', nameGroup: 'botanical', nameCategory: 'scientific'],
+                    [scientific: true, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 5, name: 'sanctioned', nameGroup: 'botanical', nameCategory: 'scientific'],
+                    [scientific: true, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 6, name: 'phrase name', nameGroup: 'botanical', nameCategory: 'phrase name'],
+                    [scientific: true, cultivar: false, formula: true, hybrid: true, autonym: false, connector: 'x', sortOrder: 7, name: 'hybrid formula parents known', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula'],
+                    [scientific: true, cultivar: false, formula: true, hybrid: true, autonym: false, connector: 'x', sortOrder: 8, name: 'hybrid formula unknown 2nd parent', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula unknown 2nd parent'],
+                    [scientific: true, cultivar: false, formula: false, hybrid: true, autonym: false, connector: 'x', sortOrder: 9, name: 'named hybrid', nameGroup: 'botanical', nameCategory: 'scientific'],
+                    [scientific: true, cultivar: false, formula: false, hybrid: true, autonym: true, connector: 'x', sortOrder: 10, name: 'named hybrid autonym', nameGroup: 'botanical', nameCategory: 'scientific'],
+                    [scientific: true, cultivar: false, formula: false, hybrid: true, autonym: true, connector: 'x', sortOrder: 11, name: 'hybrid autonym', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula'],
+                    [scientific: true, cultivar: false, formula: true, hybrid: true, autonym: false, connector: '-', sortOrder: 12, name: 'intergrade', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula'],
+                    [scientific: true, cultivar: false, formula: false, hybrid: false, autonym: true, connector: '', sortOrder: 13, name: 'autonym', nameGroup: 'botanical', nameCategory: 'scientific'],
 
                     [scientific: false, cultivar: true, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 16, name: 'cultivar', nameGroup: 'botanical', nameCategory: 'cultivar'],
-                    [scientific: false, cultivar: true, formula: false, hybrid: true, autonym: false, connector: '', sortOrder: 17,  name: 'cultivar hybrid', nameGroup: 'botanical', nameCategory: 'cultivar hybrid'],
-                    [scientific: false, cultivar: true, formula: true, hybrid: true, autonym: false, connector: '', sortOrder: 18,   name: 'cultivar hybrid formula', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula'],
+                    [scientific: false, cultivar: true, formula: false, hybrid: true, autonym: false, connector: '', sortOrder: 17, name: 'cultivar hybrid', nameGroup: 'botanical', nameCategory: 'cultivar hybrid'],
+                    [scientific: false, cultivar: true, formula: true, hybrid: true, autonym: false, connector: '', sortOrder: 18, name: 'cultivar hybrid formula', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula'],
                     [scientific: false, cultivar: true, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 19, name: 'ACRA', nameGroup: 'botanical', nameCategory: 'cultivar'],
-                    [scientific: false, cultivar: true, formula: false, hybrid: true, autonym: false, connector: '', sortOrder: 20,  name: 'ACRA hybrid', nameGroup: 'botanical', nameCategory: 'cultivar hybrid'],
+                    [scientific: false, cultivar: true, formula: false, hybrid: true, autonym: false, connector: '', sortOrder: 20, name: 'ACRA hybrid', nameGroup: 'botanical', nameCategory: 'cultivar hybrid'],
                     [scientific: false, cultivar: true, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 21, name: 'PBR', nameGroup: 'botanical', nameCategory: 'cultivar'],
-                    [scientific: false, cultivar: true, formula: false, hybrid: true, autonym: false, connector: '', sortOrder: 22,  name: 'PBR hybrid', nameGroup: 'botanical', nameCategory: 'cultivar hybrid'],
+                    [scientific: false, cultivar: true, formula: false, hybrid: true, autonym: false, connector: '', sortOrder: 22, name: 'PBR hybrid', nameGroup: 'botanical', nameCategory: 'cultivar hybrid'],
                     [scientific: false, cultivar: true, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 23, name: 'trade', nameGroup: 'botanical', nameCategory: 'cultivar'],
-                    [scientific: false, cultivar: true, formula: false, hybrid: true, autonym: false, connector: '', sortOrder: 24,  name: 'trade hybrid', nameGroup: 'botanical', nameCategory: 'cultivar hybrid'],
+                    [scientific: false, cultivar: true, formula: false, hybrid: true, autonym: false, connector: '', sortOrder: 24, name: 'trade hybrid', nameGroup: 'botanical', nameCategory: 'cultivar hybrid'],
                     [scientific: false, cultivar: true, formula: true, hybrid: false, autonym: false, connector: '+', sortOrder: 25, name: 'graft / chimera', nameGroup: 'botanical', nameCategory: 'scientific hybrid formula'],
                     [scientific: false, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 26, name: 'informal', nameGroup: 'botanical', nameCategory: 'other'],
                     [scientific: false, cultivar: false, formula: false, hybrid: false, autonym: false, connector: '', sortOrder: 15, name: 'common', nameGroup: 'botanical', nameCategory: 'other'],
             ].each { data ->
-                data.nameCategory = nameCategories[data.nameCategory]
-                data.nameGroup = nameGroups[data.nameGroup]
+                //noinspection GroovyAssignabilityCheck
+                data.nameCategory = nameCategories[data.nameCategory as String]
+                //noinspection GroovyAssignabilityCheck
+                data.nameGroup = nameGroups[data.nameGroup as String]
                 NameType nameType = new NameType(data)
                 nameType.save()
             }
@@ -292,9 +294,11 @@ class TestUte {
                     [nomIlleg: false, nomInval: false, name: 'orth. var.', nameGroup: 'botanical'],
                     [nomIlleg: false, nomInval: false, name: 'orth. cons.', nameGroup: 'botanical']
             ].each { data ->
-                data.nameGroup = nameGroups[data.nameGroup]
+                //noinspection GroovyAssignabilityCheck
+                data.nameGroup = nameGroups[data.nameGroup as String]
                 if (data.parent) {
-                    data.parent = NameStatus.findByName(data.parent)
+                    //noinspection GroovyAssignabilityCheck
+                    data.parent = NameStatus.findByName(data.parent as String)
                 }
                 NameStatus nameStatus = new NameStatus(data)
                 nameStatus.save()
@@ -346,7 +350,8 @@ class TestUte {
 
             ].each { values ->
                 if (values.parentRank) {
-                    values.parentRank = NameRank.findByName(values.parentRank)
+                    //noinspection GroovyAssignabilityCheck
+                    values.parentRank = NameRank.findByName(values.parentRank as String)
                 }
                 NameRank nameRank = new NameRank(values)
                 nameRank.nameGroup = botanicalNameGroup
@@ -371,6 +376,135 @@ class TestUte {
                 parent: parent,
                 namespace: namespace
         )
+    }
+
+    static Namespace namespace() {
+        new Namespace(name: 'test', rfId: 'blah', descriptionHtml: '<p>blah</p>')
+    }
+
+    static Reference genericReference() {
+        Author author = saveAuthor(abbrev: 'a1', name: 'Author One', namespace())
+        saveReference(title: "reference one", author: author, year: 1999, namespace())
+    }
+
+    static Author saveAuthor(Map params, Namespace namespace) {
+        Map base = [
+                updatedAt: new Timestamp(System.currentTimeMillis()),
+                updatedBy: 'test',
+                createdAt: new Timestamp(System.currentTimeMillis()),
+                createdBy: 'test',
+                namespace: namespace
+        ] << params
+        Author a = new Author(base)
+        a.save()
+        return a
+    }
+
+    static Reference saveReference(Map params, Namespace namespace) {
+        Author unknownAuthor = saveAuthor(abbrev: '-', name: '-', namespace)
+        RefAuthorRole authorRole = saveRefAuthorRole('Author')
+        RefAuthorRole editorRole = saveRefAuthorRole('Editor')
+        Language language = saveLanguage('au')
+        RefType paper = saveRefType('Paper')
+
+        Map base = [
+                refType      : paper,
+                published    : true,
+                refAuthorRole: authorRole,
+                language     : language,
+                displayTitle : 'Not set',
+                updatedAt    : new Timestamp(System.currentTimeMillis()),
+                updatedBy    : 'test',
+                createdAt    : new Timestamp(System.currentTimeMillis()),
+                createdBy    : 'test',
+                namespace    : namespace
+        ] << params
+        Reference reference = new Reference(base)
+        reference.save()
+        reference.citationHtml = ReferenceService.generateReferenceCitation(reference, unknownAuthor, editorRole)
+        reference.citation = NameConstructionService.stripMarkUp(reference.citationHtml)
+        reference.save()
+        return reference
+    }
+
+    static saveRefAuthorRole(String name) {
+        RefAuthorRole role = new RefAuthorRole(name: name, rdfId: name,
+                descriptionHtml: name)
+        role.save()
+        return role
+    }
+
+    static saveLanguage(String language) {
+        Language l = new Language(iso6391Code: language, iso6393Code: language, name: language)
+        l.save()
+        return l
+    }
+
+    static saveRefType(String name) {
+        RefType t = new RefType(
+                name: name,
+                parentOptional: true,
+                parent: null,
+                rdfId: 'blah',
+                descriptionHtml: 'blah',
+                useParentDetails: false
+        )
+        t.save()
+        return t
+    }
+
+    static String setUpInstanceTypes() {
+        [
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: '[default]', ofLabel: '[default] of', bidirectional: false, name: '[default]'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: '[unknown]', ofLabel: '[unknown] of', bidirectional: false, name: '[unknown]'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: '[n/a]', ofLabel: '[n/a] of', bidirectional: false, name: '[n/a]'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: true, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'primary reference', ofLabel: 'primary reference of', bidirectional: false, name: 'primary reference'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: true, proParte: false, protologue: true, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'tax. nov.', ofLabel: 'tax. nov. of', bidirectional: false, name: 'tax. nov.'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: true, proParte: false, protologue: true, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'nom. nov.', ofLabel: 'nom. nov. of', bidirectional: false, name: 'nom. nov.'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: true, proParte: false, protologue: true, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'nom. et stat. nov.', ofLabel: 'nom. et stat. nov. of', bidirectional: false, name: 'nom. et stat. nov.'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: true, proParte: false, protologue: true, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'comb. nov.', ofLabel: 'comb. nov. of', bidirectional: false, name: 'comb. nov.'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: true, proParte: false, protologue: true, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'comb. et stat. nov.', ofLabel: 'comb. et stat. nov. of', bidirectional: false, name: 'comb. et stat. nov.'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'autonym', ofLabel: 'autonym of', bidirectional: false, name: 'autonym'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 5, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'orthographic variant', ofLabel: 'orthographic variant of', bidirectional: false, name: 'orthographic variant'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'implicit autonym', ofLabel: 'implicit autonym of', bidirectional: false, name: 'implicit autonym'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: true, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'misapplication', ofLabel: 'misapplied to', bidirectional: false, name: 'misapplied'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: true, nomenclatural: false, primaryInstance: false, proParte: true, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 70, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'pro parte misapplication', ofLabel: 'pro parte misapplied to', bidirectional: false, name: 'pro parte misapplied'],
+                [citing: true, deprecated: false, doubtful: true, misapplied: true, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 80, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful misapplication', ofLabel: 'doubtful misapplied to', bidirectional: false, name: 'doubtful misapplied'],
+                [citing: true, deprecated: false, doubtful: true, misapplied: true, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 90, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful pro parte misapplication', ofLabel: 'doubtful pro parte misapplied to', bidirectional: false, name: 'doubtful pro parte misapplied'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: true, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'secondary reference', ofLabel: 'secondary reference of', bidirectional: false, name: 'secondary reference'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'isonym', ofLabel: 'isonym of', bidirectional: false, name: 'isonym'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'trade name', ofLabel: 'trade name of', bidirectional: false, name: 'trade name'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'excluded name', ofLabel: 'excluded name of', bidirectional: false, name: 'excluded name'],
+                [citing: false, deprecated: false, doubtful: true, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful invalid publication', ofLabel: 'doubtful invalid publication of', bidirectional: false, name: 'doubtful invalid publication'],
+                [citing: true, deprecated: true, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 140, standalone: false, synonym: true, taxonomic: false, unsourced: true, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'synonym', ofLabel: 'synonym of', bidirectional: false, name: 'synonym'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: true, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 30, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'nomenclatural synonym', ofLabel: 'nomenclatural synonym of', bidirectional: false, name: 'nomenclatural synonym'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 100, standalone: false, synonym: true, taxonomic: true, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'taxonomic synonym', ofLabel: 'taxonomic synonym of', bidirectional: false, name: 'taxonomic synonym'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 10, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'replaced synonym', ofLabel: 'replaced synonym of', bidirectional: false, name: 'replaced synonym'],
+                [citing: true, deprecated: true, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: true, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 150, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'pro parte synonym', ofLabel: 'pro parte synonym of', bidirectional: false, name: 'pro parte synonym'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: true, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 110, standalone: false, synonym: true, taxonomic: true, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'pro parte taxonomic synonym', ofLabel: 'pro parte taxonomic synonym of', bidirectional: false, name: 'pro parte taxonomic synonym'],
+                [citing: true, deprecated: true, doubtful: true, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 160, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful synonym', ofLabel: 'doubtful synonym of', bidirectional: false, name: 'doubtful synonym'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: true, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'homonym', ofLabel: 'homonym of', bidirectional: false, name: 'homonym'],
+                [citing: false, deprecated: true, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'invalid publication', ofLabel: 'invalid publication of', bidirectional: false, name: 'invalid publication'],
+                [citing: false, deprecated: true, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'sens. lat.', ofLabel: 'sens. lat. of', bidirectional: false, name: 'sens. lat.'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: true, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'common name', ofLabel: 'common name of', bidirectional: false, name: 'common name'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: true, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'vernacular name', ofLabel: 'vernacular name of', bidirectional: false, name: 'vernacular name'],
+                [citing: true, deprecated: false, doubtful: true, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 120, standalone: false, synonym: true, taxonomic: true, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful taxonomic synonym', ofLabel: 'doubtful taxonomic synonym of', bidirectional: false, name: 'doubtful taxonomic synonym'],
+                [citing: true, deprecated: true, doubtful: true, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 170, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful pro parte synonym', ofLabel: 'doubtful pro parte synonym of', bidirectional: false, name: 'doubtful pro parte synonym'],
+                [citing: true, deprecated: false, doubtful: true, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 130, standalone: false, synonym: true, taxonomic: true, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful pro parte taxonomic synonym', ofLabel: 'doubtful pro parte taxonomic synonym of', bidirectional: false, name: 'doubtful pro parte taxonomic synonym'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: false, nomenclatural: true, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 10, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'basionym', ofLabel: 'basionym of', bidirectional: false, name: 'basionym'],
+                [citing: false, deprecated: false, doubtful: true, misapplied: false, nomenclatural: true, primaryInstance: false, proParte: false, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 40, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful nomenclatural synonym', ofLabel: 'doubtful nomenclatural synonym of', bidirectional: false, name: 'doubtful nomenclatural synonym'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: true, primaryInstance: false, proParte: true, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 50, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'pro parte nomenclatural synonym', ofLabel: 'pro parte nomenclatural synonym of', bidirectional: false, name: 'pro parte nomenclatural synonym'],
+                [citing: false, deprecated: false, doubtful: false, misapplied: false, nomenclatural: false, primaryInstance: false, proParte: true, protologue: false, relationship: false, secondaryInstance: false, sortOrder: 20, standalone: false, synonym: true, taxonomic: false, unsourced: false, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'pro parte replaced synonym', ofLabel: 'pro parte replaced synonym of', bidirectional: false, name: 'pro parte replaced synonym'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: true, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 400, standalone: false, synonym: false, taxonomic: false, unsourced: true, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'misapplication', ofLabel: 'misapplied to', bidirectional: false, name: 'unsourced misapplied'],
+                [citing: true, deprecated: false, doubtful: false, misapplied: true, nomenclatural: false, primaryInstance: false, proParte: true, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 70, standalone: false, synonym: false, taxonomic: false, unsourced: true, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'pro parte misapplication', ofLabel: 'pro parte misapplied to', bidirectional: false, name: 'unsourced pro parte misapplied'],
+                [citing: true, deprecated: false, doubtful: true, misapplied: true, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 80, standalone: false, synonym: false, taxonomic: false, unsourced: true, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful misapplication', ofLabel: 'doubtful misapplied to', bidirectional: false, name: 'unsourced doubtful misapplied'],
+                [citing: true, deprecated: false, doubtful: true, misapplied: true, nomenclatural: false, primaryInstance: false, proParte: false, protologue: false, relationship: true, secondaryInstance: false, sortOrder: 90, standalone: false, synonym: false, taxonomic: false, unsourced: true, descriptionHtml: 'description', rdfId: 'rdf id', hasLabel: 'doubtful pro parte misapplication', ofLabel: 'doubtful pro parte misapplied to', bidirectional: false, name: 'unsourced doubtful pro parte misapplied'],
+        ].each { values ->
+            InstanceType instanceType = new InstanceType(values)
+            instanceType.save()
+        }
+        InstanceType.withSession { s -> s.flush() }
+        return "Instance Types created"
     }
 
 }
