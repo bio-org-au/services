@@ -384,5 +384,60 @@ introduced to new places, they cannot reproduce or spread readily without contin
 
 Each tree element will be linked to a set of distribution entries which will contain a region and a set of status entries.
 
+image::dist_entry.svg[distribution data structure]
 
+=== example query
 
+[source]
+.test dist.sql
+----
+select string_agg(entries.entry, ', ')
+from (SELECT dr.name || ' (' || string_agg(ds.name, ' and ') || ')' as entry
+      FROM dist_entry de
+               join dist_region dr on de.region_id = dr.id
+               join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
+               join dist_status ds on deds.dist_status_id = ds.id
+      where de.tree_element_id = 51223464
+      group by dr.name, dr.sort_order
+      order by dr.sort_order
+     ) entries
+;
+----
+
+result: `WA (naturalised), SA (naturalised), Qld (naturalised), NSW (native and naturalised), ACT (naturalised), Vic (naturalised)`
+
+First bash at a search example that looks for native taxa (there's only one in my DB as yet)
+
+[source]
+.search.sql
+----
+create function distribution(element_id BIGINT)
+    returns text
+    language sql as
+$$
+select string_agg(entries.entry, ', ')
+from (SELECT dr.name || ' (' || string_agg(ds.name, ' and ') || ')' as entry
+      FROM dist_entry de
+               join dist_region dr on de.region_id = dr.id
+               join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
+               join dist_status ds on deds.dist_status_id = ds.id
+      where de.tree_element_id = element_id
+      group by dr.name, dr.sort_order
+      order by dr.sort_order
+     ) entries
+$$;
+
+select te.simple_name, dr.name, ds.name, distribution(te.id)
+FROM dist_entry de
+         join dist_region dr on de.region_id = dr.id
+         join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
+         join dist_status ds on deds.dist_status_id = ds.id
+         join tree_element te on de.tree_element_id = te.id
+where ds.name = 'native'
+----
+
+result: `Acacia baileyana, NSW, native, "WA (naturalised), SA (naturalised), Qld (naturalised), NSW (native and naturalised), ACT (naturalised), Vic (naturalised)"`
+
+=== update and import
+
+see: https://github.com/bio-org-au/nsl-domain-plugin/blob/master/web-app/sql/update-to-32.sql

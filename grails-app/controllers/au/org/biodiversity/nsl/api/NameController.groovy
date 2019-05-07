@@ -180,16 +180,29 @@ class NameController implements WithTarget {
     apc(Name name) {
         withTarget(name) { ResultObject result, target ->
             TreeVersionElement tve = treeService.findCurrentElementForName(name, treeService.getAcceptedTree())
-            result << ["inAPC"   : tve != null,
-                       excluded  : tve.treeElement.excluded,
-                       operation : params.action,
-                       "nsl-name": name.id,
-                       nameNs    : "${tve.treeVersion.tree.name}-name",
-                       nameId    : linkService.getPreferredLinkForObject(name),
-                       taxonNs   : "${tve.treeVersion.tree.name}-name",
-                       taxonId   : tve.fullTaxonLink(),
-                       type      : "${tve.treeVersion.tree.name}Concept"
-            ]
+            if (tve == null) {
+                result << ["inAPC"   : false,
+                           excluded  : false,
+                           operation : params.action,
+                           "nsl-name": name?.id,
+                           nameNs    : "",
+                           nameId    : linkService.getPreferredLinkForObject(name),
+                           taxonNs   : "",
+                           taxonId   : null,
+                           type      : ""
+                ]
+            } else {
+                result << ["inAPC"   : true,
+                           excluded  : tve.treeElement.excluded,
+                           operation : params.action,
+                           "nsl-name": name.id,
+                           nameNs    : "${tve.treeVersion.tree.name}-name",
+                           nameId    : linkService.getPreferredLinkForObject(name),
+                           taxonNs   : "${tve.treeVersion.tree.name}-name",
+                           taxonId   : tve.fullTaxonLink(),
+                           type      : "${tve.treeVersion.tree.name}Concept"
+                ]
+            }
         }
     }
 
