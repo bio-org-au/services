@@ -285,6 +285,10 @@ composing: "native and naturalised" + "formerly naturalised" -> just "native and
 composing: native + naturalised + native and uncertain origin + formerly naturalised + doubtfully naturalised ->
 native and naturalised and uncertain origin
 
+NOTE: Anna and Kirsten point out that distribution for variety and species may be different so composing the species will
+not work. So we would only compose distribution of Genus and Above. We will also only compose distribution on Genus and
+Family. Need to check the species includes the distribution of children.
+
 Searching for native if we have "native and something" means we need to flag the concept of native in each state or just
 know to include all the "native and..." states.
 
@@ -437,6 +441,142 @@ where ds.name = 'native'
 ----
 
 result: `Acacia baileyana, NSW, native, "WA (naturalised), SA (naturalised), Qld (naturalised), NSW (native and naturalised), ACT (naturalised), Vic (naturalised)"`
+
+[source]
+.nativeByDist.sql
+----
+with nat_reg as (
+    select te.id,
+           te.simple_name,
+           array_agg(dr.name) r
+    from tree_element te
+             join dist_entry de on te.id = de.tree_element_id
+             join dist_region dr on de.region_id = dr.id
+             join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
+             join dist_status ds on deds.dist_status_id = ds.id
+    where ds.id = 51394229
+    group by te.id)
+select id,
+       simple_name,
+       r @> ARRAY ['WA']::varchar[]  as wa,
+       r @> ARRAY ['CoI']::varchar[] as coi,
+       r @> ARRAY ['Chi']::varchar[] as chi,
+       r @> ARRAY ['AR']::varchar[]  as ar,
+       r @> ARRAY ['CaI']::varchar[] as cai,
+       r @> ARRAY ['NT']::varchar[]  as nt,
+       r @> ARRAY ['SA']::varchar[]  as sa,
+       r @> ARRAY ['Qld']::varchar[] as qld,
+       r @> ARRAY ['CSI']::varchar[] as csi,
+       r @> ARRAY ['NSW']::varchar[] as nsw,
+       r @> ARRAY ['LHI']::varchar[] as lhi,
+       r @> ARRAY ['NI']::varchar[]  as ni,
+       r @> ARRAY ['ACT']::varchar[] as act,
+       r @> ARRAY ['Vic']::varchar[] as vic,
+       r @> ARRAY ['Tas']::varchar[] as tas,
+       r @> ARRAY ['HI']::varchar[]  as hi,
+       r @> ARRAY ['MDI']::varchar[] as mdi,
+       r @> ARRAY ['MI']::varchar[]  as mi
+from nat_reg;
+----
+
+The above query provides a view of tree_elements that are native in a region, and provides a set of flags that indicate
+it is native within that region. This makes a good view for querying. and we could provide separate views
+
+```
+id,simple_name,wa,coi,chi,ar,cai,nt,sa,qld,csi,nsw,lhi,ni,act,vic,tas,hi,mdi,mi
+51211639,Boryaceae,true,false,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,false
+```
+
+NOTE: I have extended VQ to allow it to call specific functions so the following queries may be used.
+
+[source]
+.public_apc_dist.sql
+----
+drop function public_apc_dist(status text);
+create function public_apc_dist(status text)
+    returns table
+            (
+                tree          text,
+                element_link  text,
+                simple_name   text,
+                display_html  text,
+                synonyms_html text,
+                dist          text,
+                rank          text,
+                name_path     text,
+                wa            boolean,
+                coi           boolean,
+                chi           boolean,
+                ar            boolean,
+                cai           boolean,
+                nt            boolean,
+                sa            boolean,
+                qld           boolean,
+                csi           boolean,
+                nsw           boolean,
+                lhi           boolean,
+                ni            boolean,
+                act           boolean,
+                vic           boolean,
+                tas           boolean,
+                hi            boolean,
+                mdi           boolean,
+                mi            boolean
+            )
+    language sql
+as
+$$
+with nat_reg as (
+    select te.id,
+           te.simple_name,
+           te.display_html,
+           te.synonyms_html,
+           te.profile -> 'APC Dist.' ->> 'value' as dist,
+           te.rank,
+           array_agg(dr.name)                       r
+    from tree_element te
+             join dist_entry de on te.id = de.tree_element_id
+             join dist_region dr on de.region_id = dr.id
+             join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
+             join dist_status ds on deds.dist_status_id = ds.id and ds.name ~ status
+    group by te.id)
+select t.name                          as tree,
+       t.host_name || tve.element_link as element_link,
+       simple_name,
+       display_html,
+       synonyms_html,
+       dist,
+       rank,
+       name_path,
+       r @> ARRAY ['WA']::varchar[]    as wa,
+       r @> ARRAY ['CoI']::varchar[]   as coi,
+       r @> ARRAY ['Chi']::varchar[]   as chi,
+       r @> ARRAY ['AR']::varchar[]    as ar,
+       r @> ARRAY ['CaI']::varchar[]   as cai,
+       r @> ARRAY ['NT']::varchar[]    as nt,
+       r @> ARRAY ['SA']::varchar[]    as sa,
+       r @> ARRAY ['Qld']::varchar[]   as qld,
+       r @> ARRAY ['CSI']::varchar[]   as csi,
+       r @> ARRAY ['NSW']::varchar[]   as nsw,
+       r @> ARRAY ['LHI']::varchar[]   as lhi,
+       r @> ARRAY ['NI']::varchar[]    as ni,
+       r @> ARRAY ['ACT']::varchar[]   as act,
+       r @> ARRAY ['Vic']::varchar[]   as vic,
+       r @> ARRAY ['Tas']::varchar[]   as tas,
+       r @> ARRAY ['HI']::varchar[]    as hi,
+       r @> ARRAY ['MDI']::varchar[]   as mdi,
+       r @> ARRAY ['MI']::varchar[]    as mi
+from tree t
+         join tree_version_element tve on t.current_tree_version_id = tve.tree_version_id
+         join nat_reg e on e.id = tve.tree_element_id
+where t.accepted_tree
+order by tve.name_path
+$$;
+----
+
+That function in VQ allows us to quickly answer most questions about distribution and status for the apc. Generic
+functions for any tree are possible, but splitting out the regions is trickier as they're not static.
+
 
 === update and import
 
