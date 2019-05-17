@@ -171,10 +171,10 @@ class TreeElementController extends BaseApiController {
      *
      * It needs post parameters
      * * taxonUri - the tree version element elementLink
-     * * comment - the comment text
+     * * distribution - the distribution text
      * * reason - the reason for the change
      *
-     * if comment text is blank the comment is removed.
+     * if distribution text is blank it is removed.
      *
      * @return
      */

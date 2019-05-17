@@ -386,7 +386,10 @@ introduced to new places, they cannot reproduce or spread readily without contin
 
 == Structure
 
-Each tree element will be linked to a set of distribution entries which will contain a region and a set of status entries.
+Each tree element will be linked to a set of distribution entries, via a link table, which will contain a region and a
+set of status entries.
+
+Only the valid set of distribution entry combinations will be started as distribution entries.
 
 image::dist_entry.svg[distribution data structure]
 
@@ -395,18 +398,22 @@ image::dist_entry.svg[distribution data structure]
 [source]
 .test dist.sql
 ----
-select string_agg(entries.entry, ', ')
-from (SELECT dr.name || ' (' || string_agg(ds.name, ' and ') || ')' as entry
-      FROM dist_entry de
-               join dist_region dr on de.region_id = dr.id
-               join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
-               join dist_status ds on deds.dist_status_id = ds.id
-      where de.tree_element_id = 51223464
-      group by dr.name, dr.sort_order
-      order by dr.sort_order
-     ) entries
-;
+drop function if exists distribution(BIGINT);
+create function distribution(element_id BIGINT)
+    returns text
+    language sql as
+$$
+select string_agg(e.display, ', ') from
+    (select entry.display display
+     from dist_entry entry
+              join dist_region dr on entry.region_id = dr.id
+              join tree_element_distribution_entries tede
+                   on tede.dist_entry_id = entry.id and tede.tree_element_id = element_id
+     order by dr.sort_order) e
+$$;
 ----
+
+query: `select distribution(tree_element.id);`
 
 result: `WA (naturalised), SA (naturalised), Qld (naturalised), NSW (native and naturalised), ACT (naturalised), Vic (naturalised)`
 
@@ -415,28 +422,13 @@ First bash at a search example that looks for native taxa (there's only one in m
 [source]
 .search.sql
 ----
-create function distribution(element_id BIGINT)
-    returns text
-    language sql as
-$$
-select string_agg(entries.entry, ', ')
-from (SELECT dr.name || ' (' || string_agg(ds.name, ' and ') || ')' as entry
-      FROM dist_entry de
-               join dist_region dr on de.region_id = dr.id
-               join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
-               join dist_status ds on deds.dist_status_id = ds.id
-      where de.tree_element_id = element_id
-      group by dr.name, dr.sort_order
-      order by dr.sort_order
-     ) entries
-$$;
-
 select te.simple_name, dr.name, ds.name, distribution(te.id)
 FROM dist_entry de
          join dist_region dr on de.region_id = dr.id
          join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
          join dist_status ds on deds.dist_status_id = ds.id
-         join tree_element te on de.tree_element_id = te.id
+         join tree_element_distribution_entries tede on de.id = tede.dist_entry_id
+         join tree_element te on tede.tree_element_id = te.id
 where ds.name = 'native'
 ----
 
@@ -450,11 +442,12 @@ with nat_reg as (
            te.simple_name,
            array_agg(dr.name) r
     from tree_element te
-             join dist_entry de on te.id = de.tree_element_id
+             join tree_element_distribution_entries tede on te.id = tede.tree_element_id
+             join dist_entry de on tede.dist_entry_id = de.id
              join dist_region dr on de.region_id = dr.id
              join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
              join dist_status ds on deds.dist_status_id = ds.id
-    where ds.id = 51394229
+    where ds.name = 'native'
     group by te.id)
 select id,
        simple_name,
@@ -535,7 +528,8 @@ with nat_reg as (
            te.rank,
            array_agg(dr.name)                       r
     from tree_element te
-             join dist_entry de on te.id = de.tree_element_id
+             join tree_element_distribution_entries tede on te.id = tede.tree_element_id
+             join dist_entry de on tede.dist_entry_id = de.id
              join dist_region dr on de.region_id = dr.id
              join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
              join dist_status ds on deds.dist_status_id = ds.id and ds.name ~ status
@@ -581,3 +575,15 @@ functions for any tree are possible, but splitting out the regions is trickier a
 === update and import
 
 see: https://github.com/bio-org-au/nsl-domain-plugin/blob/master/web-app/sql/update-to-32.sql
+
+== Implementation
+
+=== Issues
+
+==== editing old distributions
+Currently we allow "minor edits" to distribution (and comments) where old entries can have typos etc fixed. We record
+the old and the new distribution and have a reason for the edit recorded.
+
+If we do a minor edit to distribution it will change the distribution, but we'll need to just record the distribution
+string in the profile. I don't think that is a problem, but it means we'd need an editing interface implemented for
+historic distributions.
