@@ -24,6 +24,7 @@ class TreeService implements ValidationUtils {
     def restCallService
     def treeReportService
     def eventService
+    def distributionService
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)
 
     /**
@@ -1121,7 +1122,7 @@ INSERT INTO tree_version_element (tree_version_id,
         //so remove the profile and then compare the values for all the matches
 
         elementComparators.remove('profile')
-        //order by latest first so the first match will be the latest. (yes there are mutilple exact matches in some datasets)
+        //order by latest first so the first match will be the latest. (yes there are multiple exact matches in some data sets)
         List<TreeElement> matchingElements = TreeElement.findAllWhere(elementComparators).sort { a, b -> b.id <=> a.id }
         log.debug "Found ${matchingElements.size()} matching elements"
 
@@ -1147,6 +1148,10 @@ INSERT INTO tree_version_element (tree_version_id,
             //don't update taxonId above as the taxon hasn't changed
         }
 
+        String distKey = distributionKey(treeVersionElement)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString)
+
         Timestamp now = new Timestamp(System.currentTimeMillis())
 
         treeVersionElement.treeElement.profile = profile
@@ -1158,17 +1163,16 @@ INSERT INTO tree_version_element (tree_version_id,
         return treeVersionElement
     }
 
-    private static boolean compareProfileMapValues(Map m, Map n) {
+    static boolean compareProfileMapValues(Map m, Map n) {
         if (m.keySet() == n.keySet()) {
-            String result = m.keySet().find { key ->
-                log.debug "Comparing ${m[key].value} to ${n[key].value} : (${n[key]})"
-                m[key].value != n[key].value
+            //find first example of values *not* matching
+            boolean result = m.keySet().find { key ->
+                m[key]['value'] != n[key]['value']
             }
-            return result == null
+            return !result
         }
         return false
     }
-
 
     TreeVersionElement minorEditDistribution(TreeVersionElement treeVersionElement, String distribution, String reason, String userName) {
         String distKey = distributionKey(treeVersionElement)
@@ -1779,7 +1783,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         synonyms.each { Synonym synonym ->
             TreeVersionElement tve = TreeVersionElement
                     .find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.nameId = :nameId and tve.elementLink <> :excluding',
-                    [treeVersion: treeVersion, nameId: synonym.nameId, excluding: excluding?.elementLink ?: ''])
+                            [treeVersion: treeVersion, nameId: synonym.nameId, excluding: excluding?.elementLink ?: ''])
             if (tve) {
                 String message = "Can’t place this concept - synonym is accepted concept **${tve.treeElement.displayHtml}**"
                 throw new BadArgumentsException("$message")
@@ -2056,27 +2060,27 @@ and tve.element_link not in ($excludedLinks)
         report.getUseToType(TveDiff.REMOVED)
               .sort { a, b -> b.to.namePath <=> a.to.namePath }
               .each { diff ->
-            if (diff.from) {
-                removeTreeVersionElement(diff.from)
-                mergeLog.add "Removed ${diff.to.treeElement.simpleName}"
-            }
-        }
+                  if (diff.from) {
+                      removeTreeVersionElement(diff.from)
+                      mergeLog.add "Removed ${diff.to.treeElement.simpleName}"
+                  }
+              }
 
         // collect all useTo added - sort top down by treePath and call placePublished on toTve
         report.getUseToType(TveDiff.ADDED)
               .sort { a, b -> a.to.namePath <=> b.to.namePath }
               .each { diff ->
-            TreeVersionElement newTve = placePublishedTve(diff.to, draftVersion, userName)
-            mergeLog.add "Added ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
-        }
+                  TreeVersionElement newTve = placePublishedTve(diff.to, draftVersion, userName)
+                  mergeLog.add "Added ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
+              }
 
         // collect all useTo modified where tree_element differs between from and to tve and change the element
         // collect all useTo modified where tree_element is the same for from and to tve and update the placement/tve data(?)
         report.getUseToType(TveDiff.MODIFIED)
               .each { diff ->
-            TreeVersionElement newTve = updateFromPublised(diff.from, diff.to, userName)
-            mergeLog.add "Updated ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
-        }
+                  TreeVersionElement newTve = updateFromPublised(diff.from, diff.to, userName)
+                  mergeLog.add "Updated ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
+              }
 
         List<TreeVersionElement> conflicted = TreeVersionElement.findAllByMergeConflictAndTreeVersion(true, draftVersion)
         if (conflicted.size()) {
