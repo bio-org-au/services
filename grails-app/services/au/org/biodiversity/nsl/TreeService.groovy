@@ -1133,6 +1133,13 @@ INSERT INTO tree_version_element (tree_version_id,
         //if there is an element that matches the new data use that element
         Map elementComparators = comparators(treeVersionElement.treeElement)
 
+        String distKey = distributionKey(treeVersionElement)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        //validate distribution against excluded
+        if(distString && elementComparators.excluded) {
+            throw new BadArgumentsException("An excluded taxon can't have a distribution.")
+        }
+
         //we don't want to check the whole profile, just the *values* of the comment and distribution
         //so remove the profile and then compare the values for all the matches
 
@@ -1163,8 +1170,6 @@ INSERT INTO tree_version_element (tree_version_id,
             //don't update taxonId above as the taxon hasn't changed
         }
 
-        String distKey = distributionKey(treeVersionElement)
-        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
         distributionService.reconstructDistribution(treeVersionElement.treeElement, distString)
 
         Timestamp now = new Timestamp(System.currentTimeMillis())
@@ -1190,6 +1195,9 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     TreeVersionElement minorEditDistribution(TreeVersionElement treeVersionElement, String distribution, String reason, String userName) {
+        if(distribution && treeVersionElement.treeElement.excluded) {
+            throw new BadArgumentsException("An excluded taxon can't have a distribution.")
+        }
         String distKey = distributionKey(treeVersionElement)
         //this will throw an exception if the distribution string is bad.
         distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution)
@@ -1237,6 +1245,14 @@ INSERT INTO tree_version_element (tree_version_id,
         //if there is an element that matches the new data use that element
         Map elementComparators = comparators(treeVersionElement.treeElement)
         elementComparators.excluded = excluded
+        //validate against distribution
+        if(excluded) {
+            String distKey = distributionKey(treeVersionElement)
+            if(elementComparators.profile && elementComparators.profile[distKey] && elementComparators.profile[distKey].value){
+                throw new BadArgumentsException("An excluded taxon can't have a distribution.")
+            }
+        }
+
         TreeElement foundElement = findTreeElement(elementComparators)
         if (foundElement) {
             return changeElement(treeVersionElement, foundElement, userName)
@@ -1685,6 +1701,13 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
     protected List<String> basicPlacementValidation(TreeVersionElement parentElement, TaxonData taxonData) {
 
         List<String> warnings = checkNameValidity(taxonData)
+
+        if(taxonData.excluded) {
+            String distKey = distributionKey(parentElement)
+           if(taxonData.profile && taxonData.profile[distKey] && taxonData.profile[distKey].value){
+               throw new BadArgumentsException("An excluded taxon can't have a distribution.")
+           }
+        }
 
         NameRank taxonRank = NameRank.findByName(taxonData.rank)
         NameRank parentRank = NameRank.findByName(parentElement.treeElement.rank)
