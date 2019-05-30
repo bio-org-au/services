@@ -843,6 +843,11 @@ INSERT INTO tree_version_element (tree_version_id,
         List<String> warnings = validateNewElementPlacement(parentElement, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, null, userName)
+
+        String distKey = distributionKey(parentElement)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeElement, distString)
+
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, parentElement, nextSequenceId(), null, userName)
         updateParentTaxaId(parentElement)
 
@@ -878,6 +883,11 @@ INSERT INTO tree_version_element (tree_version_id,
         List<String> warnings = validateNewElementTopPlacement(treeVersion, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, null, userName)
+
+        String distKey = distributionKey(treeVersion.tree)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeElement, distString)
+
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, null, treeVersion, nextSequenceId(), null, userName)
 
         return [childElement: childElement, warnings: warnings, message: "#### Placed ${childElement.treeElement.name.fullName} ####"]
@@ -920,6 +930,11 @@ INSERT INTO tree_version_element (tree_version_id,
         List<String> warnings = validateReplacementElement(parentTve, currentTve, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, currentTve.treeElement, userName)
+
+        String distKey = distributionKey(currentTve)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeElement, distString)
+
         TreeVersionElement replacementTve = saveTreeVersionElement(treeElement, parentTve, nextSequenceId(), null, userName)
 
         updateParentId(currentTve, replacementTve)
