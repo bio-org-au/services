@@ -1,6 +1,7 @@
 package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.*
+import org.apache.shiro.authz.AuthorizationException
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
@@ -187,10 +188,14 @@ class TreeElementController extends BaseApiController {
             String userName = treeService.authorizeTreeOperation(treeVersionElement.treeVersion.tree)
             treeService.minorEditDistribution(treeVersionElement, distribution, reason, userName)
             redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
-        } catch(e) {
+        } catch (AuthorizationException authException) {
+            log.error(authException.message)
+            flash.message = "You need to be logged in to edit."
+            redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
+        } catch (e) {
             log.error(e.message)
             flash.message = e.message
-            if(treeVersionElement) {
+            if (treeVersionElement) {
                 redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
             } else {
                 redirect(controller: 'search', action: 'search')
