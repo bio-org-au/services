@@ -180,12 +180,22 @@ class TreeElementController extends BaseApiController {
      */
     def editDistribution(String taxonUri, String distribution, String reason) {
         TreeVersionElement treeVersionElement = TreeVersionElement.get(taxonUri)
-        if (!treeVersionElement) {
-            throw new ObjectNotFoundException("Can't find taxon with URI $taxonUri")
+        try {
+            if (!treeVersionElement) {
+                throw new ObjectNotFoundException("Can't find taxon with URI $taxonUri")
+            }
+            String userName = treeService.authorizeTreeOperation(treeVersionElement.treeVersion.tree)
+            treeService.minorEditDistribution(treeVersionElement, distribution, reason, userName)
+            redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
+        } catch(e) {
+            log.error(e.message)
+            flash.message = e.message
+            if(treeVersionElement) {
+                redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
+            } else {
+                redirect(controller: 'search', action: 'search')
+            }
         }
-        String userName = treeService.authorizeTreeOperation(treeVersionElement.treeVersion.tree)
-        treeService.minorEditDistribution(treeVersionElement, distribution, reason, userName)
-        redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
     }
 
     def editElementStatus() {

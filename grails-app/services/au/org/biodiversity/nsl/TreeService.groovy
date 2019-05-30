@@ -1176,6 +1176,8 @@ INSERT INTO tree_version_element (tree_version_id,
 
     TreeVersionElement minorEditDistribution(TreeVersionElement treeVersionElement, String distribution, String reason, String userName) {
         String distKey = distributionKey(treeVersionElement)
+        //this will throw an exception if the distribution string is bad.
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution)
         return minorEditProfile(treeVersionElement, distribution, reason, userName, distKey)
     }
 
@@ -1193,13 +1195,13 @@ INSERT INTO tree_version_element (tree_version_id,
         log.debug profile.toString()
         if (profile[key]?.value == value) {
             //value hasn't changed do nothing
-            log.debug "no change in comment, doing nothing."
+            log.debug "no change in $key, doing nothing."
             return treeVersionElement
         }
 
-        ProfileValue newComment = new ProfileValue(value, userName, profile[key] as Map, reason)
+        ProfileValue profileValue = new ProfileValue(value, userName, profile[key] as Map, reason)
 
-        treeVersionElement.treeElement.profile[key] = newComment.toMap()
+        treeVersionElement.treeElement.profile[key] = profileValue.toMap()
         treeVersionElement.treeElement.save()
         log.debug treeVersionElement.treeElement.profile.toString()
         return treeVersionElement

@@ -24,7 +24,7 @@ class DistributionService {
         dist.split(',').collect { it.trim() }.each { String desc ->
             DistEntry entry = DistEntry.findByDisplay(desc)
             if (entry == null) {
-                String validEntries = DistEntry.list().collect { e -> (e as DistEntry).display }.join(', ')
+                String validEntries = DistEntry.list().sort{(it as DistEntry).sortOrder}.collect { e -> (e as DistEntry).display }.join(', ')
                 throw new IllegalArgumentException("Distribution entry ${desc} is not valid. Try one of $validEntries")
             } else {
                 entries.add(entry)
