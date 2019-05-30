@@ -1193,6 +1193,8 @@ INSERT INTO tree_version_element (tree_version_id,
         String distKey = distributionKey(treeVersionElement)
         //this will throw an exception if the distribution string is bad.
         distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution)
+        //re-order the distribution string correctly
+        distribution = distributionService.constructDistributionString(treeVersionElement.treeElement)
         treeVersionElement.treeElement.save(flush: true)
         return minorEditProfile(treeVersionElement, distribution, reason, userName, distKey)
     }
