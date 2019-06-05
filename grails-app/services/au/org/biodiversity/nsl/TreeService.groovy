@@ -1291,7 +1291,7 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     /**
-     * Checks if an instances synonymy has changed and creates an 'Synonymy Updated' EventRecord
+     * just update the cached synonymy
      * @param instance
      * @param userName
      */
@@ -1302,6 +1302,7 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     def refreshSynonymHtmlCache() {
+        log.debug "Refreshing synonymy cache"
         Sql sql = getSql()
         sql.executeUpdate("update instance set cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>') where id in (select distinct instance_id from tree_element);")
     }
@@ -1336,7 +1337,7 @@ where te.display_html <> ('<data>' || n.full_name_html || ' <citation>' || r.cit
     }
 
     /**
-     * rewrite all the displayHtml fields on all tree elements. use as daily refresh to catch any chnages missed by lost
+     * rewrite all the displayHtml fields on all tree elements. use as daily refresh to catch any changes missed by lost
      * triggers.
      */
     def refreshDisplayHtml() {

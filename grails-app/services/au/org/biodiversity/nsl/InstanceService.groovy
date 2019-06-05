@@ -265,7 +265,7 @@ class InstanceService {
     def checkInstanceDelete(Long id) {
         Map instanceData = auditService.recoverDeletedInstanceData(id)
         if (instanceData) {
-            treeService.checkUsageOfDeletedInstance(id, instanceData.cited_by_id as Long, instanceData.updated_by ?: 'notification')
+            treeService.checkUsageOfDeletedInstance(id, instanceData.cited_by_id as Long, (instanceData.updated_by ?: 'notification') as String)
         } else {
             log.error "Audit does not contain deleted instance $id. Check audit is working."
         }
