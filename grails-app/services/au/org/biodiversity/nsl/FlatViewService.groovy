@@ -37,6 +37,7 @@ class FlatViewService implements WithSql {
 
     private static String TAXON_VIEW = 'taxon_view'
     private static String NAME_VIEW = 'name_view'
+    private static String COMMON_VIEW = 'common_name_export'
 
     def refreshNameView(Sql sql) {
         log.debug "Refreshing name view..."
@@ -78,6 +79,10 @@ class FlatViewService implements WithSql {
 
     File exportNamesToCSV() {
         exportToCSV(NAME_VIEW, "${configService.nameTreeName}-names")
+    }
+
+    File exportCommonToCSV() {
+        exportToCSV(COMMON_VIEW, "${configService.nameTreeName}-common-names")
     }
 
     private File exportToCSV(String viewName, String namePrefix) {
@@ -139,7 +144,7 @@ SELECT EXISTS
   JOIN   pg_catalog.pg_namespace n ON n.oid = c.relnamespace
   WHERE  n.nspname = 'public'
        AND    c.relname = '$tableName'
-       AND    c.relkind = 'm')
+       AND    c.relkind in ('m', 'v'))
 AS exists"""
         def rowResult = sql.firstRow(query)
         return rowResult.exists

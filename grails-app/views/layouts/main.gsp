@@ -8,9 +8,9 @@
 
   <meta name="description" content="${st.pageTitle()} biodiversity taxonomy services"/>
   <meta property="og:title" content="${st.pageTitle()}"/>
-  <meta property="og:description" content="Biodiversity taxonomy services providing bibiliography and classification data ${params.product}"/>
-  <meta property="og:url" content="${request.requestURI}"/>
-  <meta property="og:image" content="${asset.image(src:"${st.bannerImage().toString()}")}"/>
+  <meta property="og:description" content="Biodiversity taxonomy services providing bibiliography and classification data in ${params.product}"/>
+  <meta property="og:url" content="${request.getContextPath()}"/>
+  <meta property="og:image" content="${asset.assetPath(src:"${st.bannerImage().toString()}")}"/>
 
   <script type="application/javascript">
     baseContextPath = "${request.getContextPath()}";
