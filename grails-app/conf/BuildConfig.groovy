@@ -89,7 +89,7 @@ grails.project.dependency.resolution = {
         compile ':cache:1.1.8'
         compile "org.grails.plugins:cache-ehcache:1.0.5"
         compile ":asset-pipeline:2.1.0"
-        compile "au.org.biodiversity.grails.plugins:nsl-domain-plugin:1.15"
+        compile "au.org.biodiversity.grails.plugins:nsl-domain-plugin:1.16"
         compile ':rest-client-builder:2.0.3'
         compile ":simple-suggestions:0.3"
 		compile ":twitter-bootstrap:3.3.0"
