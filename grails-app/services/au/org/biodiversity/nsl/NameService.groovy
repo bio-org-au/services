@@ -337,10 +337,12 @@ class NameService {
     private Boolean paused = false
 
     def startUpdatePolling() {
+        log.debug "Start update polling"
         quartzScheduler.start()
     }
 
     def pauseUpdates() {
+        log.debug "Pause update polling"
         if (quartzScheduler.isStarted()) {
             quartzScheduler.pauseAll()
             paused = true
@@ -348,6 +350,7 @@ class NameService {
     }
 
     def resumeUpdates() {
+        log.debug "Resume update polling"
         if (quartzScheduler.isStarted()) {
             quartzScheduler.resumeAll()
         } else {

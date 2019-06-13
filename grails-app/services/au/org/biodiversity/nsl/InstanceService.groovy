@@ -239,7 +239,7 @@ class InstanceService {
         //if this is a relationship instance we want to check if it's citedBy instance is on any tree and
         //create synonymy changed EventRecords
         if (instance.citedBy) {
-            treeService.checkSynonymyUpdated(instance.citedBy, instance.updatedBy)
+            treeService.checkSynonymyUpdated(instance.citedBy)
         }
     }
 
@@ -251,7 +251,7 @@ class InstanceService {
         //if this is a relationship instance we want to check if it's citedBy instance is on any tree and
         //create synonymy changed EventRecords
         if (instance.citedBy) {
-            treeService.checkSynonymyUpdated(instance.citedBy, instance.updatedBy)
+            treeService.checkSynonymyUpdated(instance.citedBy)
         }
     }
 
@@ -265,7 +265,7 @@ class InstanceService {
     def checkInstanceDelete(Long id) {
         Map instanceData = auditService.recoverDeletedInstanceData(id)
         if (instanceData) {
-            treeService.checkUsageOfDeletedInstance(id, instanceData.cited_by_id as Long, instanceData.updated_by ?: 'notification')
+            treeService.checkUsageOfDeletedInstance(id, instanceData.cited_by_id as Long, (instanceData.updated_by ?: 'notification') as String)
         } else {
             log.error "Audit does not contain deleted instance $id. Check audit is working."
         }

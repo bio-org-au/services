@@ -150,4 +150,24 @@ class TreeServiceUnitSpec extends Specification {
         displayElement.synonymsHtml == 'synonyms html'
     }
 
+    void "test compareProfileMapValues"() {
+        when: "I compare two maps"
+        Boolean testResult = TreeService.compareProfileMapValues(m1, m2)
+
+        then: "The result is correct"
+        testResult == expected
+
+        where:
+        m1                                                  | m2                                                 | expected
+        [k1: [value: "fred"]]                               | [k1: [value: "fred"]]                              | true
+        [k1: [value: "fred"]]                               | [k1: [value: "fred"], k2: [thing: "yo"]]           | false //m1 doesn't have k2
+        [k1: [value: "fred"]]                               | [k1: [value: "freddy"]]                            | false
+        [k1: [value: "fred"], k2: [thing: "hey"]]           | [k1: [value: "fred"], k2: [thing: "wo"]]           | true //should be true because k2 doesn't have value
+        [k1: [value: "fred"], k2: [value: "hey"]]           | [k1: [value: "fred"], k2: [value: "wo"]]           | false //k2.value doesn't match
+        [k1: [value: "fred"], k2: [thing: "hey"]]           | [k1: [value: "fred"], k2: [value: "wo"]]           | false //k2.value doesn't match
+        [k1: [value: "fred"], k2: [value: "hey"]]           | [k1: [value: "fred"], k2: [value: "hey"]]          | true
+        [k1: [value: "fred"], k2: [thing: "hey", value: 1]] | [k1: [value: "fred"], k2: [thing: "wo", value: 1]] | true
+
+    }
+
 }

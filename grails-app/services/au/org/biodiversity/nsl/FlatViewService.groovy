@@ -37,6 +37,7 @@ class FlatViewService implements WithSql {
 
     private static String TAXON_VIEW = 'taxon_view'
     private static String NAME_VIEW = 'name_view'
+    private static String COMMON_VIEW = 'common_name_export'
 
     def refreshNameView(Sql sql) {
         log.debug "Refreshing name view..."
@@ -72,19 +73,16 @@ class FlatViewService implements WithSql {
         }
     }
 
-    def createView(String namespace, String viewName, Sql sql, Closure viewDefn) {
-        String drop = "DROP MATERIALIZED VIEW IF EXISTS ${viewName}"
-        sql.execute(drop)
-        String query = viewDefn(namespace)
-        sql.execute(query)
-    }
-
     File exportTaxonToCSV() {
         exportToCSV(TAXON_VIEW, "${configService.classificationTreeName}-taxon")
     }
 
     File exportNamesToCSV() {
         exportToCSV(NAME_VIEW, "${configService.nameTreeName}-names")
+    }
+
+    File exportCommonToCSV() {
+        exportToCSV(COMMON_VIEW, "${configService.nameTreeName}-common-names")
     }
 
     private File exportToCSV(String viewName, String namePrefix) {
@@ -120,7 +118,6 @@ class FlatViewService implements WithSql {
     Map taxonSearch(String name) {
         String nameQuery = name.toLowerCase()
         Map results = [:]
-        ensureView(TAXON_VIEW, taxonView)
         String query = "select * from $TAXON_VIEW where lower(\"canonicalName\") like ? or lower(\"scientificName\") like ? limit 100"
         List<Map> allResults = executeQuery(query, [nameQuery, nameQuery])
         List<Map> acceptedResults = allResults.findAll { Map result ->
@@ -140,15 +137,6 @@ class FlatViewService implements WithSql {
 
     }
 
-    private ensureView(viewName, Closure viewDefn) {
-        withSql { Sql sql ->
-            if (!viewExists(sql, viewName)) {
-                log.debug "creating $viewName view."
-                createView(configService.nameSpaceName.toLowerCase(), viewName, sql, viewDefn)
-            }
-        }
-    }
-
     private static Boolean viewExists(Sql sql, String tableName) {
         String query = """
 SELECT EXISTS
@@ -156,7 +144,7 @@ SELECT EXISTS
   JOIN   pg_catalog.pg_namespace n ON n.oid = c.relnamespace
   WHERE  n.nspname = 'public'
        AND    c.relname = '$tableName'
-       AND    c.relkind = 'm')
+       AND    c.relkind in ('m', 'v'))
 AS exists"""
         def rowResult = sql.firstRow(query)
         return rowResult.exists
