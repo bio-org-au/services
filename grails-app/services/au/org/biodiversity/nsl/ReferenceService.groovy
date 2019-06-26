@@ -184,8 +184,8 @@ class ReferenceService {
 
     private static String pubDate(Reference reference) {
         use(ReferenceStringCategory) {
-            if (reference.year) {
-                return "(${reference.year})"
+            if (reference.isoPublicationDate) {
+                return "(${reference.isoPublicationDate})"
             }
             if (reference.publicationDate) {
                 return "(${reference.publicationDate.clean()})"
@@ -197,6 +197,19 @@ class ReferenceService {
         }
     }
 
+    static String findReferenceIsoPublicationDate(Reference reference) {
+        if (!reference) {
+            return null
+        }
+        if (reference.isoPublicationDate) {
+            return reference.isoPublicationDate
+        }
+        if (reference.refType.useParentDetails) {
+            return reference.parent.isoPublicationDate
+        }
+        return null
+    }
+
     static Integer findReferenceYear(Reference reference) {
         if (!reference) {
             return null
@@ -204,7 +217,6 @@ class ReferenceService {
         if (reference.year) {
             return reference.year
         }
-
         if (reference.refType.useParentDetails) {
             return reference.parent.year
         }
