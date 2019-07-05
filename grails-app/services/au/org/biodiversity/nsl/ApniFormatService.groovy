@@ -54,16 +54,23 @@ class ApniFormatService {
             //NSL-1827 use parent details for sorting
             String aIsoDate = ReferenceService.findReferenceIsoPublicationDate(a)
             String bIsoDate = ReferenceService.findReferenceIsoPublicationDate(b)
-            if (aIsoDate == bIsoDate) {
+
+            String aIsoYear = ReferenceService.findReferenceIsoPublicationYear(a)
+            String bIsoYear = ReferenceService.findReferenceIsoPublicationYear(b)
+
+            if (aIsoYear == bIsoYear) { // year component of IsoDate 
                 if (aProto == bProto) {
                     if (aPrimary == bPrimary) {
-                        if (a == b) {
-                            if (a.pages == b.pages) {
-                                return a.id <=> b.id  //highest Id first
+                        if (aIsoDate == bIsoDate) { // year component of IsoDate 
+                            if (a == b) {
+                                if (a.pages == b.pages) {
+                                    return a.id <=> b.id  //highest Id first
+                                }
+                                return a.pages <=> b.pages //reverse string sort 1s, then 2s
                             }
-                            return a.pages <=> b.pages //reverse string sort 1s, then 2s
+                            return a.citation <=> b.citation //alpha sort by reference citation
                         }
-                        return a.citation <=> b.citation //alpha sort by reference citation
+                        return (aIsoDate) <=> (bIsoDate) //lowest IsoDate first
                     }
                     return bPrimary <=> aPrimary // primary reference first (1)
                 }

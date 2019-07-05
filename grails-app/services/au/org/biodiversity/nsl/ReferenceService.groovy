@@ -197,6 +197,19 @@ class ReferenceService {
         }
     }
 
+    static String findReferenceIsoPublicationYear(Reference reference) {
+        if (!reference) {
+            return null
+        }
+        if (reference.isoPublicationDate) {
+            return reference.isoPublicationDate.substring(1,4)
+        }
+        if (reference.refType.useParentDetails) {
+            return reference.parent.isoPublicationDate.substring(1,4)
+        }
+        return null
+    }
+
     static String findReferenceIsoPublicationDate(Reference reference) {
         if (!reference) {
             return null
