@@ -23,7 +23,6 @@ class Synonym {
     final String citesLink
     final String conceptLink
     final String year
-    final String isoPublicationDate
 
     Synonym(Instance synonymInstance, LinkService linkService) {
         host = linkService.getPreferredHost()
@@ -32,7 +31,7 @@ class Synonym {
         conceptLink = (linkService.getPreferredLinkForObject(synonymInstance.cites) ?: '') - host
         citesLink = (linkService.getPreferredLinkForObject(synonymInstance.cites?.reference) ?: '') - host
         instance = synonymInstance
-        year = instance.cites?.reference?.isoPublicationDate?.substring(1,4)
+        year = instance.cites?.reference?.getIsoYear()
         simpleName = synonymInstance.name.simpleName
         type = synonymInstance.instanceType.name
         nameId = synonymInstance.name.id
@@ -54,7 +53,7 @@ class Synonym {
         conceptLink = synonymMap.concept_link as String
         citesLink = synonymMap.cites_link as String
 
-        year = instance?.cites?.reference?.isoPublicationDate?.substring(1,4)
+        year = instance?.cites?.reference?.getIsoYear()
         simpleName = synonymMap.simple_name as String
         type = synonymMap.type as String
         nameId = synonymMap.name_id as Long
@@ -85,7 +84,7 @@ class Synonym {
                 cites         : cites,
                 citesHtml     : citesHtml,
                 cites_link    : citesLink,
-                year          : isoPublicationDate?.substring(1,4)
+                year          : year
         ]
     }
 }

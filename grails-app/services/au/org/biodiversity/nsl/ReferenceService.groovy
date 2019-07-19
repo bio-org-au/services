@@ -202,10 +202,10 @@ class ReferenceService {
             return null
         }
         if (reference.isoPublicationDate) {
-            return reference.isoPublicationDate.substring(1,4)
+            return reference.getIsoYear()
         }
         if (reference.refType.useParentDetails) {
-            return reference.parent.isoPublicationDate.substring(1,4)
+            return reference.parent.getIsoYear()
         }
         return null
     }
