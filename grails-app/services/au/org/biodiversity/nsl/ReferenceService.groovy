@@ -223,19 +223,6 @@ class ReferenceService {
         return null
     }
 
-    static Integer findReferenceYear(Reference reference) {
-        if (!reference) {
-            return null
-        }
-        if (reference.year) {
-            return reference.year
-        }
-        if (reference.refType.useParentDetails) {
-            return reference.parent.year
-        }
-        return null
-    }
-
     void checkReferenceChanges(Reference reference) {
         reconstructChildCitations(reference)
     }
