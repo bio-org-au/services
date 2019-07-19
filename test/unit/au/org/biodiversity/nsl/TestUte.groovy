@@ -384,7 +384,7 @@ class TestUte {
 
     static Reference genericReference() {
         Author author = saveAuthor(abbrev: 'a1', name: 'Author One', namespace())
-        saveReference(title: "reference one", author: author, year: 1999, namespace())
+        saveReference(title: "reference one", author: author, isoPublicationDate: '1999', year: 1999, namespace())
     }
 
     static Author saveAuthor(Map params, Namespace namespace) {
