@@ -197,13 +197,11 @@ class LinkService {
     }
 
     String getPreferredLinkForObjectSansHost(Object target) {
-        log.debug("getPreferredLinkForObjectSansHost")
         getPreferredLinkForObject(target) - "${getPreferredHost()}/"
     }
 
     @Timed()
     String getPreferredLinkForObject(Object target) {
-        log.debug("getPreferredLinkForObject")
         if (target == null) {
             log.warn "Can't get link for null object"
             return null
@@ -239,7 +237,6 @@ class LinkService {
             } catch (RestCallException e) {
                 log.error "Error $e.message getting preferred link for $target"
             }
-            log.debug("link: ${link}")
             return link
         } as String
     }
@@ -274,7 +271,6 @@ class LinkService {
             }
             preferredHost = host
         }
-        log.debug("preferredHost: ${preferredHost}")
         return preferredHost
     }
 
