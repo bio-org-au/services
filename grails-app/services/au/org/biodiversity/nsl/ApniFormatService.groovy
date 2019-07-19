@@ -58,10 +58,10 @@ class ApniFormatService {
             String aIsoYear = ReferenceService.findReferenceIsoPublicationYear(a)
             String bIsoYear = ReferenceService.findReferenceIsoPublicationYear(b)
 
-            if (aIsoYear == bIsoYear) { // year component of IsoDate 
+            if (aIsoYear == bIsoYear) { // compare year component of IsoDates
                 if (aProto == bProto) {
                     if (aPrimary == bPrimary) {
-                        if (aIsoDate == bIsoDate) { // year component of IsoDate 
+                        if (aIsoDate == bIsoDate) { // compare full IsoDates 
                             if (a == b) {
                                 if (a.pages == b.pages) {
                                     return a.id <=> b.id  //highest Id first
