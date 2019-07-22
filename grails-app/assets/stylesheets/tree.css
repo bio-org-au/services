@@ -1,0 +1,305 @@
+div.wrap {
+    background-color: white;
+}
+
+div.tr {
+    white-space: nowrap;
+}
+
+div.indented {
+    overflow: hidden;
+}
+
+div.indented div.tr {
+    background: repeating-linear-gradient(
+            90deg,
+            transparent,
+            lightblue 1px,
+            white 2px,
+            white 1.0em
+    );
+}
+
+.excluded {
+    color: red !important;
+}
+
+div.tr dl {
+    margin-bottom: 0;
+}
+
+div.tr data {
+    white-space: normal;
+    padding-bottom: 0.2em;
+    padding-top: 0.2em;
+    color: #3c3c3c;
+    background-color: white;
+}
+
+div.tr data scientific {
+    font-weight: bold;
+    color: black;
+}
+
+div.tr data scientific element {
+    font-style: normal;
+}
+
+div.tr synonyms {
+    display: block;
+    margin-left: 2em;
+    color: black;
+}
+
+div.tr synonyms name-status {
+    font-style: italic;
+}
+
+div.tr synonyms type {
+    color: darkslategrey;
+}
+
+div.tr synonyms nom,
+div.tr synonyms tax,
+div.tr synonyms mis,
+div.tr synonyms syn {
+    display: block;
+    white-space: normal;
+}
+
+div.tr synonyms oth {
+    display: none;
+}
+
+div.tr synonyms syn:before {
+    content: '≜';
+    padding-right: 0.3em;
+    color: black;
+
+}
+
+div.tr synonyms nom:before {
+    content: '≡';
+    padding-right: 0.3em;
+    color: black;
+
+}
+
+div.tr synonyms tax:before {
+    content: '=';
+    padding-right: 0.3em;
+    color: black;
+}
+
+div.tr synonyms mis:before {
+    content: '≠';
+    padding-right: 0.3em;
+    color: black;
+}
+
+div.tr synonyms type:before {
+    content: ' ';
+}
+
+div.tr.excluded data scientific {
+    color: red;
+}
+
+div.tr.excluded data::before {
+    color: red;
+    font-weight: bold;
+    padding-right: 0.5em;
+    font-family: FontAwesome;
+    content: "\f05e";
+}
+
+div.tr data scientific authors {
+    font-weight: normal;
+    /*color: #2b669a;*/
+}
+
+div.tr data citation {
+    color: darkslategrey;
+    margin-left: 1em;
+}
+
+div.indent1 div.tr {
+    margin-left: -1em;
+}
+
+div.indent2 div.tr {
+    margin-left: -2em;
+}
+
+div.indent3 div.tr {
+    margin-left: -3em;
+}
+
+div.indent4 div.tr {
+    margin-left: -4em;
+}
+
+div.indent5 div.tr {
+    margin-left: -5em;
+}
+
+div.indent6 div.tr {
+    margin-left: -5em;
+}
+
+div.indent7 div.tr {
+    margin-left: -7em;
+}
+
+div.indent8 div.tr {
+    margin-left: -8em;
+}
+
+div.indent9 div.tr {
+    margin-left: -9em;
+}
+
+div.indent10 div.tr {
+    margin-left: -10em;
+}
+
+div.indent11 div.tr {
+    margin-left: -11em;
+}
+
+div.indented div.tr.level1 {
+    padding-left: 1em;
+}
+
+div.indented div.tr.level2 {
+    padding-left: 2em;
+}
+
+div.indented div.tr.level3 {
+    padding-left: 3em;
+}
+
+div.indented div.tr.level4 {
+    padding-left: 4em;
+}
+
+div.indented div.tr.level5 {
+    padding-left: 5em;
+}
+
+div.indented div.tr.level6 {
+    padding-left: 6em;
+}
+
+div.indented div.tr.level7 {
+    padding-left: 7em;
+}
+
+div.indented div.tr.level8 {
+    padding-left: 8em;
+}
+
+div.indented div.tr.level9 {
+    padding-left: 9em;
+}
+
+div.indented div.tr.level10 {
+    padding-left: 10em;
+}
+
+div.indented div.tr.level11 {
+    padding-left: 11em;
+}
+
+div.indented div.tr.level12 {
+    padding-left: 12em;
+}
+
+div.indented div.tr.level13 {
+    padding-left: 13em;
+}
+
+div.indented div.tr.level14 {
+    padding-left: 14em;
+}
+
+/* add links to div.tr line by wrapping it with another div */
+div.wrap div.tr {
+    width: auto;
+    display: inline-block;
+}
+
+div.previous {
+    margin: 0.5em;
+    padding: 0.5em;
+    border: 1px solid grey;
+    border-radius: 0.5em;
+}
+
+div.previous dt:nth-of-type(even),
+div.previous dd:nth-of-type(even) {
+    color: grey;
+}
+
+tr.titleRow {
+    font-weight: bold;
+    border-bottom: none;
+    background-color: #dddddd;
+}
+
+.target {
+    display: inline-block !important;
+    font-weight: bold;
+    background-color: RGBA(256, 256, 0, 0.30) !important;
+    padding: 2px 10px 0 10px;
+    border-bottom: 1px solid red;
+
+}
+
+.targetHighlight {
+    display: inline-block !important;
+    font-weight: bold;
+    background-color: RGBA(256, 256, 0, 0.30) !important;
+    border-bottom: 1px solid red;
+}
+
+.targetMoved {
+    display: block;
+    margin-left: -1em;
+}
+
+.targetMoved tax,
+.targetMoved nom,
+.targetMoved mis,
+.targetMoved syn
+{
+    display: inline-block !important;
+}
+
+.minus,
+div.tr synonyms scientific .minus {
+    color: red !important;
+    font-weight: bold;
+}
+
+.plus,
+div.tr synonyms scientific .plus {
+    color: green !important;
+    font-weight: bold;
+}
+
+div.timeline {
+    color: grey;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+span.timeline {
+    border: 1px grey solid;
+    border-radius: 1em;
+    padding: 5px 5px;
+}
+
+span.timeline.active {
+    font-weight: bold;
+}

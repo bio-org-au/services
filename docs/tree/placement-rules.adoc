@@ -1,0 +1,431 @@
+= Tree Placement and Editing Rules
+v1.0, March 2018
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: New tree structure documentation
+:keywords: documentation, NSL, APNI, API, APC, tree
+:links:
+:numbered:
+
+Placing taxa on a tree has a set of rules that need to be understood. This document attempts to explain them.
+
+== Previous documentation
+
+* https://www.anbg.gov.au/25jira/browse/NSL-464[JIRA - NSL-464]
+* https://www.anbg.gov.au/ibis25/display/NSL/Tree+Monitor+Functionality[Confluence - Tree Monitor Functionality]
+* NewTreeStucture.adoc
+
+The JIRA NSL-464 lists the rules as:
+
+*Prevent placement for:*
+
+1. Within any classification, the placement of name on the tree must be below the rank of the name of its parent node.
+
+2. Within any classification, the placement of a name at the level of species and below must be within a branch subtended by the node, at rank genus, using the same generic name.
+
+3. Similarly, the placement of a name below the rank of species must be within the branch subtending from its species.
+
+4. Placement of an instance within a classification is not permitted if there is already an instance node bearing the
+same name within that tree.
+
+*Warning should be issued (at least) for:*
+
+5. Placement of an instance within a classification should not be permitted if there exists a node for an instance that
+places the new instance name in synonymy; unless, all synonymic instances of that name within the tree, bear the
+pro_parte qualification.
+
+6. Placement of an instance within a classification should not be permitted if its synonyms include the name of an
+instance that already exists within the tree; unless, the synonymic instance bears the pro_parte qualification.
+
+7. Placement of an instance within a classification should not be permitted if its synonyms include the name of a
+synonym of an instance that already exists within the tree; unless, all synonymic instance bear the pro_parte
+qualification.
+
+In part these rules are *incorrect* or deficient. Below I am documenting what has been implemented in code after much
+discussion and testing with users.
+
+== The code
+
+A summary of what we check can be found by looking at the code for placing a new taxon on the tree:
+
+[source:groovy]
+.Validate New Element Placement groovy
+----
+    protected List<String> validateNewElementPlacement(TreeVersionElement parentElement, TaxonData taxonData) {
+
+       TreeVersion treeVersion = parentElement.treeVersion
+
+(1)    List<String> warnings = checkNameValidity(taxonData)
+
+       NameRank taxonRank = NameRank.findByName(taxonData.rank)
+       NameRank parentRank = NameRank.findByName(parentElement.treeElement.rank)
+
+       //is rank below parent
+(2)    if (!RankUtils.rankHigherThan(parentRank, taxonRank)) {
+           throw new BadArgumentsException("Name $taxonData.simpleName of rank $taxonRank.name is not below rank $parentRank.name of $parentElement.treeElement.simpleName.")
+       }
+
+       //polynomials must be placed under parent
+(3)    checkPolynomialsBelowNameParent(taxonData.simpleName, taxonData.excluded, taxonRank, parentElement.namePath.split('/'))
+
+(4)    checkInstanceIsNotOnTheTree(taxonData, treeVersion)
+(5)    checkNameIsNotOnTheTree(taxonData, treeVersion)
+(6)    checkNameNotAnExistingSynonym(taxonData, treeVersion, [])
+(7)    checkSynonymsOfNameNotOnTheTree(taxonData, treeVersion)
+(8)    checkSynonymsAreNotSynonymsOnTheTree(taxonData, treeVersion, [])
+
+       return warnings
+    }
+
+----
+
+We describe each test below.
+
+=== Check name validity (warning only)
+
+ACTION: Warn that you are placing an invalid name.
+
+The creates a warning if the name is *nom Illeg* or *nom Inval*. It does not stop you from adding the name.
+
+=== Check the rank of the name is below it's parent
+
+ACTION: Prevents the taxon being placed.
+
+You can't place a lower rank above a higher one in the tree.
+
+=== Check a polynomial name is below it's parent name
+
+ACTION: Prevents the taxon being placed.
+
+e.g. Doodia aspera must be placed below Doodia not Woodwardia because the name is *Doodia* aspera not *Woodwardia* aspera.
+
+=== Check if the instance is already on the tree
+
+ACTION: Prevents the taxon being placed.
+
+Checks if the instance of the taxon is already placed on the tree. It will prevent the taxon being
+placed. In general you can replace an instance, but not with itself, so you would have to remove the existing instance
+first before placing it again, but this is almost always not what you want to do... [because??]
+
+=== check Name Is Not On The Tree
+
+ACTION: Prevents the taxon being placed.
+
+Checks if the name of the taxon is already placed on the tree. You need to replace the accepted taxon.
+In general this shouldn't happen because the editor prevents it.
+
+=== check Name Not An Existing Synonym
+
+ACTION: Prevents the taxon being placed.
+
+Checks if the name of the taxon being placed is a synonym of name already placed as accepted on the tree. If so, you
+need to supersede the accepted taxon or modify its synonymy.
+
+Error example: Can’t place this concept - Angophora costata subsp. leiocarpa is in synonymy under accepted concept
+Angophora leiocarpa (L.A.S.Johnson ex G.J.Leach) K.R.Thiele & LadigesCHAH (2006), Australian Plant Census.
+
+=== check Synonyms Of Name Not On The Tree
+
+ACTION: Prevents the taxon being placed.
+
+This checks if any of the synonyms of the taxon you are placing is a name already placed on the tree as an accepted taxon.
+If so, you need to supersede the accepted taxon.
+
+Error example: Can’t place this concept - synonym is accepted concept Angophora costata subsp. euryphylla L.A.S.Johnson
+ex G.J.LeachCHAH (2006), Australian Plant Census
+
+=== check Synonyms Are Not Synonyms On The Tree
+
+ACTION: Prevents the taxon being placed.
+
+This checks if any of the synonyms of the taxon you are placing is also a synonym of an accepted name already placed on
+the tree. If so, you need to supersede the accepted name or modify its synonymy.
+
+Error example: Can’t place this concept - synonym Eucalyptus gigantea is also a synonym of Eucalyptus globulus Labill.CHAH
+(2006), Australian Plant Census
+
+== Synonym errors
+
+=== candidate name is an accepted name
+
+e.g. trying to place another concept of Doodia aspera:
+
+Can't place this concept - Doodia aspera is already accepted as
+Doodia aspera R.Br.CHAH (2014), Australian Plant Census
+
+=== candidate's synonym is an accepted name
+
+e.g. trying to place a concept that has Doodia aspera as a synonym:
+
+Can't place this concept - synonym Doodia aspera (R.Br.) Mett. is an accepted concept
+Doodia aspera R.Br.CHAH (2014), Australian Plant Census
+
+
+=== candidate name is a synonym of an accepted name
+
+e.g. trying to place a concept of Woodwardia aspera:
+
+Can't place this concept - Woodwardia aspera (R.Br.) Mett. is part of accepted concept
+Doodia aspera R.Br.CHAH (2014), Australian Plant Census
+
+=== cadidates's synonym is a synonym of an accepted name
+
+e.g. trying to place a concept (other than Doodia aspera) that has Woodwardia aspera as a synonym:
+
+Can't place this concept - synonym Woodwardia aspera (R.Br.) Mett. is part of accepted concept
+Doodia aspera R.Br.CHAH (2014), Australian Plant Census
+
+== Fixup edits
+
+We need to be able to edit past annotations and possibly synonymy that have been erroneously entered. These minor edits
+are considered errata to a published tree (see https://www.anbg.gov.au/25jira/browse/NSL-2550[NSL-2550]).
+
+.From NSL-2550 Kirsten Cowley
+----
+    We would like the following to be included in "minor edits":
+    1. deletion or edit of distribution
+    2. deletion or edit of comment
+    3. addition of a basionym
+    4. addition of autonyms
+    5. addition of orthographic variants
+    6. addition of isonyms
+
+    We do not consider any of these to be a change of concept and therefore do not need a new instance.
+
+    We like the idea of having to provide a reason for the change and would like to suggest the following:
+    1. Change in distribution
+    2. Comment deleted
+    3. Comment edited
+    4. Basionym added
+    5. Autonym added
+    6. Orthographic variant added
+    7. Isonym added
+----
+
+Presenting the User Interface for making a fix like these needs to be consistent across the types of change and obvious
+that you are changing the historical data.
+
+Accessing the historical data such as the Distribution and Comment data in the editor will potentially be a challenge as
+they may be stored in older versions. We currently only edit the current version and a draft. It would be logical to use
+previously used instances as the vector to the previous versions in the editor, as that works in a similar way to the
+previous use of Instance Notes to provide this information.
+
+icon:question-circle[2x, role='yellow'] | Not an immediate problem, but: How do we handle other attributes people may need to edit for different trees?
+
+=== Changing synonymy
+
+In NSL-2550 the APNI/APC team want changes to synonymy that don't change the concept to be allowed as
+a minor or errata edit. e.g.
+
+1. addition of a basionym
+2. addition of autonyms
+3. addition of orthographic variants
+4. addition of isonyms
+
+Both Anna Monro and Greg Whitbread have complained that having multiple copies of instance with just a single change in
+synonymy is both ugly and confusing. Users of APNI need not know that APNI editors just forgot something so they had to
+completely re-write the book, thus the errata change requirement.
+
+Depending on the implementation, this requirement clashes with the following requiremets of the tree:
+
+. The tree must be versioned so that a citation (id) of a tree element must reproduce the tree as it was when it was
+viewed.
+. You should be able to link to a _version_ of the tree and get the current tree easily.
+.. You should be able to compare taxa in different version via an identifier. The identifier is unique to the _circumscribed_
+or enclosed taxa below this taxa. This identifier spans multiple versions of a tree. See <<taxon identifiers>>
+. The tree must enforce strict rules about the placement of names on a tree.
+. All common operations must be fast. You should be able to query the status of a name on the current tree without
+noticeable delay.
+. we must be able to create an "uber tree" from multiple sub trees.
+. The uber tree should be able to merge sub trees from multiple points - for example lichens have multiple connections
+the the fungi tree.
+. Uber tree elements need to Link back to source tree nodes if compositional.
+
+If we retrospectively change the synonymy stored in *tree elements* that refer to a concept via an *instance*
+then we change the synonymy for all trees that use that *instance*. This directly affect the tree requirements
+by:
+
+. altering what people see when they recall a version of the tree - the tree will have more names on it via
+synonymy, and there for the comparison between versions will also change.
+. "uber" and multiple trees that use existing concepts at a point in time will be changed (potentially without
+ warning) in ways the owners of those trees don't accept. The immutability of the tree is meant to allow people
+to be able to confidently refer in a proven way to the source they are quoting.
+
+One purpose of the NSL system and data structure is to encourage people to use identifiers (linked data) to refer to
+concepts.footnote:[in a general sense, not just a taxonomic concept.] in a way that provides proof, like a citation. We
+want to stop people _copying_ data, especially in an untraceable way.
+
+.cenario 1
+
+Pepi Hornswag copies a concept/tree entry into his paper "For the love of Doodia"
+
+----
+Plantae / Charophyta / Equisetopsida / Polypodiidae / Polypodiales / Blechnaceae / Doodia
+2 sub taxa
+Doodia aspera R.Br.CHAH (2014), Australian Plant Census
+ - Doodia aspera R.Br var. aspera nomenclatural synonym
+ - Woodwardia aspera  (R.Br.) Mett. nomenclatural synonym
+ - Blechnum neohollandicum Christenh. taxonomic synonym
+ - Doodia aspera var. angustifrons Domin taxonomic synonym
+----
+Then they a the link as a citation:
+https://test-id-vasc.biodiversity.org.au/tree/50629199/50629939
+
+You make a change to the synonymy by adding an isonym "Doodia isonymus" (a nomenclatural synonym) then a reader of the
+Pepi's work follows the cited link and gets:
+
+----
+Plantae / Charophyta / Equisetopsida / Polypodiidae / Polypodiales / Blechnaceae / Doodia
+2 sub taxa
+Doodia aspera R.Br.CHAH (2014), Australian Plant Census
+ - Doodia aspera R.Br var. aspera nomenclatural synonym
+ - Doodia isonymus R.Br nomenclatural synonym
+ - Woodwardia aspera  (R.Br.) Mett. nomenclatural synonym
+ - Blechnum neohollandicum Christenh. taxonomic synonym
+ - Doodia aspera var. angustifrons Domin taxonomic synonym
+----
+
+The reader assumes Pepi copied it wrong, because "computers never get it wrong" and Pepi gets cranky and doesn't trust our
+links and decides not to use them any more, and infact put disclaimers in their text like "according to the rather
+unreliable APC...". Pepi then attends many conferences and tells anyone who'll listen that linked data just doesn't work.
+
+.cenario 2
+
+The Department of Really Important Stuff (DRIS) finally decideds not to re-invent everything. In fact they can improve
+their efficiency by re-using bits of the APC. They start using the APC as a reference in legislation, and create an Composite
+tree using parts of APC and there own concepts where necessary.
+
+The legistaltion states that people can't export Doodia aspera because it can be used to make chemical weapons and links
+to the APC concept. DRIS encode the link into their monitoring system immediately allerting staff that all outgoing plants
+called:
+
+* Doodia aspera,
+* Doodia aspera R.Br var. aspera,
+* Woodwardia aspera,
+* Blechnum neohollandicum,
+* Doodia aspera var. angustifrons
+
+should be stopped at the border.
+
+The Cunning Company Pty. Ltd. starts exporting "Doodia isonymus", and get away with it because an efficiency dividend on
+DRIS means they need six months to look up unknown names that aren't flagged by there not so AI monitoring system.
+
+Coincidentally, six months after The Cunning Co. start shipping, the APC team notice the missing Doodia isonymus and
+retrospectively add it. The DRIS monitoring system has been unusually reliable for the last month, and so has kept a
+cached list of names, and doesn't notice the change.
+
+Bruce Taxonymist finally gets around to checking out what this "Doodia isonymus" is and checks APNI/APC and notices it's
+really the banned Doodia aspera! The blame game begins, Senate estimates, the whole shebang. They check the link to APC
+"it was there all along!!!! you idiots, that's it we're restructuring this obviously incompetant department, and sack
+Bruce."
+
+or... "ah it was picked up by APNI/APC a week ago, and we've managed to stop it just in time! yay we're great!! give DRIS
+more money."
+
+---
+
+In cenario 2 it may indeed have been better for the legislation to include a reference to the current concept, so that
+the legislation moves with the taxonomy and the monitoring system would have picked it up as soon as APC did.
+
+=== How do we make this work
+
+Changes to synonymy should be allowed to happen on an instance, we can tell when a synonym instance was created and could
+even make a timeline of changes to a concepts synonymy in APNI (that might be useful).
+
+When you change the synonymy of an instance it currently shows up in APNI and APC outputs immediately, in both the old and
+new tree versions of the NSL.
+
+If we stopped *test-vasc* updating the synonymy of all instances on the tree that change. Then all published versions of
+the tree would maintain the old synonymy.
+
+NOTE: The new tree reads the synonymy from the instance placed on the tree and creates a html and JSON representation of
+it and stores that in the tree element, making the tree element independant of the instance. Tree elements need to be
+independant of the instance and name objects so that UBER and Composite trees can be made. It also allows trees to be
+constructed on systems without the instance and name data.
+
+We would then update the synonymy on the current draft tree and the change would show up when that draft is published.
+
+Importantly we are talking about three separate output formats (products):
+
+* APNI format output - constructed from Instance and Name data directly.
+* APC format output - constructed from Name and Instance data using instances that are on the Accepted (APC) tree.
+* The Tree output - constructed from tree data only.
+
+==== The tricky bit
+
+Changing synonymy of an instance is un-related to tree operations as such. In other words the user may add a synonym
+to an instance and not be a "treebuilder", so how does the draft tree get updated? What if there isn't a draft
+tree.footnote:[because that could happen (murphies' law)]? Do we just do the change automagically in the background or
+do we let treebuilders know there is a change required (notifications)?
+
+An instance may be used on a tree that is controlled by someone else (another team or even on a different shard potentially
+- see composed and uber trees), so  we need to think through how and when the changes to synonymy will be propagated to
+trees.
+
+Lets look at the simplest situation and the current vascular shard APC.
+
+===== When the instance and tree are on the same shard.
+
+We could use *workflow controls*, for example if the instance is on the APC tree:
+
+* we could alert the user that they are altering an instance that is on a published tree (we'll say published instance
+for short). It would be up to that user to alert the APC team that the synonymy has changed if they choose to go ahead
+and change it
+- but lets assume that won't always happen because, people.
+* we could prevent the change, and the user would have to ask the APC team to make the change and update the draft tree...
+- but lets assume the APC team won't be told, and the user will be cranky and say I just can't do my work because the
+computer says "no" and not tell anyone they're not doing work.
+* we could allow the change without fuss.footnote:[The change in synonymy would show up immediately in the APNi and APC
+outputs.], and automatically notify the APC team of the change, which they could review
+and update the tree by going to the name on the draft tree in the editor and clicking "update synonymy". Then when the
+draft is published the synonymy would be published on the tree output.
+
+*OR* we could *automatically* make the change in the draft tree and notify the APC team. This would imply that we would
+make the same change to all trees, not just the APC tree.
+
+*OR* we could have a *pre-publish check on changed synonymy* which brings up a report of all the changes in synonymy for
+instances on the tree you are about to publish. You review the changes and can select "update synonymy", or go back and
+further edit both the tree and instances.
+
+TIP: I think the pre-publish check is probably the simplest and most understandable option for most users. It is also better
+for scaling to trees created by "others" that may not be on the system that records the instance/concept.
+
+===== Technicallities
+
+Automatic changes:
+
+* When an instance is added, updated or deleted a database trigger adds a notification to the notification table
+* the notification service scans the notification table and processes the instance change
+ - if added check if its a synonym and if the cited_by instance is on any current tree version (tree_element.instance_id)
+ - if it is check if the tree has a default_draft, if so create a new tree_element with the updated synonymy and use that
+ in this tree_version. Note that the change will show in the tree diff for review before publishing the draft.
+ - send a notification email? and log the change...somewhere.
+
+To scale out the automatic changes, uber/composite trees would register with source shards for instance change
+notifications (via message passing, e.g. camel/rabbit ) and would run a similar update process.
+
+Pre-publish check using brute force:
+
+* When we validate the tree we can also run a synonymy change check which regenerates the synonymy for all instances used
+on the tree and compare them with the existing. If it has changed we report the change.
+* "update synonymy" would create new tree_elements for all changed concepts and populate it with the updated synonymy.
+* if you re-run the synonymy check there should now be no differences.
+
+Pre-publish check intelligent:
+
+* use the notification service to check changed instances/synonymys and log the change in the report
+* allow users to update all synonyms or pick the ones they want to use.
+* you could still send out notification emails when a relevant change occurs.
+
+To scale out the Pre-publish check the "intelligent" approach would be best becuase we can remotely notify other systems
+via message passing as changes happen. This improves asynchronous changes to trees. The intelligent method is also the
+most efficient and will not require the user to wait for the brute force check to complete.
+
+TIP: I think the pre-publish check intelligent method is probaly the simplest and most understandable option for most users.
+It is also better for scaling to trees created by "others" that may not be on the system that records the instance/concept.

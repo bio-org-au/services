@@ -1,0 +1,1819 @@
+= New tree structure
+v1.0, June 2017
+:imagesdir: tree/archive/resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: New tree structure documentation
+:keywords: documentation, NSL, APNI, API, APC, tree
+:links:
+:numbered:
+
+
+NOTE: This document is about the redevelopment of the tree data structure from the previous structure (Originally developed
+by Paul Murray). This document is still relevant but will not be updated with new developments as it would become too
+confusing while trying to maintaining the history. We will be moving documentation into a structure that shows current
+and archived information.
+
+The current tree structure is over complicated and difficult to validate and maintain going forward. The reasons for this
+are many, but basically come down to changing understanding of requirements.
+
+I propose to scale back and simplify the structure used to store the trees and to only implement what is currently required,
+then evolve the implementation as needed.
+
+The main change in requirements is the idea of using a workspace, or draft tree, to do work. The workspace would then be
+published as a new version. once a version is published it is immutable _except_ for minor typographical changes as determined
+by policy.
+
+
+IMPORTANT: This work is designed to make the tree easy to understand and reason about, and therefore make it easier to
+change and maintain over time, and improve performance.
+
+== Requirements
+
+=== Major requirements:
+
+ . The tree must store and display the parent child taxonomic relationship between names.
+ . The tree must be versioned so that a citation (id) of a tree element must reproduce the tree as it was when it was
+ viewed.
+ . A link to an element on the tree should be able to identify the version of the tree and reproduce that version.
+ . You should be able to link to a _version_ of the tree and get the current tree easily.
+ .. You should be able to compare taxa in different version via an identifier. The identifier is unique to the _circumscribed_
+ or enclosed taxa below this taxa. This identifier spans multiple versions of a tree. See <<taxon identifiers>>
+ . The tree must enforce strict rules about the placement of names on a tree.
+ . Profile data including only Comment and Distribution data is to be stored in the tree structure.
+ . Tree elements are pointers to an Instance as a representation of a Taxon Concept.
+ . Tree elements can represent Accepted and Excluded items which need to be distinguished. This appears to be accepted
+ and not accepted, but treated. The "Excluded" is a covering term of a number of reasons these names are not accepted
+ (e.g. doubtful) but the distinction is not required. As such for now we can just indicate an element is Accepted or Not.
+ . Easy to work with a version of the tree.
+ . All common operations must be fast. You should be able to query the status of a name on the current tree without
+ noticeable delay.
+ . Editors should be able to work on a draft version of the tree without it being public, then publish it at a time of
+ their choosing.
+ . Versions should be released as a unit of work, collecting a set of changes together (policy).
+ . The users need to be able to add a log entry describing the work done and referencing the documents that lead to the changes.
+ . Multiple workspaces that can be merged over different time frames is a requirement.
+ . It would be nice to be able to list and view older version of the tree and see what changed (diffing)
+ . It would be nice to be able to archive older versions of the tree without breaking it.
+ . we want to access the trees through RDF.
+
+==== Uber trees
+
+ . we must be able to create an "uber tree" from multiple sub trees.
+ . The uber tree should be able to merge sub trees from multiple points - for example lichens have multiple connections
+  the the fungi tree.
+ . Uber tree elements need to Link back to source tree nodes if compositional.
+
+according to https://www.environment.gov.au/science/abrs/publications/other/numbers-living-species/executive-summary[ABRS Numbers of Living Species in Australia and the World]
+there are ~2million species in the world that we should aim to handle in an uber tree.
+
+==== Use cases
+
+ . creation of accepted taxonomic trees with strict hierarchical placement rules within a shard.
+ . creation of a list of taxon concepts commonly (only) from family down, known as a checklist, from one or more shards.
+ these trees may have more relaxed placement rules.
+ . creation of composite (uber) trees made from multiple sub trees, such as accepted taxonomic trees from multiple shards
+
+WARNING: We should take a closer look at the needs of List compilers and Tree composers to see if the difference in the
+ set or requirements leads to different solutions for each.
+
+==== Editors
+
+Based on the above use cases, and current editor usage, it looks like we need two different editing pathways for trees.
+
+  . In instance editor tree editing: Where the advanced editor can create specific taxonomic concepts for accepted trees
+  in accordance with some authority such as CHAH.
+  . A composition editor that can compose multiple trees into an uber tree, or create a checklist. This doesn't require the
+  ability to edit instances, just choose concepts, or other tree elements/sections.
+
+Perhaps the second, compositional, editor is logically broken into an uber tree manager and a checklist editor.
+
+==== Search
+
+We need to clearly define the  difference between the search on names (the APNI search) and the search requirements on
+trees. At the moment there is confusion because some searches in the advanced search are mix tree and name concerns.
+
+NOTE: Greg W. put this view forward too.
+
+===== use cases
+
+ . search a tree for names under a name and bring back the results displaying the apni or apc format output
+   * search synonyms or accepted only
+   * search based on native, naturalised, distribution or profile data.
+   * further advanced filtering based on name/instance type, tags, author etc.
+ . search a tree for names independent of any tree and display in APNI format - this may be an advanced search on name types
+  tags, instance types, and may require knowledge of the Family.
+ . Name check - a specific check against the accepted tree in a shard.
+ . check to see if a taxon is the same as another taxon i.e. encloses the same sub taxa via comparison of a taxon identifier.
+
+===== implementation (discussion)
+
+Tree searches should be associated with the tree they are on because a tree may be separated from the name and instance
+data it is pointing at. In the case of the uber trees they may be pointing to multiple shards.
+
+Since trees contain the name and instance id, but not instance data a tree search may bring back a list of names that can
+in turn fetch APNI or APC format data via the existing service API (much like the existing service search).
+
+If we want to implement a closer coupled database implementation in the search we could link to multiple shard databases
+to get the data. *I prefer the previous solution as it allows fully autonomous trees and lists to exist that just use
+linked data.* However speed will need to be taken into account when looking at this, which means looking at if the service
+APIs need improving or the solution is limited to direct database connections.
+
+We need to carefully consider what is offered in search and how you discover what can be searched... initially of course
+we are publicly offering only the APC as a cross shard search, and then moving up to NSL including AFD.
+
+Trees that are linked to a shard, e.g. the Vascular APC tree, that have a database relationship to the name and instance
+data in the shard can take advantage of joins for more complex queries.
+
+Cross shard searching in general needs an API approach where an API (which could be just a database connection) is used
+to collect data, then a map/reduce/sort approach is used to filter and sort results. The name paths and sort names will
+help in collating and sorting results from multiple sources.
+
+See https://www.anbg.gov.au/25jira/browse/NSL-2412[NSL-2312]
+
+After discussion with Greg Whitbread and following from user feedback and experience the use of the name tree search may
+be a reflection of the way we use the "product" concept and clarification of how the sets of data can be used, and what
+they should be used for.
+
+At the moment we try and describe this in the APNI and APC product descriptions.
+
+APNI
+****
+The Australian Plant Name Index (APNI) is a tool for the botanical community that deals with plant names and their usage
+in the scientific literature, whether as a current name or synonym. APNI does not recommend any particular taxonomy or
+nomenclature. For a listing of currently accepted scientific names for the Australian vascular flora, please use the
+Australian Plant Census (APC) link above.
+****
+
+APC
+****
+The Australian Plant Census (APC) is a list of the accepted scientific names for the Australian vascular flora, ferns,
+gymnosperms, hornworts and liverworts, both native and introduced, and includes synonyms and misapplications for these
+names. The APC covers all published scientific plant names used in an Australian context in the taxonomic literature,
+but excludes taxa known only from cultivation in Australia. The taxonomy and nomenclature adopted for the APC are endorsed
+by the Council of Heads of Australasian Herbaria (CHAH).
+****
+
+As Greg points out though, we don't limit the search, because people are asking "within" questions from APNI. This
+question comes about because scientific names intrinsically, but unreliably, describe or imply rank and hierarchy
+information, except where they don't.
+
+It seems to me that we need to explicitly combine the name and taxonomy searches and express clearly what it is the
+user is asking: for example "what is in the family Fabaceae according to Maberly" or "what is in the family Fabaceae
+according to APC" and then we can do useful things like "compare the family Fabaceae according to Maberly and APC"
+
+By combining we can ask questions like "What is not in APC but is in Maberly" so long as we can emphasize the context
+of the APNI/NSL dataset.
+
+=== Change over requirements:
+
+ . We must maintain existing links to trees (APC) that have been used prior to this change. This means any links to
+ existing nodes must resolve to the same instance data and position in the tree structure. The intrinsic data should not
+ change, though extraneous data may be left out (broken links, some RDF identifiers that didn't lead to real data).
+ . Editing the tree should work and be possible from the point of change over.
+
+== Concept
+
+The concept for the new structure is to remove the need for link objects and simply copy the list of tree elements for
+each version of the tree. The Workspace is then a copy of the current tree that is then altered. When the workspace is
+ready it is published as the latest version of the tree by making it the current version. A copy of the current version
+is then made to create the new workspace version.
+
+We track changes in the tree by maintaining a previous link that points to the tree_element in the previous version.
+
+Versions are grouped by a tree_version which is associated with a tree. Tree_elements are associated with a tree_version
+via a linking tree_version_element table.
+
+ Tree <- [Tree_Versions]<-[Tree_Version_Elements]<- [Tree_Elements]
+
+The tree holds a pointer to the current tree and a default workspace. Tree_version_element is a join table between tree
+versions and tree elements, and is the versioned object or tree_element. This structure reduces duplication of data on
+copying a tree, and holds a unique versioned identifier for an element in a tree.
+
+This concept is storage efficient and simple. Excessive numbers of versions could create a lot of copied
+tree version elements, but the workspace/publish model may also lead to a more structured release of versions
+(e.g. once a Day/Week/Month) instead of on the fly changes.
+
+=== User concept
+
+Versions of a tree are Publications that can be referenced or cited. You can cite a published tree (version) using an
+identifier for the _tree_version_ or using an identifier for a _tree_version_element_. This will return the element and
+then entire tree in the context of the published tree.
+
+==== taxon identifiers
+
+Each tree_version_element also has associated a _taxon identifier_ which identifies the concept of the taxon in terms of
+the data including the circumscription of the taxon (i.e. the taxa under this taxon). The taxon identifier can be used to
+compare taxon between versions, i.e. see if the concept has changed.
+
+The definition of a taxon for determining if it has changed is:
+
+* A taxon consists of the Name, it's Instance and it's children. Where an Instance defines the usage of the Name in a
+reference and it's Synonymy.
+* A taxon does *not* include the status (Excluded from this classification) or the Profile data (Comments and Distribution)
+which are part of the classification as published.
+
+A taxon will exist in many publications (versions) of a tree, so the distribution, comments and status may change over
+the publications.
+
+NOTE: See <<Existing links, Existing links  >> for resolving taxon identifiers
+
+=== Autonomous trees
+
+Trees should be able to be autonomous from the shards. This means that database foreign keys to names and instances are
+not enforced (i.e. no direct FK relationship). This means we need to rely on the link to identify the instances. It also
+means that we want to copy the data required to ask questions of the tree into the tree structure as much as possible.
+
+Whilst we will rely on the link to reference the data in the shards we will store the instance and name id (as a Long),
+which means also that we need to store the source shard for the instance and name. If a placed name later becomes
+de-duplicated we may have to update the id by using the mapper (rare).
+
+=== Data usage vs speed
+
+Copying the tree for every version is less space efficient than the current model, but affords many benefits. At the
+current size of the APC tree 35k tree_elements are required for each copy.
+
+NOTE: these are updated usage figures after spiking and importing actual data, the old guesstimate has been removed.
+
+After doing the spike and adding in all the additional data to make the trees autonomous we can compare actual data sizes.
+These have been updated with the version join table instead of simple copies.
+
+
+In APNI:
+
+|===
+| table | total size including indexes
+
+| tree_node
+| 284MB (inc 224MB index)
+
+| tree_event
+| 1328MB (inc 248kB index)
+
+| tree_link
+| 1434MB (inc 693MB index)
+
+| tree_element (152 versions)
+| 263MB (inc 95MB index)
+
+| tree_version_element (5.5M)
+| 4088MB (inc 2564MB index)
+|===
+
+which makes the new tree structure not much larger than the old one.
+
+Note: Prior to implementing the join table for version/element tree_element table was consuming ~40GB of data for 150
+versions. The totals of table columns didn't add up to this amount, but there was something else the DB was doing to
+use this space.
+
+==== Tree_Version_element "link table"
+
+Instead of copying the tree_elements each lime we just need to keep a link table of elements to tree versions, making
+a many to many relationship. This adds a little complexity when archiving off older versions of trees, but at the same
+time will reduce the need to archive.
+
+The link table means that tree elements that don't change do not need to be copied. To copy a tree to draft is a matter
+adding the link table rows. New elements only participate in new trees.
+
+This means we don't need to use a composite key for tree elements, we just use the element_id which can become the id.
+
+The reason why we didn't initially do this was that the old tree changes the parent node quite often based on something
+else changing on this or another branch. But... the changing parent doesn't mean something changed above that node, but
+there *may* have been a placement change.
+
+If the parent of a node does actually change in some material way we need to insert a new tree_element at the point where
+the change happens. *This is not easy.*
+
+A simpler compromise for this is to only create a new tree_element when the parent changes. this will still replicate a
+lot of redundant data.
+
+The diagram below demonstrates the problem. Nodes 5,6,7 have not changed, they have been added so that the tree from 5
+down shows the addition of node 8. Node 3 is in both trees, it just has two parent links. We just want to have a version
+(say v2) point to 1, 2, 3, 4, 8. Which for two versions we could accomplish (if nothing above 8 changes) by using the previous
+node link, but for if you look at node 9, 10, 11 it gets trickier to do.
+
+image::multi-parent-node.svg[]
+
+What we need to do is compare the data in the nodes to check the parentage, in particular we need to check the instance
+path of the node. So for each daily version we create a tree based on instance path where we have a unique tree_element
+for each instance path. We then map the tree_elements to a version.
+
+. for each top node (daily) recurse down the tree creating a table of:
+. [instance path id], instance path, node id, instance id, name id, parent instance path id, version number
+. group by instance_path, aggregate version numbers, aggregate node_ids
+. generate new tree elements for each instance path, using the parent instance path to set the parent tree_element
+. add tree elements to versions
+
+
+==== Finding sizes
+
+[source]
+.table-size.sql
+----
+SELECT
+  *,
+  pg_size_pretty(total_bytes) AS total,
+  pg_size_pretty(index_bytes) AS INDEX,
+  pg_size_pretty(toast_bytes) AS toast,
+  pg_size_pretty(table_bytes) AS TABLE
+FROM (
+       SELECT
+         *,
+         total_bytes - index_bytes - COALESCE(toast_bytes, 0) AS table_bytes
+       FROM (
+              SELECT
+                c.oid,
+                nspname                               AS table_schema,
+                relname                               AS TABLE_NAME,
+                c.reltuples                           AS row_estimate,
+                pg_total_relation_size(c.oid)         AS total_bytes,
+                pg_indexes_size(c.oid)                AS index_bytes,
+                pg_total_relation_size(reltoastrelid) AS toast_bytes
+              FROM pg_class c
+                LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+              WHERE relkind = 'r'
+            ) a
+     ) a;
+----
+
+NOTE: The new data structure allows us to partition and archive older versions should we need to.
+
+Copying the 35k tree_elements to a workspace takes about 12.8 seconds, *however we only need to add join table
+rows to make a copy* which is much quicker, 850ms.
+
+ insert into tree_version_tree_elements (tree_version_id, tree_element_id)
+   SELECT 9703722, tree_element_id from tree_version_tree_elements where tree_version_id = 152;
+
+
+===== VM info:
+    appsint1 24GB RAM (18GB used) 50GB space with ~27GB free for tomcat
+    pgsql-prod1-ibis.it.csiro.au 6GB RAM (5GB used)
+    /dev/mapper/vg_data-lv_data        50G  981M   50G   2% /pg_data
+    /dev/mapper/vg_back-lv_back       100G   16G   85G  16% /pg_back
+    /dev/mapper/vg_tbl1-lv_tbl1       100G  8.3G   92G   9% /pg_tbl1
+    /dev/mapper/vg_xlog-lv_xlog        20G  257M   20G   2% /pg_xlog
+
+=== Multiple workspaces
+
+Because a workspace is just a copy of a version of the tree with pointers to the previous version of it's tree_elements,
+we can implement a merge of the latest tree or a version (like a branch in GIT). A workspace or draft version of the tree
+would reference the version it is a copy of and when you go to publish it, we check that the version of the current
+tree has not changed. If it has you would need to merge the current version of the tree with your draft version. Where
+there are conflicts, i.e. the current version  has changed a tree_element that you have also changed you need to resolve
+the conflict by either accepting the current version, overwriting the current version with yours, or somehow merging the
+changes. The workflow for a merge of conflicting changes is the trickiest bit.
+
+Where different workspaces are working in different branches of the tree auto merging would be possible.
+
+Multiple workspaces would make long running projects more feasible, e.g. adding a branch of orchids as a single update.
+
+Talking to the current APC editors they considered the ability to have multiple workspaces and merging as something that
+"was always a requirement, really"
+
+=== Building new trees
+
+A new tree starts with an initial draft version which can be
+
+ . a copy of an existing tree
+ . entirely new, adding elements to the root of the tree
+ . made up of copies of portions of other trees, by copying from a node down and placing that section under a node in
+ the draft.
+
+Once the initial draft is ready to be made "public" it is published as the first version.
+
+=== Tree paths
+
+The current name tree path concept would be incorporated into the new tree_elements to provide a rapid way to display,
+sort, and search for items under (subtending) an element (currently called a node). We can then remove name_tree_path as
+an additional maintenance cost.
+
+=== Immutable
+
+The immutability of published versions (apart from typographical fixes, mainly in the names/references) means that we can
+use de-normalisation of data to increase efficiency in display and queries. For example, storing a precomposed display
+string for the tree, name and rank information (see name_tree_paths rank path and name path). This also makes trees largely
+stand alone when it comes to queries.
+
+****
+For example you could search *just the tree elements* for a name string % abru% in family
+Fabaceae of rank species that are native to WA.
+****
+
+This will greatly improve the speed and simplicity of searches, especially given the right indexes.
+
+Since links are also immutable they can also be stored to reduce round trips to the mapper.
+
+=== Synonyms
+
+To further make trees autonomous we need to store the synonyms of the name in the tree element data. This can be achieved
+by storing a names string, similar to the name path, that contains all the synonyms of the name separated by a pipe.
+
+ e.g.
+ |Acacia mucronata subsp. mucronata|Acacia mucronata var. linearis|Acacia mucronata var. mucronata|Racosperma mucronatum subsp. mucronatum
+
+This means you can do a search for a name on a tree including the synonyms by doing:
+
+ select * from tree_element where names like '%|Acacia mucronata var. linearis%';
+
+NOTE: after implementing the names string and testing various queries the speed benefit of having the synonyms in this
+format wasn't there and the use cases need the extra information. So I have removed the names string format and just left
+the synonyms jsonb data. Greg W pointed out it might be worth splitting synonyms into synonyms and relationships.
+I have replaced that string with a synonyms_html string for displaying the nomenclatural, taxanomic and missapplications.
+
+A jsonb synonyms field stores more synonym data. To do a synonym search on a JSONB field and take advantage of gin
+indexing we need to carefully structure the JSON data around a common search. This probably means grouping the synonyms
+into relationship types e.g.
+
+[source,javascript]
+.synonyms.json
+----
+{
+        "Isoetes drummondii var. anomala"           : {
+                "mis"           : false,
+                "nom"           : true,
+                "tax"           : false,
+                "type"          : "nomenclatural synonym",
+                "cites"         : "Britton, D.M. & Brunton, D.F.(1991), < i > Fern Gazette < /i> 14",
+                "name_id"       : 205871,
+                "full_name_html": "<scientific><name id='205871'><scientific><name id='64421'><scientific><name id='64341'><element class='Isoetes'>Isoetes</ element > < /name></ scientific > < element class = 'drummondii' > drummondii < /element></ name > < /scientific> <rank id='54412'>var.</ rank > < element class = 'anomala' > anomala < /element> <authors><ex id='7577' title='Marsden, C.R.'>C.R.Marsden</ ex > ex < author id = '5138' title = 'Britton,D.M. & amp; Brunton ,D.F.'>D.M.Britton & D.F.Brunt.</author></authors></name></scientific>"
+        },
+        "Isoetes drummondii subsp. nov. (polyploid)": {
+                "mis"           : false,
+                "nom"           : true,
+                "tax"           : false,
+                "type"          : "nomenclatural synonym",
+                "cites"         : "Ross, J.H.in Ross, J.H.(ed.)(1993), < i > A Census of the Vascular Plants of Victoria < /i> Edn. 4",
+                "name_id"       : 205964,
+                "full_name_html": "<scientific><name id='205964'><scientific><name id='64421'><scientific><name id='64341'><element class='Isoetes'>Isoetes</ element > < /name></ scientific > < element class = 'drummondii' > drummondii < /element></ name > < /scientific> <rank id='54410'>subsp.</ rank > < element class = 'nov. (polyploid)' > nov.(polyploid) < /element> <authors><author id='7781' title='Ross, J.H.'>J.H.Ross</ author > < /authors></ name > < /scientific>"
+        }
+}
+----
+
+=== Profile data / attributes
+
+The Profile data will be stored as a JSON object/document field in the tree_element. This allows arbitrary extension of the
+profile data to be stored. It also provides a consistent versioned view of the Profile data. e.g.
+
+[source,javascript]
+.profile.json
+----
+{
+        "APC Dist."  : {
+                "value"        : "Tas",
+                "source_id"    : 9928,
+                "created_at"   : "2007-06-06T00:00:00+10:00",
+                "created_by"   : "APNI-NSL MIGRATION",
+                "updated_at"   : "2007-06-06T00:00:00+10:00",
+                "updated_by"   : "APNI-NSL MIGRATION",
+                "source_system": "APC_CONCEPT"
+        },
+        "APC Comment": {
+                "value"        : "Previous references to this species on mainland Australia refer to I. muelleri (Chinnock, 1998).",
+                "source_id"    : 9928,
+                "created_at"   : "2007-06-06T00:00:00+10:00",
+                "created_by"   : "APNI-NSL MIGRATION",
+                "updated_at"   : "2007-06-06T00:00:00+10:00",
+                "updated_by"   : "APNI-NSL MIGRATION",
+                "source_system": "APC_CONCEPT"
+        }
+}
+----
+
+
+
+==== Comments
+
+Comments will be stored as a text comment field in the JSON profile data.
+
+==== Distribution
+
+Distribution data is currently just unstructured and unvalidated text. However a *lot* of the requests for information
+rely on the distribution data, and the correct interpretation of that data. Since distribution data is part of the
+profile data requirement now is a good time to tackle this.
+
+To this end we will make the distribution profile data a JSON object in the profile field containing pointers to
+distribution data combinations. Distribution data combinations consist of a region and a set of flags in a legal
+combination much the same way as name_status is set up. We use a JSON field because there is a variable number of regions
+that can be assigned to a concept (tree_element) and we don't want to make outward pointing join tables to tree_elements.
+
+This design helps keep trees stand alone, while linking back to distribution combinations and allowing the distribution
+definition to be extended, while providing the editor with a configurable set of valid profile combinations.
+
+The Distribution field of the profile will contain a list of JSON object representations of the distribution combinations
+including the id of the combination for update purposes.
+
+=== Archiving
+
+The data structure allows for archiving of versions by moving/exporting a tree version. The structure keeps all the data
+contained in the tree itself. Versions are immutable or read only, and self contained. Operations that need to interact
+with the tree are limited to the workspaces/drafts, and perhaps some advanced search operations on the current version.
+
+By storing the Name, display string, Rank Path, and links on the tree, older versions can be displayed and queried without
+referring to the rest of the NSL database, making it possible to have a service which can display the tree as it was from
+archived version in a different database.
+
+This also means exporting a tree version provides 'all' the data needed to describe the tree.
+
+=== [.line-through]#Composite keys for tree_elements#
+
+
+NOTE: We have moved to a join table for the elements to tree versions so we don't need a composite key. A join table
+doesn't reduce the advantages except for the identification of nodes to tree elements due to needing a unique tree_element
+id that is not related to node id.
+
+It would be worth looking at using composite keys for tree_elements made up of the tree_version id and the tree_element id
+that way we can copy the tree_elements and just change the version number.
+
+The advantages of this are:
+
+ . dramatically reduces the number of id's we have to generate out of the globally unique ID pool
+ . intrinsically tracks nodes from one version to the next
+ . simplifies the copy process a little
+ . may help in diffing trees ( grab all the tree_elements with the same id across versions )
+ . lets you very quickly find what an old version of a tree_element looks like now and ask questions like is this in
+ the current version without any tree walks.
+
+Disadvantages are:
+
+ . Looking up by id always requires the version
+ . slightly trickier ORM mapping
+
+I think just advantage 1 outweighs the disadvantages because 100 x 35000 = 3,500,000 new IDs per year when the majority of
+the data doesn't change. The rest of the advantages come down to speed and efficiency.
+
+=== Auditing
+
+A single updated by and updated at field is required in the tree_element since changes are versioned.
+
+== Transition
+
+We will identify and replace the existing service endpoints for the Instance Editor to maintain functionality with the
+change over. The tree editor functionality will need to be changed or incorporated into the Instance Editor. This work
+needs to happen anyway.
+
+=== Existing history
+
+There are currently:
+
+ * 114k current APC nodes, including 35k taxon nodes and 79k value nodes.
+ * 365k taxon nodes for any tree (including the APNI name tree)
+ * 7M links.
+ * 2995 versioned changes to the APC tree
+
+The version changes date back to 2012-02-09 via the APC import. Greg Whitbread has suggested that we could discard all the
+historical changes up to a point, and considering no one would have relevant links that are currently supported.
+
+Looking in the mapper we only have mapped these older URI:
+
+ * apni.name/
+ * apni.publication/
+ * apni.reference/
+ * apni.taxon/
+
+None of which refer to tree information, or nodes.
+
+We currently map 63k node objects in the mapper across all trees, 48k nodes in apni (vascular shard).
+
+There are 315k taxon nodes out of 365k (apni shard) that are _not_ in the mapper and therefore have never been referenced.
+There are 67k APC taxon nodes out of 115k APC taxon nodes that are _not_ in the mapper and so haven't been referenced.
+There are only 5 nodes in the current APC tree that are not in the mapper.
+
+How much history should we keep? We can import from 2016 and delete history later.
+
+=== option 1
+
+Based on the above stats we should be able to work out which of the 2995 versions of the tree we have currently are in
+the mapper and and just replicate those versions to maintain the mapped links. Doable, but tricky.
+
+*NOTE* it's possible that we have shared links to nodes that are _not_ in the mapper via the APC taxon exports. These
+links are created in SQL, but may not have been created in the mapper because no one has referred to them via the services.
+We could fix this by adding all nodes since the APC taxon exports started being used (with node links). There are 5 nodes
+in the current APC tree that are not in the mapper.
+
+=== option 2
+
+Draw a line in the sand, then group changes. We can be sure that no links to the tree exist before the NSL was launched,
+so we can ignore all versions before January 2015 (leaving us with 2643 versions). Then group versions into monthly
+releases and point all node links in that month to the final version of the node for that month. This brings it down to
+around 30 versions.
+
+This somewhat breaks the contract that what was cited is what we get back, however the number of citations where the
+changes incurred matter would, I guess, be approaching zero? I say that because by and large the changes per version are
+for a single item, so while december 2015 saw 132 versions each one was for a single name, e.g.
+
+.version changes
+|===
+|note |time stamp
+
+|update name 5416769|2015-12-23 09:34:44.212000 +11:00
+|update name 81345|2015-12-23 09:33:52.836000 +11:00
+|update name 5417736|2015-12-23 09:32:46.223000 +11:00
+|update name 5419222|2015-12-23 09:31:40.348000 +11:00
+|update name 80372|2015-12-23 09:29:25.683000 +11:00
+|add name 80912 to name 80855|2015-12-23 08:49:16.608000 +11:00
+|add name 80899 to name 80855|2015-12-23 08:48:29.840000 +11:00
+|add name 80878 to name 80855|2015-12-23 08:47:15.710000 +11:00
+|===
+
+Take these changes adding excluded names to Correa pulchella J.B.Mackay ex Sweet which is this node
+https://id.biodiversity.org.au/node/apni/5424450 at 2015-12-23 08:49:16.608000 +11:00 but was a different
+node 3 minutes earlier. The reality is that these changes were meant to be done as a batch and should only have been
+published once.
+
+==== option 2a
+
+We could modify this option to group changes in a day to a single version, in which case I doubt anyone would notice.
+This would not dramatically increase the number of versions saved as tree work seems to be limited to a few days a month
+which comes out as a total of 206 versions from 2015-01-01.
+
+=== Declared BTs
+
+Declared BT tree_elements will be removed from history and where we can the excluded names attached to the BT will
+be linked ot the BTs parent directly. Most of the time this will mean the top of the tree. This will create a consistent
+tree in the history.
+
+=== Existing links
+
+NOTE: A link to a node in the old structure only gives you the structure *below* it as it was when you took the link
+unless you took a link to a changed node further up the tree, or the top node. Although it is possible to find the
+version of the tree you were looking at it was *not* intrinsic in the link. The node identifier is effectively a taxon
+concept identifier.
+
+We can take existing published links and forward them to new links. Due to history only being maintained in node links
+below that node we need node links to point to the latest version that has that node id.
+
+With the change to using a join table we lose the node_id/tree_element relationship, so we either need to store the
+node id(s) in the tree_element or just use the mapper to map to the tree_element.
+
+The most appropriate solution is to use the mapper to map node URI to tree_elements. They will resolve more appropriately
+to a _taxon identifier_.
+
+==== new links
+
+We need to be able to encode the version into the tree links since tree_version_element effectively uses a composite key.
+(In the current implementation this element_link in tree_version_element *is* the PK)
+
+Links currently are structured as .../object/namespace/number, e.g. node/apni/7845073, where the namespace so far
+has been directly related to the shard. Trees are meant to be above/separate to shards, so perhaps we should move to
+storing the shard specifically in the identity structure in the mapper (it's more of a system identifier). This way
+we can use the namespace as intended and have tree element links like:
+
+ .../tree/137/7845073  i.e. effectively tree/version/element
+
+WARNING: The ID of tree_element should be _GLOBALLY UNIQUE_ so it *can* be copied from one tree to another on different
+systems.
+
+this lets us map any tree version to any shard/uber service directly.
+
+The mapper configuration handles the namespace to system mapping.
+
+This URL scheme is useful for debugging.
+
+NOTE: Previously links were only created in the mapper when they were requested by the services - This was not intended
+ to be the default way to make links, but... So when a workspace is created we do a bulk add of identifiers to
+ the mapper. We need to add a bulk add api call on the mapper (done).
+
+The mapper currently handles around 1.15 million identities without problem, and is designed to scale out via load
+balancing if needed.
+
+NOTE: tree_elements store links to instance and name. The tree_version_element holds the "element link" to itself. The
+element link is the primary key of the tree_version_element join table.
+
+==== taxon identifiers
+
+Since taxon identifiers exist in multiple versions of different trees (since they represent the taxon concept regardless
+of version) the question becomes how do you resolve a taxon concept? In the sense of this document it becomes clear that
+a taxon concept is a fixed representation of the branch below a taxon, and the data contained within the circumscribed
+taxa. So a taxon concept is fixed or immutable and exists outside of versions (so it may not be the current concept used)
+which means we can choose the concept from any version (by definition they are the same).
+
+WARNING: There are significant questions regarding use of taxon ID. Ideally the instance ID *is* the taxon ID
+but the child taxa are not defined within an instance, they are described on a tree. If you change the sub taxa
+the instance should change, but if you just haven't fully described the concept represented by the instance then the
+taxon is the same. A taxon ID as described here represents what has been described in this tree so far, not what the
+concept represents.
+
+.*_CONCLUSION_*
+
+****
+I have decided for the purposes of getting a working tree that is manageable that we should *not* track and create
+taxon IDs as such. We can provide a comparison service end point (even a database function) to compare taxa in trees
+at a point. The user can compare Instance IDs as the definition of a Concept of a taxon, then compare two trees
+representation of that taxon and all it's sub taxa. Just because the representation in a tree is slightly different
+the taxon they are *trying* to represent may be the same, they just made a mistake or haven't completed the task.
+
+It can be left as a later excercise to create services that track taxa and validate their use, i.e. if someone re-uses
+an instance in another tree, does it contain *only* the same taxa in the same order?
+****
+
+===== A circumscription hash
+
+So we could resolve a taxon using something like:
+
+http://id.biodiversity.org.au/taxon/80dd7fffd995817fe1a4d4494c519a0c1aa38803b394f69482ab5c794318e0a9
+
+To generate the hash taxon identifier we use the [.line-through]#tree paths# instance paths of the parent and the
+children within that version:
+
+NOTE: We changed from the tree path to the instance path above because the tree element id changes on editing and it
+becomes very tricky to track taxon changes, or element changes that have no net effect, e.g. moving a taxon to another
+family and then moving it back. By using the instance id path we can use the query below to check if a taxon has changed
+because the instance should not have changed.
+
+[source]
+.circumscribe.sql
+----
+CREATE EXTENSION pgcrypto;
+
+DROP FUNCTION IF EXISTS circumscribe( BIGINT, TEXT );
+CREATE FUNCTION circumscribe(version_id BIGINT, path_match TEXT)
+  RETURNS TEXT
+LANGUAGE SQL
+AS
+$$
+SELECT sha256_agg(paths)
+FROM (
+       SELECT e.instance_path AS paths
+       FROM tree_version_element tve
+         JOIN tree_element e ON tve.tree_element_id = e.id
+       WHERE tve.tree_version_id = version_id
+             AND e.instance_path LIKE path_match || '%'
+       ORDER BY e.tree_path
+     ) AS circumscription;
+$$;
+----
+see <<A simple sha256_agg function>>
+
+The circumscribe function above is a unique hash of all the children in order under a taxon (including that taxon). The
+current worst case time for calculation of Plantae is ~2 seconds when placing a new leaf taxon we need to take the
+tree path of that taxon and re calculate the taxon identifier hash for all the tree_version_elements in that path. Given
+about 11 levels those calculations should take less than 22 seconds, and could be updated in the background.
+
+We can drop the hash and use a simple array of instance ids for comparisons e.g.
+
+[source]
+.circumscribe.sql
+----
+DROP FUNCTION IF EXISTS circumscribe( BIGINT, TEXT );
+CREATE FUNCTION circumscribe(version_id BIGINT, path_match TEXT)
+  RETURNS BIGINT[]
+LANGUAGE SQL
+AS
+$$
+SELECT array_agg(paths)
+FROM (
+  SELECT e.instance_id paths
+  FROM tree_version_element tve
+    JOIN tree_element e ON tve.tree_element_id = e.id
+  WHERE tve.tree_version_id = version_id
+        AND e.instance_path LIKE path_match || '%'
+  ORDER BY e.instance_path
+) AS circumscription;
+$$;
+----
+
+The difference in speed is around 300ms which would be significant in bulk operations, and this provides real
+data that can be used (instance ids).
+
+===== More efficient method
+
+All tree_elements have a hash of the tree_path. The tree_path (and tree_element as a result) guarantees that the path
+above matches the taxon, so we only need to include the children to show difference. We also only need the leaf taxon in
+the hash, because they contain the path of the entire branch to the top of the tree.
+
+. Leaf tree_version_elements use the hash from the tree_element as taxon hash.
+. Parent tree_version_elements concatenate immediate child taxon hashes and hash that.
+. up one level and repeat.
+
+When we add a taxon (leaf) we use the tree_elements hash as the new taxon hash then follow the tree path up regenerating
+the taxon hash for each tree_version_element up the tree as above.
+
+This method would be more efficient in production, but the initial generation is trickier with a reverse tree walk.
+
+==== Even more efficient and pragmatic method
+
+The Hash methods have an elephant in the room, Hashes. A Hash can clash, they're good for cases where the data doesn't
+exceed the number of different hashes. Sha256 has a lot of hashes and can represent billions of separate bits of data
+but we can't guarantee there won't be a clash. The best way to use a hash is to reduce the length of the data
+represented by the hash. We can determine the uniqueness of a taxon (the circumscription of children and the taxon itself)
+using the sum of the tree_paths of the leaf tree_elements. This effectively represents the tree, in fact it's just printing
+out the tree id's in order (depth first) as a string. The above hash methods take that string and hash it. The string
+contains a lot of repetition, but it is unique to this taxon... it *is* this taxon.
+
+At last count we have 5.4 million tree_version_elements, 38 thousand tree_elements, and by the look of it around 40k
+individual taxon. *It would be simpler to just assign an ID to a new taxon.* In fact, we already use the node ID to
+identify the taxon, so we can just keep them as taxon identifiers and generate new ones when we add a taxon:
+
+. Add (or Remove) a leaf element and assign the tree_version_element a new taxon ID
+. use the tree_path to assign new taxon IDs to all the tree_version_elements up the branch
+. profit.
+
+===== cons?
+
+If we do this every time a taxon is added to the tree in a draft we will go through a lot of identifiers. We could check
+to see if the identifier is new to this version and only change it once per version, but that is probably unnecessary
+overhead...
+
+Lets' say we add 100 taxa in this version at forma level (about 10 levels down from Plantae) all under the same species,
+then we'll use 1100 identifiers for 110 new taxa.
+
+NOTE: implementation includes a uniqueness check on taxon identifiers when assigning them within a draft version. This
+does a count on tree_version_elements with the taxon identifier, if it returns just 1 then this is the only usage and is
+a draft so it can be kept as the taxon identifier as it hasn't been published.
+
+It doesn't intrinsically tell us if two taxa on different trees are the same. If you copy a taxa from one tree to another
+we could use the same identifier, but if you create a copy of a taxa from parts, you would have a new identifier. We can
+provide a service to compare taxa, but finding matching taxa across different trees would be relatively expensive (you
+could use a tree comparison/diff to identify matches). Once you know two taxons are the same with different IDs you then
+need to combine the identifiers somehow, perhaps in a matching service.
+
+NOTE: We have added instance path to tree_elements to help us track/compare taxon. This is because the above method means
+a new taxon identifier will be generated when you move a taxon somewhere else then move it back to where it was. There
+is no way to check that it's actually the same taxon. So we can use <<A circumscription hash>> on instance_path.
+
+=== RDF
+
+We will need to map the new tree structure in joseki. There is a project called nsl-data, that is in the old git
+repository. The nsl-data/src/apni.ttl file contains around 400 lines of mapping config (lines 2057 - 2457) which will
+need to be reconfigured and deployed.
+
+Currently the RDF services are apparently largely unused, so we should be able to re-map to a structure that makes
+sense.
+
+=== Uber trees
+
+The new structure caters for uber trees by easily allowing trees to be copied and providing very fast mechanisms for
+search and display. Two million records is certainly not excessive to copy or refer to. It is not expected that people
+will edit the uber tree directly so workspace versions would not normally be required.
+
+We need to provide a mechanism to describe and build an uber tree that potentially watches the component trees to build
+current uber tree.
+
+Two million record tree would be expected to take up around 285MB based on the estimated data usage figures quoted above
+for 35k names.
+
+doing a select on 4 819 443 tree_version_elements and ordering by name_path on my local machine took 250ms
+
+ sql> select te.simple_name, te.name_link, tve.element_link tree_link, tve.name_path
+      from tree_element te
+                  join tree_version_element tve on te.id = tve.tree_element_id
+ [2018-11-28 13:46:28] 2000 rows retrieved starting from 1 in 249 ms (execution: 144 ms, fetching: 105 ms)
+
+after optimising postgresql this came down to 1m 40s.
+
+With an index on name_path a search for everything under Eucalyptus on 4.8M tree_elements (159213 results 2000 fetched)
+takes ~200ms.
+
+ sql> select te.simple_name, te.name_link, t.host_name|| tve.element_link tree_link, tve.name_path
+      from tree_element te
+                  join tree_version_element tve on te.id = tve.tree_element_id
+                  join tree t on tve.tree_version_id = t.current_tree_version_id and t.accepted_tree
+      where name_path like '%/Eucalyptus/%' order by name_path
+ [2018-11-28 13:42:41] 1168 rows retrieved starting from 1 in 203 ms (execution: 137 ms, fetching: 66 ms)
+
+More machine grunt may improve performance. (After optimising postgresql this came down a lot)
+
+****
+My local machine is an i7-4820K 3.70GHz CPU x 4, 32GB machine with a 500GB Samsung SSD. Postgresql had not been optimised
+for this machine yet.
+****
+
+Copying 2 million tree_elements into a new table takes around 9.6s
+
+ sql> select * into new_tree_elements from tree_element where tree_version_id > 80
+ [2017-06-26 17:37:30] completed in 9s 618ms
+
+
+Given it takes about 12 seconds to copy/insert 35k tree_elements into the tree_elements table to make a workspace
+it should take around 11 minutes to copy an entire 2 million element tree. We shouldn't have to copy the entire uber
+tree of this size very often.
+
+NOTE: This copy was done on an older structure. We still copy the draft tree, but the process takes a little longer
+because we bulk load the identifiers by sending the list of identifiers to add to the mapper. This process currently
+needs some more optimisation.
+
+== What it looks like
+
+image::new-tree-overview.svg[]
+
+== The model
+
+[source]
+.DDL.sql
+----
+    create table tree (
+        id int8 default nextval('nsl_global_seq') not null,
+        lock_version int8 default 0 not null,
+        accepted_tree boolean default false not null,
+        config jsonb,
+        current_tree_version_id int8,
+        default_draft_tree_version_id int8,
+        description_html Text default 'Edit me' not null,
+        group_name Text not null,
+        host_name Text not null,
+        link_to_home_page Text,
+        name Text not null,
+        reference_id int8,
+        primary key (id)
+    );
+
+    create table tree_element (
+        id int8 default nextval('nsl_global_seq') not null,
+        lock_version int8 default 0 not null,
+        display_html Text not null,
+        excluded boolean default false not null,
+        instance_id int8 not null,
+        instance_link Text not null,
+        name_element varchar(255) not null,
+        name_id int8 not null,
+        name_link Text not null,
+        previous_element_id int8,
+        profile jsonb,
+        rank varchar(50) not null,
+        simple_name Text not null,
+        source_element_link Text,
+        source_shard Text not null,
+        synonyms jsonb,
+        synonyms_html Text not null,
+        updated_at timestamp with time zone not null,
+        updated_by varchar(255) not null,
+        primary key (id)
+    );
+
+    create table tree_version (
+        id int8 default nextval('nsl_global_seq') not null,
+        lock_version int8 default 0 not null,
+        created_at timestamp with time zone not null,
+        created_by varchar(255) not null,
+        draft_name Text not null,
+        log_entry Text,
+        previous_version_id int8,
+        published boolean default false not null,
+        published_at timestamp with time zone,
+        published_by varchar(100),
+        tree_id int8 not null,
+        primary key (id)
+    );
+
+    create table tree_version_element (
+        element_link Text not null,
+        depth int4 not null,
+        merge_conflict boolean default false not null,
+        name_path Text not null,
+        parent_id Text,
+        taxon_id int8 not null,
+        taxon_link Text not null,
+        tree_element_id int8 not null,
+        tree_path Text not null,
+        tree_version_id int8 not null,
+        updated_at timestamp with time zone not null,
+        updated_by varchar(255) not null,
+        primary key (element_link)
+    );
+
+----
+
+Refer to code at
+https://github.com/bio-org-au/nsl-domain-plugin/blob/8685491bc3916f5615d9716465fe622c32deebfe/web-app/sql/nsl-ddl.sql#L735[github]
+
+---
+
+IMPORTANT: This has been implemented in production so the Impact and Amount of work information below is only useful for
+retrospective evaluation. Skip to <<Query Examples>>
+
+---
+== User impact of change over
+
+Currently in production:
+
+ * a taxon can be added or removed from a tree.
+ * the status of the taxon can be changed from accepted to excluded.
+ * the comment and distribution values on the tree can be updated, but are not used as instance notes are used instead.
+
+Synonymy does not affect the tree structure as such, as that is related to the concepts that are placed on the tree only.
+There is no current process to determine if changes to synonymy of taxon concepts (instances) affect the tree, in terms
+of the rules governing placements.
+
+Placement rules are currently poorly implemented and incomplete.
+
+In the change over the initial goal will be to replace the existing functionality. We should be able to do this without
+major impact or change.
+
+== Amount of work
+
+There main functional areas affected by this change:
+
+ . Search
+ . Display
+ . Editing
+
+We would also need to factor out NameTreePath as it is replaced by the new TreeElement and the APNI name tree.
+
+I'm guestimating the amount of work to be around 340 hours in total, which depending on other work could be completed
+in 8 weeks.
+
+=== APNI Name Tree
+
+Now would be the right time to replace the APNI name tree if we're going to do that. JIRA NSL-2304 discusses the issues
+around the name tree being replaced. There is definitely a current need for a tree structure that caters for names that
+aren't in the APC/taxonomic tree.
+
+The solution suggested in NSL-2304 is to replace Name.sortName with a tree path as per the tree_element and existing
+name_tree_path, and putting the "agreed" family of a name in the name where that name is below family. Name id path
+would be a logical addition to speed up any other name path operations, but we may say
+https://en.wikipedia.org/wiki/You_aren%27t_gonna_need_it[YAGNI] on this initially.
+
+To do this we would do this (in order):
+
+. copy the APC name path to all names in APC
+. copy the APC name path to all synonyms of names on the tree
+. follow name.parent up the tree for names not in APC till we reach a name in APC to build their path.
+
+In the last step we can stop once we hit a name with a name path, which makes this more of a functional step.
+
+This still means editors should put the immediate parent of a name in, not the "Name parent" as we're still using the
+name tree as a filler for what isn't in APC.
+
+=== Search and display
+
+==== Services
+
+In the current services we use a search including the tree_nodes to determine if a name is on a tree and where it is
+ranked on that tree. We also look to see if a name is in APC to display an APC tick. This has been generalised somewhat
+to allow different "accepted" trees.
+
+We need to refactor:
+
+|===
+|work| notes| effort
+| search and APC/APNIFormat outputs.| -| 20h
+| tree path code to use the tree_element | will mostly be deleting code that keeps up with tree_node changes| 20h
+| The APNI name tree needs to be replaced | just use the name parent, and make sure Family comes from the accepted
+tree only. Extra time allowed for implementation discussion.|40h
+| tree services API | most of it is deleted.| 40h
+| Tree object representation| -|20h
+| flat view taxon and name exports | rework the view| 10h
+| test infrastructure and tests| -| 30h
+|| -|180h
+|===
+
+Obviously the existing tree structure is used extensively in the services for the "tree services", but most of that will
+just go and be replaced with a much simpler set of code. The search service and APNI/APC format out put are the only
+other places that use them along with name_tree_path.
+
+===== Objects representation in HTML/JSON
+
+Currently the tree nodes are modeled with and output object which in html looks like
+https://biodiversity.org.au/nsl/services/node/apni/9159708
+
+The JSON version exposes too much of the tree infrastructure by using terminology like "subnodes", links and some random
+RDF stuff.
+
+https://biodiversity.org.au/nsl/services/node/apni/9159708.json
+
+Most of the following snippet is useless to anyone consuming the data.
+
+[source,javascript]
+.node_snippet.js
+----
+{
+    "class": "au.org.biodiversity.nsl.Link",
+    "typeUri": {
+        "idPart": "btOf",
+        "nsPart": "apc-voc",
+        "uri": "http://biodiversity.org.au/voc/apc/APC#btOf",
+        "uriEncoded": "http%3A%2F%2Fbiodiversity.org.au%2Fvoc%2Fapc%2FAPC%23btOf",
+        "qname": "apc-voc:btOf",
+        "css": "apc-voc bt-of"
+    },
+    "subNode": {
+        "class": "au.org.biodiversity.nsl.Node",
+        "_links": {
+            "permalink": {
+                "link": "https://id.biodiversity.org.au/node/apni/9159707",
+                "preferred": true,
+                "resources": 1
+            }
+        },
+        "id": 9159707,
+        "type": "T",
+        "typeUri": {
+            "idPart": "ApcConcept",
+            "nsPart": "apc-voc",
+            "uri": "http://biodiversity.org.au/voc/apc/APC#ApcConcept",
+            "uriEncoded": "http%3A%2F%2Fbiodiversity.org.au%2Fvoc%2Fapc%2FAPC%23ApcConcept",
+            "qname": "apc-voc:ApcConcept",
+            "css": "apc-voc apc-concept"
+        }
+    },
+    "linkSeq": 1,
+    "versioningMethod": {
+        "enumType": "au.org.biodiversity.nsl.VersioningMethod",
+        "name": "V"
+    },
+    "isSynthetic": true
+},
+
+----
+
+We'll replace the html page with something very similar for now and completely restructure the JSON output to better
+represent the taxon in the context of the tree.
+
+e.g.
+
+[source,javascript]
+.treeElement.js
+----
+{
+
+    "treeElement": {
+        "class": "au.org.biodiversity.nsl.TreeElement",
+        "_links": {
+            "elementLink": "http://test-id-vasc.biodiversity.org.au/tree/9476777/9479620",
+            "taxonLink": "http://test-id-vasc.biodiversity.org.au/node/apni/2908938",
+            "parentElementLink": "http://test-id-vasc.biodiversity.org.au/tree/9476777/9479431",
+            "nameLink": "http://test-id-vasc.biodiversity.org.au/name/apni/54576",
+            "instanceLink": "http://test-id-vasc.biodiversity.org.au/instance/apni/650575",
+            "sourceElementLink": null
+        },
+        "tree": {
+            "class": "au.org.biodiversity.nsl.Tree",
+            "_links": {
+                "permalinks": [
+                    {
+                        "link": "https://test-id-vasc.biodiversity.org.au/tree/apni/APC",
+                        "preferred": true,
+                        "resources": 1
+                    }
+                ]
+            },
+            "audit": null,
+            "name": "APC"
+        },
+        "simpleName": "Juncaginaceae",
+        "rankPath": {
+            "Ordo": {
+                "id": 214965.0,
+                "name": "Alismatales",
+                "name_link": "http://test-id-vasc.biodiversity.org.au/name/apni/214965"
+            },
+            "Regnum": {
+                "id": 54717.0,
+                "name": "Plantae",
+                "name_link": "http://test-id-vasc.biodiversity.org.au/name/apni/54717"
+            },
+            "Classis": {
+                "id": 223519.0,
+                "name": "Equisetopsida",
+                "name_link": "http://test-id-vasc.biodiversity.org.au/name/apni/223519"
+            },
+            "Familia": {
+                "id": 54576.0,
+                "name": "Juncaginaceae",
+                "name_link": "http://test-id-vasc.biodiversity.org.au/name/apni/54576"
+            },
+            "Division": {
+                "id": 224706.0,
+                "name": "Charophyta",
+                "name_link": "http://test-id-vasc.biodiversity.org.au/name/apni/224706"
+            },
+            "Superordo": {
+                "id": 216053.0,
+                "name": "Lilianae",
+                "name_link": "http://test-id-vasc.biodiversity.org.au/name/apni/216053"
+            },
+            "Subclassis": {
+                "id": 214954.0,
+                "name": "Magnoliidae",
+                "name_link": "http://test-id-vasc.biodiversity.org.au/name/apni/214954"
+            }
+        },
+        "namePath": "Plantae/Charophyta/Equisetopsida/Magnoliidae/Lilianae/Alismatales/Juncaginaceae",
+        "displayString": "<data><scientific><name id='54576'><element class='Juncaginaceae'>Juncaginaceae</element> <authors><author id='7128' title='Richard, L.C.M.'>Rich.</author></authors></name></scientific><citation>CHAH (2008), <i>Australian Plant Census</i></citation></data>",
+        "sourceShard": "APNI",
+        "synonyms": null,
+        "profile": {
+            "APC Dist.": {
+                "value": "WA (naturalised), NT, SA, Qld, NSW (native and naturalised), LHI, ACT, Vic (native and naturalised), Tas",
+                "created_at": "2009-09-08T00:00:00+10:00",
+                "created_by": "KIRSTENC",
+                "updated_at": "2009-09-08T00:00:00+10:00",
+                "updated_by": "KIRSTENC",
+                "source_link": "http://test-id-vasc.biodiversity.org.au/instanceNote/apni/1110848"
+            }
+        },
+        "children": [
+            {
+                "displayHtml": "<data><scientific><name id='54576'><element class='Juncaginaceae'>Juncaginaceae</element> <authors><author id='7128' title='Richard, L.C.M.'>Rich.</author></authors></name></scientific><citation>CHAH (2008), <i>Australian Plant Census</i></citation></data>",
+                "elementLink": "http://test-id-vasc.biodiversity.org.au/tree/9476777/9479620",
+                "nameLink": "http://test-id-vasc.biodiversity.org.au/name/apni/54576",
+                "instanceLink": "http://test-id-vasc.biodiversity.org.au/instance/apni/650575",
+                "excluded": false,
+                "depth": 7,
+                "synonymsHtml": "<synonyms></synonyms>"
+            },
+
+            ...
+
+            {
+                "displayHtml": "<data><scientific><name id='215455'><scientific><name id='100623'><element class='Triglochin'>Triglochin</element></name></scientific> <element class='turrifera'>turrifera</element> <authors><author id='6955' title='Ewart, A.J.'>Ewart</author></authors></name></scientific><citation>CHAH (2006), <i>Australian Plant Census</i></citation></data>",
+                "elementLink": "http://test-id-vasc.biodiversity.org.au/tree/9476777/9479645",
+                "nameLink": "http://test-id-vasc.biodiversity.org.au/name/apni/215455",
+                "instanceLink": "http://test-id-vasc.biodiversity.org.au/instance/apni/635661",
+                "excluded": false,
+                "depth": 9,
+                "synonymsHtml": "<synonyms><tax><scientific><name id='103161'><scientific><name id='100623'><element class='Triglochin'>Triglochin</element></name></scientific> <element class='turrifera'>turrifera</element> <authors><author id='6955' title='Ewart, A.J.'>Ewart</author></authors></name></scientific> <type>taxonomic synonym</type></tax><tax><scientific><name id='7377413'><scientific><name id='100623'><element class='Triglochin'>Triglochin</element></name></scientific> <element class='turrifera'>turrifera</element> <authors><author id='6833' title='Gardner, C.A.'>C.A.Gardner</author></authors></name></scientific> <type>taxonomic synonym</type></tax></synonyms>"
+            }
+        ]
+    }
+
+}
+----
+
+
+
+==== Editor
+
+|===
+|work| notes| effort
+|convert views| mostly simple changes but need to handle node type| 10h
+|refactor models| the DB models need to be replaced with new models hopefully returning only relevant data| 40h
+|refactor the tree editing tab| with the refactoring of the tree edit service end points this should be a minimal change
+only replacing some of the reference keys like the voc:AcpComment stuff.| 40h
+|||90h
+|===
+
+The editor uses views to check if a name is currently accepted:
+
+ * accepted_name_vw
+ * accepted_synonym_vw
+
+We would need to change code around type_code which relates directly to tree_node.type_uri_id_part.
+
+The editor also models
+
+ * TreeArrangement
+ * TreeLink
+ * TreeNode
+ * TreeUriNs
+ * TreeValueUri
+ * AcceptedConcept
+ * AcceptedInSomeWay
+
+which would all need refactoring for usage.
+
+There are two different editors for the tree in the instance editor, the current AngularJS based one can be removed
+completely and be replaced with the workspace based one that uses the following service end points:
+
+ * treeEdit/updateValue
+ * treeEdit/placeNameOnTree
+ * treeEdit/removeNameFromTree
+
+==== New tree editor
+
+|===
+|work| notes| effort
+|Add admin tasks to admin pages| This should be a straightforward form| 20h
+|Add a tree view| This should already be part of the new tree_element object display replacing the node object| included
+|re work validation code| see services | included
+|||20h
+|===
+
+This editor needs to be incorporated in the instance editor. The new structure will make this easier, but this is
+possibly not required in the first iteration of this change.
+
+Basically we need to be able to create trees and workspaces and publish or delete a workspace. Create and delete are
+part of the existing API on the services.
+
+We will make the basic tree administration part of the existing services and incorporate the editing into the instance
+editor. We will develop a tree view for both the editor and services - where the editor view will allow access to
+instance editing etc.
+
+We will re-implement the validation code on the new tree structure as a callable service, and as part of the placement
+actions.
+
+==== New search
+
+|===
+|work| notes| effort
+|convert views| mostly simple changes but need to handle node type| 10h
+|refactor models| the DB models need to be replaced with new models hopefully returning only relevant data| 40h
+|||50h
+|===
+
+The new search app uses the following views:
+
+  * accepted_name_vw
+  * accepted_synonym_vw
+  * instance_resource_vw
+  * name_instance_vw
+  * name_or_synonym_vw
+
+It models:
+
+ * TreeArrangement
+ * TreeNode
+
+== Other stuff
+At the moment the name tree has namespaces and the lichen name tree has 31 Fungi name spaced names. This doens't work at
+the moment as a tree can only have one name space. I have changed the lichen names to all have the same namespace (Lichen)
+so that the current name tree works kind of....
+
+But this is going to bring up a problem we'll have to deal with where we have intersecting trees.
+
+== Query Examples
+
+This section is for documenting some query examples using the new tree structure.
+
+=== Search for synonyms of a type in a tree
+
+[source,sql]
+.search-synonyms.sql
+----
+SELECT
+  el.name_id,
+  el.simple_name,
+  tax_syn,
+  synonyms ->> tax_syn,
+  rank.name,
+  type.name,
+  el.name_path
+FROM tree_element el
+  JOIN name n ON el.name_id = n.id
+  JOIN name_rank rank ON n.name_rank_id = rank.id
+  JOIN name_type type ON n.name_type_id = type.id
+  ,
+      jsonb_object_keys(synonyms) AS tax_syn
+WHERE tree_version_id = 144
+      AND type.scientific
+      AND tax_syn ILIKE 'Billardiera b%'
+      AND synonyms -> tax_syn ->> 'type' = 'taxonomic synonym'
+ORDER BY el.name_path;
+----
+
+|===
+| name_id | simple_name | tax_syn | syn_data | rank | type| name_path
+|55543|Billardiera scandens|Billardiera brachyantha|"{""type"": ""taxonomic synonym"", ""name_id"": 230111}"|Species|scientific| Plantae Charophyta Equisetopsida Magnoliidae Asteranae Apiales Pittosporaceae Billardiera scandens
+|55543|Billardiera scandens|Billardiera brachyantha var. brachyantha|"{""type"": ""taxonomic synonym"", ""name_id"": 55168}"|Species|scientific|Plantae Charophyta Equisetopsida Magnoliidae Asteranae Apiales Pittosporaceae Billardiera scandens
+|84869|Marianthus bicolor|Billardiera bicolor var. lineata|"{""type"": ""taxonomic synonym"", ""name_id"": 55149}"|Species|scientific|Plantae Charophyta Equisetopsida Magnoliidae Asteranae Apiales Pittosporaceae Marianthus bicolor
+
+|===
+
+=== find leaf paths
+
+[source]
+.leaf-paths.sql
+----
+-- find leaf paths
+SELECT e.tree_path as paths
+FROM tree_version_element tve
+  JOIN tree_element e ON tve.tree_element_id = e.id
+where tve.tree_version_id = 9451356
+  and not exists(select 1 from tree_version_element ctve join tree_element ce on ctve.tree_element_id = ce.id
+where ctve.tree_version_id = 9451356 and ce.parent_element_id = e.id)
+ORDER BY e.tree_path
+----
+
+=== circumscribe a taxon at a version
+
+This function takes a tree version id and a tree_path and gives a sha256 hash of all the leaf node child paths. The
+effectively gives a comparable hash of the circumscription of this taxon which can be used as an identifier that can
+compare the taxon concept here.
+
+[source]
+.circumscribe.sql
+----
+DROP FUNCTION IF EXISTS circumscribe( BIGINT, TEXT );
+CREATE FUNCTION circumscribe(version_id BIGINT, path_match TEXT)
+  RETURNS TEXT
+LANGUAGE SQL
+AS
+$$
+SELECT encode(digest(string_agg(paths, ''), 'sha256'), 'hex')
+FROM (
+       SELECT e.tree_path AS paths
+       FROM tree_version_element tve
+         JOIN tree_element e ON tve.tree_element_id = e.id
+       WHERE tve.tree_version_id = version_id
+             AND e.tree_path LIKE path_match || '%'
+       ORDER BY e.tree_path
+     ) AS circumscription;
+$$;
+
+select circumscribe(9451356, '/9451389');
+----
+
+or better still using the simple sha256agg function
+
+[source]
+.circumscribe.sql
+----
+CREATE EXTENSION pgcrypto;
+
+DROP FUNCTION IF EXISTS circumscribe( BIGINT, TEXT );
+CREATE FUNCTION circumscribe(version_id BIGINT, path_match TEXT)
+  RETURNS TEXT
+LANGUAGE SQL
+AS
+$$
+SELECT sha256_agg(paths)
+FROM (
+       SELECT e.tree_path AS paths
+       FROM tree_version_element tve
+         JOIN tree_element e ON tve.tree_element_id = e.id
+       WHERE tve.tree_version_id = version_id
+             AND e.tree_path LIKE path_match || '%'
+       ORDER BY e.tree_path
+     ) AS circumscription;
+$$;
+----
+
+=== A simple md5_agg aggregate function
+
+[source]
+.md5_agg.sql
+----
+DROP AGGREGATE IF EXISTS md5_agg( TEXT );
+DROP FUNCTION IF EXISTS md5agg_sfunc( TEXT, TEXT );
+DROP FUNCTION IF EXISTS md5agg_finalfunc( TEXT );
+
+CREATE FUNCTION md5agg_sfunc(agg_state TEXT, el TEXT)
+  RETURNS TEXT
+IMMUTABLE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  current_sum TEXT;
+BEGIN
+  --   RAISE NOTICE 'current state %', agg_state;
+  current_sum := md5(coalesce(agg_state, '') || el);
+  --   raise notice 'agg state %',current_sum;
+  RETURN current_sum;
+END;
+$$;
+
+CREATE FUNCTION md5agg_finalfunc(agg_state TEXT)
+  RETURNS TEXT
+IMMUTABLE
+STRICT
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN agg_state;
+END;
+$$;
+
+CREATE AGGREGATE md5_agg ( TEXT )
+(
+SFUNC = md5agg_sfunc,
+STYPE = TEXT,
+FINALFUNC = md5agg_finalfunc
+);
+----
+
+=== A simple sha256_agg function
+
+[source]
+.sha256_agg.sql
+----
+DROP AGGREGATE IF EXISTS sha256_agg( TEXT );
+DROP FUNCTION IF EXISTS sha256agg_sfunc( TEXT, TEXT );
+DROP FUNCTION IF EXISTS sha256agg_finalfunc( TEXT );
+
+CREATE FUNCTION sha256agg_sfunc(agg_state TEXT, el TEXT)
+  RETURNS TEXT
+IMMUTABLE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  current_sum TEXT;
+BEGIN
+  --   RAISE NOTICE 'current state %', agg_state;
+  current_sum := encode(digest((coalesce(agg_state, '') || el), 'sha256'), 'hex');
+  --   raise notice 'agg state %',current_sum;
+  RETURN current_sum;
+END;
+$$;
+
+CREATE FUNCTION sha256agg_finalfunc(agg_state TEXT)
+  RETURNS TEXT
+IMMUTABLE
+STRICT
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN agg_state;
+END;
+$$;
+
+CREATE AGGREGATE sha256_agg ( TEXT )
+(
+SFUNC = sha256agg_sfunc,
+STYPE = TEXT,
+FINALFUNC = sha256agg_finalfunc
+);
+----
+
+=== To sum the total data size of the tree_element table
+
+[source]
+.sum_tree_element.sql
+----
+select
+  pg_size_pretty(sum(pg_column_size(tree_version_id))) as tree_version_id_size,
+  pg_size_pretty(sum(pg_column_size(tree_element_id))) as tree_element_id_size,
+  pg_size_pretty(sum(pg_column_size(lock_version))) as lock_version_size,
+  pg_size_pretty(sum(pg_column_size(display_string))) as display_string_size,
+  pg_size_pretty(sum(pg_column_size(element_link))) as element_link_size,
+  pg_size_pretty(sum(pg_column_size(excluded))) as excluded_size,
+  pg_size_pretty(sum(pg_column_size(instance_id))) as instance_id_size,
+  pg_size_pretty(sum(pg_column_size(instance_link))) as instance_link_size,
+  pg_size_pretty(sum(pg_column_size(name_id))) as name_id_size,
+  pg_size_pretty(sum(pg_column_size(name_link))) as name_link_size,
+  pg_size_pretty(sum(pg_column_size(name_path))) as name_path_size,
+  pg_size_pretty(sum(pg_column_size(names))) as names_size,
+  pg_size_pretty(sum(pg_column_size(parent_version_id))) as parent_version_id_size,
+  pg_size_pretty(sum(pg_column_size(parent_element_id))) as parent_element_id_size,
+  pg_size_pretty(sum(pg_column_size(previous_version_id))) as previous_version_id_size,
+  pg_size_pretty(sum(pg_column_size(previous_element_id))) as previous_element_id_size,
+  pg_size_pretty(sum(pg_column_size(profile))) as profile_size,
+  pg_size_pretty(sum(pg_column_size(rank_path))) as rank_path_size,
+  pg_size_pretty(sum(pg_column_size(simple_name))) as simple_name_size,
+  pg_size_pretty(sum(pg_column_size(source_element_link))) as source_element_link_size,
+  pg_size_pretty(sum(pg_column_size(source_shard))) as source_shard_size,
+  pg_size_pretty(sum(pg_column_size(synonyms))) as synonyms_size,
+  pg_size_pretty(sum(pg_column_size(tree_path))) as tree_path_size,
+  pg_size_pretty(sum(pg_column_size(updated_at))) as updated_at_size,
+  pg_size_pretty(sum(pg_column_size(updated_by))) as updated_by_size
+  from tree_element;
+----
+
+=== To find the total used sizes of tables in the database
+
+[source]
+.table_size.sql
+----
+SELECT
+  *,
+  pg_size_pretty(total_bytes) AS total,
+  pg_size_pretty(index_bytes) AS INDEX,
+  pg_size_pretty(toast_bytes) AS toast,
+  pg_size_pretty(table_bytes) AS TABLE
+FROM (
+       SELECT
+         *,
+         total_bytes - index_bytes - COALESCE(toast_bytes, 0) AS table_bytes
+       FROM (
+              SELECT
+                c.oid,
+                nspname                               AS table_schema,
+                relname                               AS TABLE_NAME,
+                c.reltuples                           AS row_estimate,
+                pg_total_relation_size(c.oid)         AS total_bytes,
+                pg_indexes_size(c.oid)                AS index_bytes,
+                pg_total_relation_size(reltoastrelid) AS toast_bytes
+              FROM pg_class c
+                LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+              WHERE relkind = 'r' and nspname = 'public'
+            ) a
+     ) a;
+----
+
+=== fix the depth of all elements in a tree version
+
+[source:sql]
+.update depth.sql
+----
+DO $$
+DECLARE
+    c CURSOR FOR
+    SELECT tve.parent_id
+    FROM tree_version_element tve
+      JOIN tree ON tve.tree_version_id = tree.default_draft_tree_version_id AND tree.name = 'APC'
+    ORDER BY tve.tree_path
+    FOR UPDATE;
+BEGIN
+  FOR row IN c LOOP
+    UPDATE tree_version_element
+    SET depth = coalesce ((select depth + 1 from tree_version_element where element_link = row.parent_id), 1)
+    WHERE CURRENT OF c;
+  END LOOP;
+END
+$$
+----
+
+This works, but sets the depth assuming the top element has the correct depth. The below solution
+is better because it uses the tree_path to set the depth by counting the number of '/' chars
+
+[source:sql]
+.update depth.sql
+----
+UPDATE tree_version_element
+SET depth   = array_length(regexp_split_to_array(tree_path, '/'),1) - 1
+WHERE tree_version_id = 50617332
+AND tree_path ~ '/50617337';
+----
+
+== Placement Rules
+
+NOTE: there is a new more succinct document "<<placement-rules.adoc>>" which is based directly on the new implementation
+after we've tested and reviewed the results with users. Consider this document to be the before picture and that as the
+after.
+
+This is an interpretation of the results of the discussion at https://www.anbg.gov.au/ibis25/display/NSL/Tree+Monitor+Functionality
+regarding the placement rules.
+
+This is from the point of view of attempting to place an instance on a version of a tree. The version of the tree must
+be consistent within these rules. We take it that an Instance == Concept == Taxon == Taxon concept. The Instance being
+placed as already been chosen appropriately in an editor.
+
+WARNING: we need to look at the difference between validating a placement, before it's been placed and validating a
+whole tree that already has been created.
+
+=== The Taxon should not already be on the tree
+=== A Taxon's Name can not be in the tree as an accepted name more than once
+=== The Taxon's Name Rank must be below the parent taxon's rank
+=== A relationship instance can't be put on the tree
+=== Polynomial names must be a child of the name parent except excluded names
+
+e.g. Doodia caudata must be placed under Doodia
+
+=== Hybrid names must be a child of the first hybrid name
+
+e.g.  Blechnum cartilagineum Sw. x Doodia media R.Br. must be placed under Blechnum cartilagineum
+
+=== An accepted name can't be placed under an excluded name
+
+All names above an accepted name must also be accepted.
+
+=== illegal and illegitimate names *should not* be placed on the tree
+
+This is a warning only because there are illegitimate names used in APC because a phrase name would have to be created.
+
+
+=== A Taxon's Name or Synonyms can only be in the tree once.
+
+checking for synonyms needs to be done from a point of view. For example with Ficus virens
+(see https://biodiversity.org.au/nsl/services/search?product=APC&tree.id=1133571&name=Ficus+virens&inc._scientific=&inc.scientific=on&inc._cultivar=&inc._other=&max=100&display=apc&search=true)
+
+Ficus virens var. sublanceolata (Miq.) Corner is a synonym of Ficus virens according to CHAH 2005, but not according to
+CHAH 2016 which has them as distinct taxa (so they can both be accepted). The existing code for findSynonymOfInstance
+checks if a placed instance is cited by the instance you wish to place in any reference (other relationship instance).
+If you try to place Ficus virens Aiton (CHAH 2016) it will bring up the CHAH 2005 instance, which isn't relevant because
+you're view (sensu)  is CHAH 2016.
+
+So we should check synonymy from the point of view of the taxa being placed and then the already placed taxa back to the
+taxa being placed, e.g. from Ficus virens var. sublanceolata
+
+To warn on taxonomic synonyms we need to check the name of the instance. For example if you try to place Woodwardia Sm.
+under Blechnaceae using Mueller, F.J.H. von (1882), Systematic Census of Australian Plants which considers Doodia R.Br.
+to be a Synonym, but the instance of Doodia on the tree does not consider woodwardia a taxonmic synonym you won't see
+the apparently obvious conflict in this placement because the cited instance is not on the tree. So if the instance being
+placed cites a Name as being a synonym we should probably warn the user.
+
+* relationship instances can't be placed on the accepted tree
+* misapplication synonyms can be ignored.
+* warn if pro. parte synonyms exist elsewhere in the current tree
+
+=== A name once on the tree should always be accounted for on the tree
+
+A name *should* not be removed from a tree, it should be accounted for within the accepted names or synonyms.
+
+==== Implementation within the tree
+
+The Synonyms field in the Tree Element shows the synonym name and the type. We need to use the synonyms JSON structure to
+determine if the name exists as a synonym in the context of what is on the tree currently and that no synonyms of the taxon
+being placed are on the tree.
+
+So if we try and place 'Ficus cunninghami' we might use...
+
+[source]
+.find-synonym-of.sql
+----
+SELECT
+  el.name_id,
+  el.simple_name,
+  tax_syn,
+  synonyms ->> tax_syn,
+  el.names,
+  el.name_path
+FROM tree_element el
+  JOIN name n ON el.name_id = n.id,
+      jsonb_object_keys(synonyms) AS tax_syn
+WHERE tree_version_id = 146
+      AND el.names like '%|Ficus cunninghami|%'
+      AND synonyms -> tax_syn ->> 'type' !~ '.*(misapp|pro parte).*'
+  and tax_syn = 'Ficus cunninghami'
+----
+
+Which takes around 60-70ms to find Ficus virens. Note the LIKE on el.names limits the search quickly before using the slower
+jsonb queries, and is quicker than the equivalent regex.
+
+[source]
+.explain
+----
+Nested Loop  (cost=0.98..127531.08 rows=3 width=342)
+  ->  Nested Loop  (cost=0.98..127525.04 rows=3 width=310)
+        ->  Index Scan using tree_element_pkey on tree_element el  (cost=0.56..127511.69 rows=3 width=310)
+              Index Cond: (tree_version_id = 146)
+              Filter: (names ~~ '%|Ficus cunninghami|%'::text)
+        ->  Index Only Scan using name_pkey on name n  (cost=0.42..4.44 rows=1 width=8)
+              Index Cond: (id = el.name_id)
+  ->  Function Scan on jsonb_object_keys tax_syn  (cost=0.00..2.00 rows=1 width=32)
+        Filter: ((tax_syn = 'Ficus cunninghami'::text) AND (((el.synonyms -> tax_syn) ->> 'type'::text) !~ '.*(misapp|pro parte).*'::text))
+----
+
+if we repeat that search for all the names in the el.names string for the name we're trying to place, then we would have
+found all matching names both ways.
+
+So for example we can find all the clashing synonyms for an instance using:
+
+[source]
+.find_synonyms
+----
+SELECT
+  el.name_id,
+  el.simple_name,
+  tax_syn,
+  synonyms -> tax_syn ->> 'type' as syn_type,
+  synonyms -> tax_syn ->> 'name_id' as syn_id
+FROM tree_element el
+  JOIN name n ON el.name_id = n.id,
+      jsonb_object_keys(synonyms) AS tax_syn
+WHERE tree_version_id = 146
+      AND synonyms -> tax_syn ->> 'type' !~ '.*(misapp|pro parte).*'
+  and tax_syn in (select synonym.simple_name as sn
+from Instance s join instance_type it on s.instance_type_id = it.id,
+  Name synonym
+where s.cited_by_id = :instance_id_to_place
+      and synonym.id = s.name_id
+  and it.misapplied = FALSE
+  and it.pro_parte = FALSE
+);
+----
+
+Using the above if we try and place Ficus virens var. sublanceolata sensu Jacobs & Packard (1981) plants of NSW instance 692695
+we get the results:
+
+|===
+|name_id|simple_name|tax_syn|syn_type|syn_id
+
+|75398|Ficus virens|Ficus cunninghamii|taxonomic synonym|90744
+|75398|Ficus virens|Ficus infectoria var. cunninghamii|taxonomic synonym|91343
+|===
+
+==== Checking the validity of an existing tree
+
+Check all names in the tree for synonyms of that name in the tree:
+(See https://www.anbg.gov.au/25jira/browse/NSL-2484)
+
+[source]
+.findSynonyms in tree
+----
+-- updated for tree_version_element join table
+SELECT
+  e1.simple_name                    AS name1,
+  e1.name_id,
+  e2.simple_name                    AS name2,
+  e2.name_id,
+  tax_syn                           AS name2_synonym,
+  e2.synonyms -> tax_syn ->> 'type' AS type
+FROM tree t,
+  tree_version_element tve1
+  JOIN tree_element e1 ON tve1.tree_element_id = e1.id
+  ,
+  tree_version_element tve2
+  JOIN tree_element e2 ON tve2.tree_element_id = e2.id
+  ,
+      jsonb_object_keys(e2.synonyms) AS tax_syn
+WHERE t.name = 'APC'
+      AND tve1.tree_version_id = t.current_tree_version_id
+      AND tve2.tree_version_id = t.current_tree_version_id
+      AND tve2.tree_element_id <> tve1.tree_element_id
+      AND e1.excluded = FALSE
+      AND e2.excluded = FALSE
+      AND e2.synonyms IS NOT NULL
+      AND (e2.synonyms -> tax_syn ->> 'name_id') :: BIGINT = e1.name_id
+      AND e2.synonyms -> tax_syn ->> 'type' !~ '.*(misapp|pro parte|common).*';
+----
+
+NOTE: we've used the current APC tree above.
+
+== Running the migration
+
+The services will run a migration script on startup which will alter the DDL adding tables and indexes. It will then
+migrate all the nodes and versions over as well as setting the family of the names. It will use the preferred host from
+the mapper to set the links in the tree_element and tree_version_element tables, which means we probably have to manually
+do this for the moss and lichen shards.
+
+WARNING: *BEFORE you run the services/upgrade script make sure the preferred host is set correctly if you're running it locally
+or in test.*
+
+After the upgrade script has run we need to run the "tree-element-mapper-links.sql" script to add all the mapper links.
+
+NOTE: need to delete from notification due to all the changes to name.

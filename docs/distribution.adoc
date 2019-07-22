@@ -1,0 +1,589 @@
+= Distribution data structure
+v1.0, April 2019
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: New distribution structure documentation
+:keywords: documentation, NSL, APNI, API, APC, tree
+:links:
+:numbered:
+
+This documents the new data structure development for handling distributions.
+
+== Description
+
+Distribution of named things (taxa) is recorded against tree entries (Tree_element) as part of it's "profile".
+Historically this distribution is recorded as free form text that has been tending toward a structured text.
+
+e.g. `Qld (native and naturalised), NSW (native and naturalised), LHI, NI, ACT, Vic, Tas`
+
+The existing text structure can be described as:
+
+ a comma separated list of Regions with an optional modifier in brackets.
+
+The current set of modifiers for APC are:
+
+----
+(doubtfully extinct)
+(uncertain origin)
+(naturalised)
+(possibly extinct)
+(doubtfully naturalised)
+(native and doubtfully naturalised)
+(native and uncertain origin)
+(presumed extinct)
+(native and naturalised)
+(native and naturalised and uncertain origin)
+(?naturalised)
+(formerly naturalised)
+(native and formerly naturalised)
+----
+
+the current set of Regions for APC are:
+
+----
+WA, CoI, ChI, AR, CaI, NT, SA, Qld, CSI, NSW, LHI, NI, ACT, Vic, Tas, HI, MDI, MI
+----
+
+== Requirements
+
+We regularly get asked for data that relies on distribution information and importantly on the modifier information. For
+example we are asked for counts of native or weed species recorded in a region or regions. 
+
+I have some SQL which currently break down the data as best we can (understanding that some of the text is un parsable)
+
+[source]
+.tmp_distribution.sql
+----
+DROP TABLE IF EXISTS tmp_distribution;
+SELECT dist,
+       te.instance_id,
+       te.id                                                                                                                                AS apc_te_id,
+       tve.element_link,
+       FALSE                                                                                                                                AS australian_native,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](WA(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)')  AS wa,
+       FALSE                                                                                                                                AS wa_native,
+       FALSE                                                                                                                                AS WA_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](CoI(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS CoI,
+       FALSE                                                                                                                                AS CoI_native,
+       FALSE                                                                                                                                AS CoI_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](ChI(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS ChI,
+       FALSE                                                                                                                                AS ChI_native,
+       FALSE                                                                                                                                AS ChI_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](AR(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)')  AS AR,
+       FALSE                                                                                                                                AS AR_native,
+       FALSE                                                                                                                                AS AR_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](CaI(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS CaI,
+       FALSE                                                                                                                                AS CaI_native,
+       FALSE                                                                                                                                AS CaI_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](NT(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)')  AS NT,
+       FALSE                                                                                                                                AS NT_native,
+       FALSE                                                                                                                                AS NT_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](SA(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)')  AS SA,
+       FALSE                                                                                                                                AS SA_native,
+       FALSE                                                                                                                                AS SA_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](Qld(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS Qld,
+       FALSE                                                                                                                                AS Qld_native,
+       FALSE                                                                                                                                AS Qld_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](CSI(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS CSI,
+       FALSE                                                                                                                                AS CSI_native,
+       FALSE                                                                                                                                AS CSI_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](NSW(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS NSW,
+       FALSE                                                                                                                                AS NSW_native,
+       FALSE                                                                                                                                AS NSW_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](LHI(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS LHI,
+       FALSE                                                                                                                                AS LHI_native,
+       FALSE                                                                                                                                AS LHI_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](NI(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)')  AS NI,
+       FALSE                                                                                                                                AS NI_native,
+       FALSE                                                                                                                                AS NI_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](ACT(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS ACT,
+       FALSE                                                                                                                                AS ACT_native,
+       FALSE                                                                                                                                AS ACT_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](Vic(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS Vic,
+       FALSE                                                                                                                                AS Vic_native,
+       FALSE                                                                                                                                AS Vic_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](Tas(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS Tas,
+       FALSE                                                                                                                                AS Tas_native,
+       FALSE                                                                                                                                AS Tas_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](HI(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)')  AS HI,
+       FALSE                                                                                                                                AS HI_native,
+       FALSE                                                                                                                                AS HI_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](MDI(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)') AS MDI,
+       FALSE                                                                                                                                AS MDI_native,
+       FALSE                                                                                                                                AS MDI_naturalised,
+       SUBSTRING(' ' || dist FROM
+                 '(?i)[^A-Za-z](MI(?![a-z]).*?)(((,|, +| +)\??(WA|CoI|ChI|AR|CaI|NT|SA|Qld|CSI|NSW|LHI|NI|ACT|Vic|Tas|HI|MDI|MI))|,? *$)')  AS MI,
+       FALSE                                                                                                                                AS MI_native,
+       FALSE                                                                                                                                AS MI_naturalised
+    INTO tmp_distribution
+FROM tree_element te
+       JOIN tree_version_element tve ON te.id = tve.tree_element_id
+       JOIN tree t ON tve.tree_version_id = t.current_tree_version_id AND t.name = 'APC',
+     latest_accepted_profile(te.instance_id) as profile,
+     regexp_replace(profile.dist_value, E'[\\n\\r\\u2028]+', ' ', 'g') AS dist;
+
+SELECT count(*)
+FROM tmp_distribution;
+
+UPDATE tmp_distribution SET WA_native = TRUE WHERE WA IS NOT NULL   AND WA ~ '(^WA$|.*native.*)';
+ UPDATE tmp_distribution SET CoI_native = TRUE WHERE CoI IS NOT NULL   AND CoI ~ '(^CoI$|.*native.*)';
+ UPDATE tmp_distribution SET ChI_native = TRUE WHERE ChI IS NOT NULL   AND ChI ~ '(^ChI$|.*native.*)';
+ UPDATE tmp_distribution SET AR_native = TRUE WHERE AR IS NOT NULL   AND AR ~ '(^AR$|.*native.*)';
+ UPDATE tmp_distribution SET CaI_native = TRUE WHERE CaI IS NOT NULL   AND CaI ~ '(^CaI$|.*native.*)';
+ UPDATE tmp_distribution SET NT_native = TRUE WHERE NT IS NOT NULL   AND NT ~ '(^NT$|.*native.*)';
+ UPDATE tmp_distribution SET SA_native = TRUE WHERE SA IS NOT NULL   AND SA ~ '(^SA$|.*native.*)';
+ UPDATE tmp_distribution SET Qld_native = TRUE WHERE Qld IS NOT NULL   AND Qld ~ '(^Qld$|.*native.*)';
+ UPDATE tmp_distribution SET CSI_native = TRUE WHERE CSI IS NOT NULL   AND CSI ~ '(^CSI$|.*native.*)';
+ UPDATE tmp_distribution SET NSW_native = TRUE WHERE NSW IS NOT NULL   AND NSW ~ '(^NSW$|.*native.*)';
+ UPDATE tmp_distribution SET LHI_native = TRUE WHERE LHI IS NOT NULL   AND LHI ~ '(^LHI$|.*native.*)';
+ UPDATE tmp_distribution SET NI_native = TRUE WHERE NI IS NOT NULL   AND NI ~ '(^NI$|.*native.*)';
+ UPDATE tmp_distribution SET ACT_native = TRUE WHERE ACT IS NOT NULL   AND ACT ~ '(^ACT$|.*native.*)';
+ UPDATE tmp_distribution SET Vic_native = TRUE WHERE Vic IS NOT NULL   AND Vic ~ '(^Vic$|.*native.*)';
+ UPDATE tmp_distribution SET Tas_native = TRUE WHERE Tas IS NOT NULL   AND Tas ~ '(^Tas$|.*native.*)';
+ UPDATE tmp_distribution SET HI_native = TRUE WHERE HI IS NOT NULL   AND HI ~ '(^HI$|.*native.*)';
+ UPDATE tmp_distribution SET MDI_native = TRUE WHERE MDI IS NOT NULL   AND MDI ~ '(^MDI$|.*native.*)';
+ UPDATE tmp_distribution SET MI_native = TRUE WHERE MI IS NOT NULL   AND MI ~ '(^MI$|.*native.*)';
+ 
+UPDATE tmp_distribution SET WA_naturalised = TRUE WHERE WA IS NOT NULL   AND NOT WA_native;
+ UPDATE tmp_distribution SET CoI_naturalised = TRUE WHERE CoI IS NOT NULL   AND NOT CoI_native;
+ UPDATE tmp_distribution SET ChI_naturalised = TRUE WHERE ChI IS NOT NULL   AND NOT ChI_native;
+ UPDATE tmp_distribution SET AR_naturalised = TRUE WHERE AR IS NOT NULL   AND NOT AR_native;
+ UPDATE tmp_distribution SET CaI_naturalised = TRUE WHERE CaI IS NOT NULL   AND NOT CaI_native;
+ UPDATE tmp_distribution SET NT_naturalised = TRUE WHERE NT IS NOT NULL   AND NOT NT_native;
+ UPDATE tmp_distribution SET SA_naturalised = TRUE WHERE SA IS NOT NULL   AND NOT SA_native;
+ UPDATE tmp_distribution SET Qld_naturalised = TRUE WHERE Qld IS NOT NULL   AND NOT Qld_native;
+ UPDATE tmp_distribution SET CSI_naturalised = TRUE WHERE CSI IS NOT NULL   AND NOT CSI_native;
+ UPDATE tmp_distribution SET NSW_naturalised = TRUE WHERE NSW IS NOT NULL   AND NOT NSW_native;
+ UPDATE tmp_distribution SET LHI_naturalised = TRUE WHERE LHI IS NOT NULL   AND NOT LHI_native;
+ UPDATE tmp_distribution SET NI_naturalised = TRUE WHERE NI IS NOT NULL   AND NOT NI_native;
+ UPDATE tmp_distribution SET ACT_naturalised = TRUE WHERE ACT IS NOT NULL   AND NOT ACT_native;
+ UPDATE tmp_distribution SET Vic_naturalised = TRUE WHERE Vic IS NOT NULL   AND NOT Vic_native;
+ UPDATE tmp_distribution SET Tas_naturalised = TRUE WHERE Tas IS NOT NULL   AND NOT Tas_native;
+ UPDATE tmp_distribution SET HI_naturalised = TRUE WHERE HI IS NOT NULL   AND NOT HI_native;
+ UPDATE tmp_distribution SET MDI_naturalised = TRUE WHERE MDI IS NOT NULL   AND NOT MDI_native;
+ UPDATE tmp_distribution SET MI_naturalised = TRUE WHERE MI IS NOT NULL   AND NOT MI_native;
+ 
+UPDATE tmp_distribution
+SET australian_native = TRUE
+WHERE WA_native OR CoI_native OR ChI_native OR AR_native OR CaI_native OR NT_native OR SA_native
+OR Qld_native OR CSI_native OR NSW_native OR LHI_native OR NI_native OR ACT_native OR Vic_native OR Tas_native
+OR HI_native OR MDI_native OR MI_native;
+----
+
+Once the tmp_distribution table has been created you can export the data using this query:
+
+[source]
+.export_dist.sql
+----
+SELECT DISTINCT apc_te_id                                               AS tree_element_id,
+                apc_te.excluded                                         AS excluded,
+                (select e.created_at from instance e where e.name_id = n.id order by e.created_at asc limit 1) as earliest,
+                n.full_name                                             AS plant_name,
+                family.full_name                                        AS family,
+                ctve IS NULL                                            AS leaf,
+                tve.name_path,
+                r.name                                                  AS rank,
+                s.name                                                  AS status,
+                t.name                                                  AS type,
+                s.nom_inval,
+                s.nom_illeg,
+                d.*,
+                'https://id.biodiversity.org.au/instance/apni/' || i.id AS instance_id,
+                'https://id.biodiversity.org.au/name/apni/' || n.id     AS name_id
+FROM tmp_distribution d
+       JOIN instance i ON d.instance_id = i.id
+       JOIN name n ON i.name_id = n.id
+
+       JOIN name_rank r ON n.name_rank_id = r.id
+       JOIN name_status s ON n.name_status_id = s.id
+       JOIN name_type t ON n.name_type_id = t.id
+       JOIN tree_element apc_te ON apc_te.id = d.apc_te_id
+       JOIN tree_version_element tve ON tve.element_link = d.element_link
+       LEFT OUTER JOIN name family ON n.family_id = family.id
+       LEFT OUTER JOIN tree_version_element ctve ON tve.element_link = ctve.parent_id
+
+
+WHERE tve.name_path ~ 'Plantae/Charophyta/.*'
+  AND not australian_native
+  AND (select e.created_at from instance e where e.name_id = n.id order by e.created_at asc limit 1) > '2005-01-01'
+  AND not apc_te.excluded
+  AND ctve is null
+ORDER BY earliest asc;
+----
+
+We would ideally like to be able to have a permanent real time query for this data.
+
+We need to be compatible with GBIF distributions http://rs.gbif.org/extension/gbif/1.0/distribution.xml .
+
+=== Observations
+
+==== multiple concerns
+
+The Distribution data is trying to deal with multiple concerns at different levels. This is made trickier by the lack of
+granularity in the data, for example the statement that something (at a species level) is both native and naturalised in
+a region doesn't make logical sense, if it is native in NSW then it _is_ native in NSW. What the users are trying to
+record is finer grained data within the region, i.e. it is native to parts of NSW but it is naturalised in other parts.
+We are not recording the finer grains of information like _where_ it is naturalised or native.
+
+These distinctions are apparently because we need to avoid saying "this wattle is native to Bogsville because Bogsville
+is in NSW". Currently the modifiers say native *AND* naturalised, but they should probably just say native "," naturalised,
+or even native "or" naturalised?? Maybe not according to Anna Monro because "Normal people we say 'What does that mean?'"
+
+==== composition on higher ranks
+
+Taxa that are _leaf nodes_ on the tree are concrete objects, highter taxons are a grouping, so higher taxon distributions
+will be a grouping or aggregation of lower taxa distributions. Put plainly Genus and Family names need a distribution
+composed from the distributions of the leaf taxa. e.g.
+
+image::composed-dist.svg[]
+
+You'll note from the example that there are trumping rules where formerly naturalised is trumped by naturalised in another
+species when aggregating the modifiers. You'll also note that when a species is just native there is no modifier, but once
+combined with naturalised it is explicitly displayed i.e. "Vic" + "Vic (naturalised)" = "Vic (native and naturalised)".
+
+image::additive_states.png[additive states from Anna Monro]
+
+=== Implied/Detailed requirements
+
+. define regions with a sort order (geographic co-ordinates not required)
+. regions can only appear once in a distribution.
+. define status (i.e. the modifiers) with
+.. display order
+.. composing rules for display (when creating higher order distributions)
+.. combinatorial rules for what modifiers can be combined on leaf taxa e.g. "naturalised and uncertain origin" but not
+"naturalised and formerly naturalised"
+
+In Anna's diagram above, it is clear that there is a set of valid or Possible Character States (status). We could just
+have each possible state as a modifier i.e. have separate state for each combination, but that would make composition at
+higher taxa harder and searching harder e.g.
+
+composing: "native and naturalised" + "formerly naturalised" -> just "native and naturalised"
+
+composing: native + naturalised + native and uncertain origin + formerly naturalised + doubtfully naturalised ->
+native and naturalised and uncertain origin
+
+NOTE: Anna and Kirsten point out that distribution for variety and species may be different so composing the species will
+not work. So we would only compose distribution of Genus and Above. We will also only compose distribution on Genus and
+Family. Need to check the species includes the distribution of children.
+
+Searching for native if we have "native and something" means we need to flag the concept of native in each state or just
+know to include all the "native and..." states.
+
+By separating out the states to single concerns, then combining them as needed,
+composition and searching  will be simpler (90% usecase), displaying the composed state as a string will be "meh", and
+combinatorial rules will need some magic. Searching for separated states is then effectively a flag operation:
+
+ find all taxa with the state "native" and region "NSW"
+
+or
+
+ find all taxa with the state "naturalised" and not state "native" in all regions.
+
+Combinatorial rules could defined as a many to many link table between states. Each entry is a valid combination, which
+is modeling a list of valid states you can combine with. Let's try it:
+
+. presumed extinct
+. doubtfully naturalised
+.. native
+. formerly naturalised
+.. native
+
+. naturalised
+.. native
+.. uncertain origin
+
+. native
+.. naturalised
+.. formerly naturalised
+.. doubtfully naturalised
+.. uncertain origin
+
+. uncertain origin
+.. native
+.. naturalised
+
+If we treat the sub items on the list as things you can combine with but you can only make combinations where all elements
+can combine with all other elements...
+
+We can combine:
+
+* native and doubtfully naturalised
+* native and naturalised and uncertain origin
+
+We can't combine:
+
+* native and naturalised and doubtfully naturalised - because naturalised doesn't contain doubtfully naturalised
+* anything with "presumed extinct"
+
+==== GBIF Distribution Extension to Darwin Core
+
+Niels Klazenga pointed out we need to support the http://rs.gbif.org/extension/gbif/1.0/distribution.xml[GBIF Distribution Extension to Darwin Core.]
+
+The relevant fields from that are:
+
+* http://rs.gbif.org/areas/[LocationId] - just map our regions to TDWG maybe? Better still store the geojson shape reference.
+* locality - Long form of region abbreviation e.g. New South Wales
+* countryCode - AU
+* http://rs.gbif.org/vocabulary/gbif/occurrence_status.xml[occurrenceStatus] ...
+** present: `There is at least one well documented record of the taxons presence in the area.`
+** common: `Subclass of present: Species observed frequently in most proper habitat.`
+** rare: `Subclass of present: Species occurs regularly, but in small numbers. Requires careful searching of proper habitat.`
+** irregular: `Subclass of present: May be common in certain years and entirely absent other years.`
+** doubtful: `The taxon is scored as being present in the area but there is some doubt over the evidence. The doubt may
+be of different kinds including taxonomic or geographic imprecision in the records.`
+** absent: `There is evidence to document the absence of a taxon in the area. An extinct organism is absent while its
+establishmentMeans is native.`
+** excluded: `Subclass of absent: The organism is reported insome (gray) literature for a certain region, but is is
+erroneous. Reason for exclusion could be a misidentification, an old report, a simple publishing mistake or any other or unknown reason.`
+* http://rs.gbif.org/vocabulary/iucn/threat_status.xml[threatStatus] ...
+** Extinct
+** Extinct in the Wild
+** Regionally Extinct - **APC current use of presumed extinct?** however this term uses "when there is no reasonable doubt that ..."
+** Critically Endangered
+** Endangered
+** Vulnerable
+** Near Threatened
+** Least Concern
+** Data Deficient
+** Not Applicable
+** Not Evaluated
+* http://rs.gbif.org/vocabulary/gbif/establishment_means.xml[establishmentMeans] ...
+** native: `A species that is a part of the balance of nature that has developed over hundreds or thousands of years in
+a particular region or ecosystem. The word native should always be used with a geographic qualifier (for example, native to New England).`
+** introduced: `A species introduced with human help (intentionally or accidentally) to a new place or new type of habitat
+where it was not previously found. Not all non-native species are invasive. In fact, when many non-native species are
+introduced to new places, they cannot reproduce or spread readily without continued human help (for example, many ornamental plants).`
+** naturalised: `Subclass of introduced: The organism reproduces naturally and forms part of the local ecology.`
+** invasive: `Subclass of introduced: The organism is having a deleterious impact on another organism, multiple organisms or the ecosystem as a whole.`
+** managed: `Subclass of introduced: The organism maintains its presence through intentional cultivation or husbandry.`
+** uncertain: `Origin of organism is uncertain`
+* source: (APC would use CHAH ref?) `Source reference for this distribution record. Can be proper publication citation, a webpage URL, etc.`
+* occurrenceRemarks: `Comments or notes about the distribution e.g. "Excluded because of misidentification"`
+* http://rs.tdwg.org/dwc/terms/#datasetID[datasetID] - e.g. http://biodiversity.org.au/nsl/APC **note we don't have a dataset identifier**
+
+== Structure
+
+Each tree element will be linked to a set of distribution entries, via a link table, which will contain a region and a
+set of status entries.
+
+Only the valid set of distribution entry combinations will be started as distribution entries.
+
+image::dist_entry.svg[distribution data structure]
+
+=== example query
+
+[source]
+.test dist.sql
+----
+drop function if exists distribution(BIGINT);
+create function distribution(element_id BIGINT)
+    returns text
+    language sql as
+$$
+select string_agg(e.display, ', ') from
+    (select entry.display display
+     from dist_entry entry
+              join dist_region dr on entry.region_id = dr.id
+              join tree_element_distribution_entries tede
+                   on tede.dist_entry_id = entry.id and tede.tree_element_id = element_id
+     order by dr.sort_order) e
+$$;
+----
+
+query: `select distribution(tree_element.id);`
+
+result: `WA (naturalised), SA (naturalised), Qld (naturalised), NSW (native and naturalised), ACT (naturalised), Vic (naturalised)`
+
+First bash at a search example that looks for native taxa (there's only one in my DB as yet)
+
+[source]
+.search.sql
+----
+select te.simple_name, dr.name, ds.name, distribution(te.id)
+FROM dist_entry de
+         join dist_region dr on de.region_id = dr.id
+         join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
+         join dist_status ds on deds.dist_status_id = ds.id
+         join tree_element_distribution_entries tede on de.id = tede.dist_entry_id
+         join tree_element te on tede.tree_element_id = te.id
+where ds.name = 'native'
+----
+
+result: `Acacia baileyana, NSW, native, "WA (naturalised), SA (naturalised), Qld (naturalised), NSW (native and naturalised), ACT (naturalised), Vic (naturalised)"`
+
+[source]
+.nativeByDist.sql
+----
+with nat_reg as (
+    select te.id,
+           te.simple_name,
+           array_agg(dr.name) r
+    from tree_element te
+             join tree_element_distribution_entries tede on te.id = tede.tree_element_id
+             join dist_entry de on tede.dist_entry_id = de.id
+             join dist_region dr on de.region_id = dr.id
+             join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
+             join dist_status ds on deds.dist_status_id = ds.id
+    where ds.name = 'native'
+    group by te.id)
+select id,
+       simple_name,
+       r @> ARRAY ['WA']::varchar[]  as wa,
+       r @> ARRAY ['CoI']::varchar[] as coi,
+       r @> ARRAY ['Chi']::varchar[] as chi,
+       r @> ARRAY ['AR']::varchar[]  as ar,
+       r @> ARRAY ['CaI']::varchar[] as cai,
+       r @> ARRAY ['NT']::varchar[]  as nt,
+       r @> ARRAY ['SA']::varchar[]  as sa,
+       r @> ARRAY ['Qld']::varchar[] as qld,
+       r @> ARRAY ['CSI']::varchar[] as csi,
+       r @> ARRAY ['NSW']::varchar[] as nsw,
+       r @> ARRAY ['LHI']::varchar[] as lhi,
+       r @> ARRAY ['NI']::varchar[]  as ni,
+       r @> ARRAY ['ACT']::varchar[] as act,
+       r @> ARRAY ['Vic']::varchar[] as vic,
+       r @> ARRAY ['Tas']::varchar[] as tas,
+       r @> ARRAY ['HI']::varchar[]  as hi,
+       r @> ARRAY ['MDI']::varchar[] as mdi,
+       r @> ARRAY ['MI']::varchar[]  as mi
+from nat_reg;
+----
+
+The above query provides a view of tree_elements that are native in a region, and provides a set of flags that indicate
+it is native within that region. This makes a good view for querying. and we could provide separate views
+
+```
+id,simple_name,wa,coi,chi,ar,cai,nt,sa,qld,csi,nsw,lhi,ni,act,vic,tas,hi,mdi,mi
+51211639,Boryaceae,true,false,false,false,false,true,false,true,false,true,false,false,false,true,false,false,false,false
+```
+
+NOTE: I have extended VQ to allow it to call specific functions so the following queries may be used.
+
+[source]
+.public_apc_dist.sql
+----
+drop function public_apc_dist(status text);
+create function public_apc_dist(status text)
+    returns table
+            (
+                tree          text,
+                element_link  text,
+                simple_name   text,
+                display_html  text,
+                synonyms_html text,
+                dist          text,
+                rank          text,
+                name_path     text,
+                wa            boolean,
+                coi           boolean,
+                chi           boolean,
+                ar            boolean,
+                cai           boolean,
+                nt            boolean,
+                sa            boolean,
+                qld           boolean,
+                csi           boolean,
+                nsw           boolean,
+                lhi           boolean,
+                ni            boolean,
+                act           boolean,
+                vic           boolean,
+                tas           boolean,
+                hi            boolean,
+                mdi           boolean,
+                mi            boolean
+            )
+    language sql
+as
+$$
+with nat_reg as (
+    select te.id,
+           te.simple_name,
+           te.display_html,
+           te.synonyms_html,
+           te.profile -> 'APC Dist.' ->> 'value' as dist,
+           te.rank,
+           array_agg(dr.name)                       r
+    from tree_element te
+             join tree_element_distribution_entries tede on te.id = tede.tree_element_id
+             join dist_entry de on tede.dist_entry_id = de.id
+             join dist_region dr on de.region_id = dr.id
+             join dist_entry_dist_status deds on de.id = deds.dist_entry_status_id
+             join dist_status ds on deds.dist_status_id = ds.id and ds.name ~ status
+    group by te.id)
+select t.name                          as tree,
+       t.host_name || tve.element_link as element_link,
+       simple_name,
+       display_html,
+       synonyms_html,
+       dist,
+       rank,
+       name_path,
+       r @> ARRAY ['WA']::varchar[]    as wa,
+       r @> ARRAY ['CoI']::varchar[]   as coi,
+       r @> ARRAY ['Chi']::varchar[]   as chi,
+       r @> ARRAY ['AR']::varchar[]    as ar,
+       r @> ARRAY ['CaI']::varchar[]   as cai,
+       r @> ARRAY ['NT']::varchar[]    as nt,
+       r @> ARRAY ['SA']::varchar[]    as sa,
+       r @> ARRAY ['Qld']::varchar[]   as qld,
+       r @> ARRAY ['CSI']::varchar[]   as csi,
+       r @> ARRAY ['NSW']::varchar[]   as nsw,
+       r @> ARRAY ['LHI']::varchar[]   as lhi,
+       r @> ARRAY ['NI']::varchar[]    as ni,
+       r @> ARRAY ['ACT']::varchar[]   as act,
+       r @> ARRAY ['Vic']::varchar[]   as vic,
+       r @> ARRAY ['Tas']::varchar[]   as tas,
+       r @> ARRAY ['HI']::varchar[]    as hi,
+       r @> ARRAY ['MDI']::varchar[]   as mdi,
+       r @> ARRAY ['MI']::varchar[]    as mi
+from tree t
+         join tree_version_element tve on t.current_tree_version_id = tve.tree_version_id
+         join nat_reg e on e.id = tve.tree_element_id
+where t.accepted_tree
+order by tve.name_path
+$$;
+----
+
+That function in VQ allows us to quickly answer most questions about distribution and status for the apc. Generic
+functions for any tree are possible, but splitting out the regions is trickier as they're not static.
+
+
+=== update and import
+
+see: https://github.com/bio-org-au/nsl-domain-plugin/blob/master/web-app/sql/update-to-32.sql
+
+== Implementation
+
+=== Issues
+
+==== editing old distributions
+Currently we allow "minor edits" to distribution (and comments) where old entries can have typos etc fixed. We record
+the old and the new distribution and have a reason for the edit recorded.
+
+If we do a minor edit to distribution it will change the distribution, but we'll need to just record the distribution
+string in the profile. I don't think that is a problem, but it means we'd need an editing interface implemented for
+historic distributions.

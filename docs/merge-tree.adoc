@@ -1,0 +1,147 @@
+= Merge Tree
+v1.0, August 2017
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: New tree structure documentation
+:keywords: documentation, NSL, APNI, API, APC, tree
+:links:
+:numbered:
+
+This documents the process of merging a version of the tree with another version
+
+== Why?
+
+If you have two draft copies of a tree and you make changes to one then publish that draft, the second draft will
+not contain the changes made to the currently published tree. That is, the second draft will be "behind" the published
+tree.
+
+If the second draft is published without updates it will overwrite the changes of the first draft, so they will "revert"
+back to the previous version.
+
+To fix this, when a draft is published, remaining drafts need to "Pull" or "Merge" the changes on the newly published
+tree with their drafts.
+
+== Usage
+
+When the editor of a draft tries to publish a draft that came from an older version than the currently published version
+they will be blocked and asked to merge changes from the published tree first. They would be presented with a diff of
+the two versions showing simple updates and "clashes".
+
+* A simple update is one that does not overwrite a change made in the draft.
+* A clash is an update that would overwrite changes made in the draft.
+
+Non-conflicting updates would be automatically made to the draft. Conflicting updates would require to user to decide
+what to do:
+
+1. Accept the published changes, overwriting the draft changes.
+2. Reject the published changes, effectively overwriting the published changes.
+3. Merge the changes from both the published and draft versions.
+
+image::draft-tree-cycle.svg[]
+
+=== Simplifications to get it happening
+
+Merging the changes will initially be the same as Rejecting the published changes where the user will have to manually
+copy the the changes across to their version.
+
+*Ideally* (which means probably *later*) we should try to merge all non clashing changes, e.g. if the published tree has a
+change to the comment and the draft has a change to distribution then the merge should just add the comment and leave
+the distribution change.
+
+=== Complications
+
+Changes in synonymy will show up in altered synonymy reports and can be applied to any draft at any time. The services
+code should choose and re-use identical tree elements and remove orphaned elements as you go but minor changes (such as
+double spaces in comments) can cause an inconsequential change to be recorded. It may be wise to implement some form
+of clean up for inconsequential changes such as double spaces which don't show up in the HTML output.
+
+== Implementation
+
+=== Working out if we're behind the published tree
+
+Each draft has a previous version id which points to the version it was created from. If this is not the currently
+published tree version then we are behind the "Head". It shouldn't matter how far behind the head we are we can Diff
+from the previous version to the current version to work out what has changed and apply the changes to the draft.
+
+When we're happy that we have caught up with (merged) all the changes we want, we reset the previous version on the draft
+to the Head, or currently published tree.
+
+=== Tracking a merge
+
+Since it may take a little while for the user to go through the changes and decide what to do while merging we probably
+need a way to track where the user is up to. Where we're accepting changes from the published version we can just apply
+as we go and those changes will drop off the list.
+
+WARNING: Is there a batching up requirement for accept?.
+
+So we only need to track what changes we are happy with, that is changes we want to keep. This will include rejection of
+the published changes and merged changes (which are still just changes from the currently published changes.
+
+We will add a flag to tree version element, which isn't copied to new versions, to indicate that any difference to the
+published tree has been accepted by the user. In fact this should be inverted as a conflict flag set when a merge conflict
+is detected. When the conflict is resolved the flag is reset. This will help find unresolved conflicts, which is what we
+really want.
+
+Since subsequent published tree changes will only contain elements that have changed since the last
+published tree, we only need to set the conflict flag on each merge check.
+
+=== Changes to consider
+
+We could just compare the currently published tree to the draft and show the diff, however that will show changes that
+have been made in the draft that the owner of the draft clearly wants, and therefore that would be _noise_.
+
+So we really just want consider the set of changes made between the previous version (currently set on the draft version)
+and the published version. Lets call this the *head change set*
+
+From that set we want to compare to our draft. The diff between the previous version and the draft, which
+we will call the *draft change set*, can be compared with the *head change set* to work out *conflicting changes* and
+*non-conflicting changes*.
+
+* If the tree version element for a name is in the draft and head change sets it is a conflicting change.
+* If the tree version element for a name is only in the head change set it is a non-conflicting change.
+* If the tree version element for a name is only in the draft change set it can be ignored.
+
+=== Conflicting changes
+
+==== Accept published
+
+Accepting the published changes, overwriting the draft changes is effectively the diff *Revert* function. Diff revert
+compares the draft against published and allows you to revert a change to the currently published version. Revert is not
+yet implemented, so it may make sense to implement that first?
+
+WARNING: Technical Content
+
+To revert a change we change the tree_element_id on the tree_version_element - this can be done with the existing
+`treeServices.changeElement()` which
+
+* replaces the tree version element
+* updates the child tree paths
+* updates the parent ID of child tree version elements
+* and deletes the old tree version element
+
+Implementing Revert gives us both a revert for current diff changes and the Accept published changes per change, so the
+user could individually pick updates to accept.
+
+It can then be used as the basis for a bulk update from published by identifying draft elements that changed between the
+previously published version and the current published version.
+
+==== Reject published changes, use this version.
+
+To use the draft changes over the published changes we simply ignore the published change. Once we have set the previous version
+to the currently published tree we're done. While merging the user will reject the published change clearing the conflict
+flag on the Tree Version Element.
+
+=== Non-conflicting changes
+
+Non conflicting changes from the *head change set* should be automatically applied on merge. Initially we'll just list the
+changes briefly in the merge report.
+
+== Testing
+
+We need to devise a good set of tests for merge.

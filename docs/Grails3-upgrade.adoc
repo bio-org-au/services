@@ -1,0 +1,122 @@
+= Upgrading services to Grails 3.3.10
+
+== Plugins
+
+=== nsl domain plugin
+
+migrate the nsl domain plugin
+
+=== Simple Suggestions
+
+  compile ":simple-suggestions:0.3"
+
+Migrate the simple suggestions plugin
+
+=== Shiro
+
+Migrate the Shiro plugin - note: check and publish
+
+    compile ":shiro:1.2.1"
+
+=== Quartz
+
+Use and update to:
+
+    compile 'org.grails.plugins:quartz:2.0.13'
+
+http://plugins.grails.org/plugin/grails/quartz
+
+=== Executor
+
+Use the async plugin instead, so  port any async code to this.
+
+    compile 'org.grails.plugins:async:4.0.0.RC2'
+
+http://plugins.grails.org/plugin/grails/async
+
+=== Mail
+
+Mail is no longer used? remove.
+
+    //compile 'org.grails.plugins:mail:2.0.0'
+
+http://plugins.grails.org/plugin/grails/mail
+
+=== Yammer metrics
+
+No grails 3 plugin. Move to drop wizard?
+
+    compile ":yammer-metrics:3.0.1-2"
+    compile 'org.grails.plugins:dropwizard-metrics:1.0.0.M3'
+
+http://grails-plugins.github.io/grails-dropwizard-metrics/latest/index.html
+
+=== slack logger
+
+Not used? Remove.
+
+    compile "org.grails.plugins:slack-logger:1.0.1" TODO not used??
+
+https://plugins.grails.org/plugin/mathifonseca/slack
+
+=== CORS
+
+Move to native CORS support http://docs.grails.org/latest/guide/theWebLayer.html#cors
+
+=== Bootstrap
+
+Move to the bootstrap-framework gradle plugin http://plugins.grails.org/plugin/kensiprell/bootstrap-framework
+
+=== jquery & jquery ui
+
+There no longer seems to be a plugin as such - just use assets or CDN?
+
+=== cache/cache-ehcache
+
+use a 3.x version see http://plugins.grails.org/plugin/grails/cache
+
+http://grails-plugins.github.io/grails-cache-ehcache/latest/
+
+=== rest-client-builder
+
+No longer required use compile 'org.grails:grails-datastore-rest-client'
+
+Will need to review what works and doesn't here.
+
+== Other dependencies
+
+* postgresql - in nsl domain plugin
+* joda-time - should be a drop in
+* jericho html parser
+* Jsonwebtoken
+
+compile 'net.htmlparser.jericho:jericho-html:3.2', {
+            excludes 'log4j', 'commons-logging-api','slf4j-api'
+        }
+
+== Configuration
+
+=== Externalised config
+
+  grails.config.locations = ["file:${userHome}/.nsl/${appName}-config.groovy"]
+  updates.dir = "${userHome}/.nsl/updates"
+
+There is some sort of spring boot thing for this... See:
+
+* https://docs.grails.org/3.3.x/guide/conf.html#ymlOptions
+* https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html#boot-features-external-config-application-property-files
+
+Basically, the setting needs to become an environment variable set set in tomcat:
+
+NOTE: *CONFIG CHANGE* set environment variable `SPRING_CONFIG_LOCATION="file:$HOME/.nsl/services3-config.yml"`
+
+However we use groovy for much config which needs a config slurper. So... we can split the config between an essential
+config.yml used to bootstrap and then a groovy config for the rest of the configuration.
+
+==== Logging
+
+the logging configuration can be externalised by adding an environment variable `LOGGING_CONFIG` e.g.
+
+`LOGGING_CONFIG=$HOME/.nsl/services3-logging.groovy`
+
+see: https://docs.grails.org/3.3.x/guide/conf.html#externalLoggingConfiguration

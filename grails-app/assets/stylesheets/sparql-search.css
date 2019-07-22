@@ -1,0 +1,24 @@
+.sparql-search-bnode {
+}
+
+.sparql-search-uri {
+}
+
+.sparql-search-numeric-literal {
+    text-align: right;
+}
+
+.sparql-search-typed-literal {
+}
+
+.sparql-search-text-literal {
+}
+
+.sparql-result-cell {
+    padding-right: 1em;
+    vertical-align: text-top;
+}
+ #SPARQLQUERY {
+     font-family: monospace;
+     white-space: pre;
+ }

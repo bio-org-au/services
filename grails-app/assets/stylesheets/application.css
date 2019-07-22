@@ -1,0 +1,607 @@
+/*
+* This is a manifest file that'll be compiled into application.css, which will include all the files
+* listed below.
+*
+* Any CSS file within this directory can be referenced here using a relative path.
+*
+* You're free to add application-wide styles to this file and they'll appear at the top of the
+* compiled file, but it's generally better to create a new file per style scope.
+*
+*= require bootstrap.min
+*= require apni-format
+*= require sparql-search
+*= require themes/ui-lightness/jquery-ui-1.10.4.custom.css
+*= require_self
+*/
+
+@media print {
+    a[href]:after {
+        content: none;
+    }
+    a {
+        color: blue;
+    }
+    .footer {
+        display: none;
+    }
+    branch {
+        display: inline;
+    }
+    branch ul {
+        position: relative;
+        display: inline;
+        border: none;
+    }
+
+    branch li {
+        display: inline;
+    }
+
+    branch li:after {
+        content: ' -> ';
+        padding-right: 10px;
+    }
+}
+
+body {
+    min-width: 400px !important;
+    min-height: 100vh;
+}
+
+body.test {
+    border-left: #7a43b6 15px solid;
+}
+
+body.local {
+    border-left: #41b622 15px solid;
+}
+
+body.stage {
+    border-left: #2e3ab6 15px solid;
+}
+
+div.logo {
+    font-size: 1.5em;
+    color: darkolivegreen;
+    /*background-color: #ECECE3;*/
+    border-radius: 6px;
+    font-family: "Bookman", Georgia, "Times New Roman", serif;
+    padding: 6px;
+}
+
+.nsl {
+    display: inline;
+}
+
+/* data table */
+div.row {
+    display: table-row;
+}
+
+span.cell {
+    display: table-cell;
+    padding: 0.5em;
+    border-top: 1px solid grey;
+}
+
+.ui-autocomplete {
+    z-index: 10000;
+}
+
+.slider {
+    animation-duration: 10s;
+    animation-name: slidein;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@keyframes slidein {
+    from {
+        margin-left: 80%;
+        width: 100%;
+    }
+
+    to {
+        margin-left: 0%;
+        width: 100%;
+    }
+}
+
+
+@media(min-width:992px) and (max-width:1100px){
+    div.logo img {
+        -ms-transform: rotate(90deg) translate(50px, 50px);
+        -webkit-transform: rotate(90deg) translate(50px, 50px);
+        -moz-transform: rotate(90deg) translate(50px, 50px);
+        transform: rotate(90deg) translate(50px, 50px);
+        margin-bottom: 130px;
+    }
+}
+
+@media(min-width:1100px) {
+    .nsl {
+        white-space: nowrap;
+        display: block;
+    }
+}
+
+@media(max-width:1030px) {
+    twitter {
+         display: none;
+    }
+}
+
+div.logo p {
+    display: inline-block;
+    margin: 0;
+    line-height: 1.3;
+}
+
+div.logo p::first-letter {
+    font-size: 1.5em;
+}
+
+div.logo div.sublogo {
+    display: inline-block;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-size: 0.9em;
+    color: #66512c;
+}
+
+div#page-footer {
+
+    background: white none repeat scroll 0 0;
+    color: black;
+    border-top: 1px solid gray;
+    bottom: 0;
+    height: 4em;
+    position: fixed;
+    width: 100vh;
+    padding-top: 0.5em;
+    padding-left: 1em;
+    padding-right: 1em;
+    left: 0;
+
+}
+
+div#page-footer a.twitter-link {
+    color: black;
+}
+
+span#page-footer-inner-right {
+    display: inline-block;
+    margin-top: 1em;
+}
+
+div#main-content {
+    margin-bottom: 5em;
+}
+
+
+
+/* styles for basic CRUD pages */
+li.fieldcontain {
+    display: block;
+}
+
+li.fieldcontain span {
+    display: block;
+}
+
+li.fieldcontain span.property-label {
+    font-weight: bold;
+}
+
+li.fieldcontain span.property-value {
+    padding-left: 20px;
+}
+
+.scaffold-list tr {
+    display: table-row;
+}
+
+.scaffold-list th,
+.scaffold-list td {
+    display: table-cell;
+    padding-right: 1em;
+}
+div.pagination a,
+div.pagination span {
+    padding: 5px 10px;
+    margin-right: 5px;
+}
+
+div.pagination span.currentStep{
+    border: solid #017cc6 1px;
+    border-radius: 5px;
+}
+
+div.pagination a {
+    border: solid #b3b3b3 1px;
+    border-radius: 5px;
+}
+
+.green {
+    color: #0ccf00;
+}
+
+a {
+    color: #023C6E;
+}
+a:hover {
+    color: #0271c2;
+}
+.well {
+    background-color: #FAFAF8;
+}
+
+.vertbar {
+    border-left: 1px grey solid;
+    padding-left: 5px;
+}
+
+.limit {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    -moz-user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.rest-resource-content {
+    padding-left: 15px;
+}
+
+.see-through {
+    opacity: 0.5;
+}
+
+.text-default {
+    color: black;
+}
+
+.form-control {
+    !important;
+    font-weight: normal;
+}
+
+#max {
+    margin-right: -80px;
+}
+
+.card {
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+}
+
+.card {
+    position: relative;
+    margin: 0.5rem 0 1rem 0;
+    background-color: #fff;
+    transition: box-shadow .25s;
+    border-radius: 2px;
+}
+
+.card .card-title {
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.card .card-title.activator {
+    cursor: pointer;
+}
+
+.card.small, .card.medium, .card.large {
+    position: relative;
+}
+
+.card.small .card-image, .card.medium .card-image, .card.large .card-image {
+    max-height: 60%;
+    overflow: hidden;
+}
+
+.card.small .card-image + .card-content, .card.medium .card-image + .card-content, .card.large .card-image + .card-content {
+    max-height: 40%;
+}
+
+.card.small .card-content, .card.medium .card-content, .card.large .card-content {
+    max-height: 100%;
+    overflow: hidden;
+}
+
+.card.small .card-action, .card.medium .card-action, .card.large .card-action {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.card.small {
+    height: 300px;
+}
+
+.card.medium {
+    height: 400px;
+}
+
+.card.large {
+    height: 500px;
+}
+
+.card.horizontal {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+}
+
+.card.horizontal.small .card-image, .card.horizontal.medium .card-image, .card.horizontal.large .card-image {
+    height: 100%;
+    max-height: none;
+    overflow: visible;
+}
+
+.card.horizontal.small .card-image img, .card.horizontal.medium .card-image img, .card.horizontal.large .card-image img {
+    height: 100%;
+}
+
+.card.horizontal .card-image {
+    max-width: 50%;
+}
+
+.card.horizontal .card-image img {
+    max-width: 100%;
+    width: auto;
+}
+
+.card.horizontal .card-stacked {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+    position: relative;
+}
+
+.card.horizontal .card-stacked .card-content {
+    -webkit-flex-grow: 1;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+}
+
+.card.sticky-action .card-action {
+    z-index: 2;
+}
+
+.card.sticky-action .card-reveal {
+    z-index: 1;
+    padding-bottom: 64px;
+}
+
+.card .card-image {
+    position: relative;
+}
+
+.card .card-image img {
+    display: block;
+    border-radius: 2px 2px 0 0;
+    position: relative;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.card .card-image .card-title {
+    color: #fff;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 20px;
+}
+
+.card .card-content {
+    padding: 20px;
+    border-radius: 0 0 2px 2px;
+}
+
+.card .card-content p {
+    margin: 0;
+    color: inherit;
+}
+
+.card .card-content .card-title {
+    line-height: 48px;
+}
+
+.card .card-action {
+    position: relative;
+    background-color: inherit;
+    border-top: 1px solid rgba(160, 160, 160, 0.2);
+    padding: 20px;
+}
+
+.card .card-action a:not(.btn):not(.btn-large):not(.btn-floating) {
+    color: #031eff;
+    margin-right: 20px;
+    transition: color .3s ease;
+}
+
+.card .card-action a:not(.btn):not(.btn-large):not(.btn-floating):hover {
+    color: #7a81ff;
+}
+
+.card .card-reveal {
+    padding: 20px;
+    position: absolute;
+    background-color: #fff;
+    width: 100%;
+    overflow-y: auto;
+    top: 100%;
+    height: 100%;
+    z-index: 3;
+    display: none;
+}
+
+.card .card-reveal .card-title {
+    cursor: pointer;
+    display: block;
+}
+
+.imageAndText {
+    position: relative;
+    overflow: hidden;
+}
+.imageAndText img {
+    float: right;
+    margin-right: 0px;
+    margin-left: auto;
+}
+.imageAndText .col {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    text-shadow:
+            -1px -1px 0 #eee,
+            1px -1px 0 #eee,
+            -1px 1px 0 #eee,
+            1px 1px 0 #eee;
+}
+.imageAndText h1 {
+    font-size: 46px;
+}
+
+.diffBefore,
+.diffAfter {
+    width: 50vw;
+    overflow: auto;
+}
+
+label.disabled {
+    color: grey;
+    text-decoration: grey line-through;
+}
+
+.conflicting {
+    border-left: 2px solid red;
+    padding-left: 1em;
+}
+.nonConflicting {
+    border-left: 2px solid green;
+    padding-left: 1em;
+}
+
+.diffBefore, .Removed {
+    border-left: 10px solid rgba(235, 21, 31, 0.1);
+    background-color: rgba(235, 21, 31, 0.02);
+}
+.diffAfter, .Added {
+    border-left: 10px solid rgba(12, 235, 2, 0.1);
+    background-color: rgba(12, 235, 2, 0.02);
+}
+
+.Removed span.change-description {
+    font-weight: bold;
+    color: red;
+}
+
+.Added span.change-description {
+    font-weight: bold;
+    color: green;
+}
+
+.Modified span.change-description {
+    font-weight: bold;
+    color: purple;
+}
+
+.Unchanged span.change-description {
+    font-weight: bold;
+    color: grey;
+}
+
+.Modified {
+    border-left: 10px solid rgba(3, 19, 235, 0.1);
+    background-color: rgba(4, 31, 235, 0.02);
+}
+
+.Unchanged {
+    border-left: 10px solid rgba(167, 156, 160, 0.11);
+}
+
+.missing {
+    display: inline;
+    background-color: RGBA(256, 256, 0, 0.30) !important;
+    border-bottom: 2px solid red;
+}
+
+.added {
+    display: inline;
+    background-color: RGBA(256, 256, 0, 0.30) !important;
+    border-bottom: 2px solid #0cff2e;
+}
+
+.noTop > td {
+    border-top: none !important;
+}
+
+.noBottom > td {
+    border-bottom: none !important;
+}
+
+tr.sep {
+    border-top: 3px solid grey;
+}
+
+h3.sep {
+    border-bottom: 1px solid grey;
+}
+
+hybrid {
+    visibility: hidden;
+    margin-right: 0;
+    margin-left: -6px;
+}
+
+hybrid::after {
+    content: '×';
+    visibility: visible;
+}
+
+
+table.audit-report th {
+    text-align: center;
+}
+
+table.audit-report td.data {
+    text-align: center;
+}
+
+@media(max-width: 1500px) {
+    .imageAndText h1 {
+        font-size: calc(12px + 2vw);
+    }
+}
+@media(max-width: 400px) {
+    .imageAndText h1 {
+        font-size: 20px;
+    }
+}
+div.debug {
+    border: 1px solid green;
+    padding: 1em;
+    background-color: rgba(92, 184, 92, 0.65);
+}

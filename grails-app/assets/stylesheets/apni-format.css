@@ -1,0 +1,270 @@
+.results {
+    font-family: "Bookman", Georgia, "Times New Roman", serif;
+    font-size: 1.1em;
+}
+
+.results .btn-group {
+    margin-bottom: 10px;
+}
+
+.results .fa {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.toggleNext,
+.openForm,
+.closeForm {
+    cursor: pointer;
+}
+
+.openForm,
+.closeForm {
+    margin-top: 0;
+    padding-top: 0;
+    margin-bottom: 5px;
+}
+
+.highlight {
+    background-color: #ff97aa;
+    transition: background-color 1s;
+}
+
+reference {
+    margin-bottom: 10px;
+}
+
+reference, instance, family, synonym-of, has-synonym, misapplication {
+    display: block;
+}
+
+ref-citation,
+page,
+instance-type,
+instance-note-key,
+instance-note,
+tree-note {
+    display: inline;
+}
+
+candidatus:before {
+    content: '"';
+}
+candidatus:after {
+    content: '"';
+    margin-left: -0.3em;
+}
+
+span.draftStamp:before {
+    content: 'DRAFT';
+}
+
+span.draftStamp {
+    color: #730E1530;
+    text-transform: uppercase;
+    border-top: 4px solid #730E1530;
+    padding-top: 24px;
+    border-bottom: 4px solid #730E1530;
+    display: inline-block;
+    transform: rotate(-25deg);
+    position: absolute;
+    font-size: 3em;
+    z-index: -1;
+    left: 40px;
+}
+
+span.draft:after {
+    content: '[DRAFT]';
+    color: #730E15;
+}
+
+ul.instance-notes {
+    margin-bottom: 0;
+}
+
+instance-note-key, .key {
+    font-weight: bold;
+}
+
+synonym-type {
+    font-style: normal;
+}
+
+synonym-type.\[unknown\] {
+    display: none;
+}
+
+has-synonym.misapplied name > authors,
+span.misapplied name > authors {
+    display: none;
+}
+
+.instance-notes, synonym-of, has-synonym, missapplied-to, misapplication {
+    font-size: 0.9em;
+    padding-left: 3em;
+    display: block;
+}
+
+/*synonym-of element,*/
+/*has-synonym element,*/
+/*missapplied-to element,*/
+/*misapplication element {*/
+element {
+    font-style: italic;
+}
+
+common element,
+informal element {
+    font-style: normal;
+}
+
+reference instance-type {
+    display: none;
+}
+
+reference instance-type.nov\.,
+reference instance-type.autonym {
+    display: inline;
+}
+
+name-type {
+    display: none;
+    font-size: small;
+    color: #777777;
+}
+
+name-type.show-always {
+    display: inline;
+}
+
+name-status.manuscript,
+name-status.legitimate,
+name-status.\[default\],
+name-status.\[unknown\],
+name-status.\[n\/a\] {
+    display: none;
+}
+
+bhl a {
+    font-variant-caps: all-small-caps;
+    font-size: small;
+    color: blue;
+}
+
+apc {
+    font-variant-caps: all-small-caps;
+    font-size: larger;
+    color: red;
+    font-family: "Lucida Grande", "Helvetica Nueue", Arial, sans-serif;
+}
+
+.form-control {
+    display: inline-block;
+}
+
+branch ul,
+help div {
+    position: absolute;
+    display: none;
+    background-color: #ffffff;
+    border: solid 1px #000000;
+    border-radius: 6px;
+    padding: 1em;
+    box-sizing: border-box;
+    font-weight: normal;
+    font-size: 12pt;
+    line-height: 1.5em;
+    z-index: 1000;
+}
+
+branch,
+help {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 14pt;
+}
+
+reference-author {
+    display: block;
+}
+
+reference-author-role.Unknown {
+    display: none;
+}
+
+reference-type {
+    color: #808080;
+    font-size: small;
+}
+
+div.foa-content h1,
+div.foa-content h2 {
+    display: none;
+}
+
+div.foa-content {
+    border: 1px solid grey;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+accepted-name {
+    font-weight: bold;
+}
+
+accepted-name element,
+family element {
+    font-style: normal;
+}
+
+apnilink {
+    display: inline-block;
+    font-family: 'Lucida Grande', 'Helvetica Nueue', Arial, sans-serif;
+    color: black;
+    font-size: small;
+    font-variant-caps: all-petite-caps;
+}
+
+.results apnilink .fa {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+name-tag {
+    display: inline-block;
+    font-family: 'Lucida Grande', 'Helvetica Nueue', Arial, sans-serif;
+    color: black;
+    font-size: small;
+}
+
+name element.\[unnamed\] {
+    display: none;
+}
+
+.divide {
+    line-height: 50%;
+}
+
+dt.divide {
+    border-bottom: solid #cfcfcf 1px;
+}
+
+.branch_node.apc-voc.apc-concept {
+}
+
+.branch_node.apc-voc.apc-excluded {
+    color: red;
+}
+
+.branch_node.apc-voc.declared-bt {
+    color: darkgray;
+}
+
+
+bhl-link img {
+    vertical-align: baseline;
+}
+
+.undo {
+    text-decoration: grey line-through;
+}

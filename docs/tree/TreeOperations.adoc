@@ -1,0 +1,144 @@
+= New tree operations/API
+v1.0, August 2017
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: New tree structure documentation
+:keywords: documentation, NSL, APNI, API, APC, tree
+:links:
+:numbered:
+
+This documents the operations that can be done on the tree.
+
+== Create tree
+
+Endpoint: create-tree
+Method: PUT
+
+* name - name of the tree
+* groupName - name of the group who can edit the tree
+* refId - optional reference ID for in reference classification
+
+== Edit tree
+
+Endpoint: edit-tree
+Method: POST - JSON
+
+* id - tree id
+* name - name of the tree
+* groupName - name of the group who can edit the tree
+* refId - optional reference ID for in reference classification
+
+== Delete tree
+
+Endpoint: delete-tree
+Method: DELETE
+
+* treeId - tree id
+
+== create version
+
+Endpoint: create-tree-version
+Method: PUT
+
+* treeId - tree id
+* fromVersionId - optional version to copy this version from
+* draftName - a name for this draft version
+* defaultVersion - boolean make this the default draft version
+
+== set default draft version
+
+Endpoint: set-default-draft-tree-version
+Method: PUT
+
+* treeVersionId - the tree version to set as the default draft version
+
+== edit version
+
+Endpoint: edit-tree-version
+Method: POST - JSON
+
+* id - tree version id
+* draftName - the name of the draft version
+
+== publish version
+
+Endpoint: publish-tree-version
+Method: POST - JSON
+
+* id - tree version id
+* logEntry
+
+== delete version
+
+Endpoint: delete-tree-version
+Method: DELETE
+
+* treeVersionId
+
+== validate version
+
+Do a validation report on a tree version
+
+== element data from instance
+
+Create a TreeElement data from an instance, and return it as JSON data. This is used to create an
+element on a tree owned by another service.
+
+Endpoint: element-data-from-instance
+Method: GET
+
+* InstanceId
+
+== Place taxon element
+
+Take an instance URI and create a tree element to place under the supplied element
+This will place a taxon from any NSL shard on the tree. It can only place a taxon under an
+element on a tree version controlled by this service.
+
+Validation checks will be run to make sure the placement is valid.
+
+Endpoint: place-taxon
+Method: PUT
+
+* treeElementUri - the element to place it under
+* taxonUri - the instance URI to use to create the tree-element
+
+== Place a top level taxon element
+
+Take an instance URI and place it in a tree version with no parent element
+This will place a taxon from any NSL shard on the tree. It can only place a taxon under
+a tree version controlled by this service.
+
+* treeVersionId - the element to place it under
+* taxonUri - the instance URI to use to create the tree-element
+
+== Replace a taxon element
+
+Replace an existing Taxon Concept with another one and possibly move it's placement on the tree.
+This moves the child taxa from the replaced taxon to this new one.
+
+A new taxon (tree element) is created with a new instance and placed on the tree under the desired
+parent element. The child elements are copied to new elements under the new taxon (since they have a new
+parent path) but keep their taxon identifiers.
+
+This will copy the status and profile information from the replaced taxon.
+
+The old tree element will be removed from the current version of the tree.
+
+* treeElementUri - the element you want to replace
+* instanceUri - the new instanceUri you want to replace it with
+* newElementParentUri - the new parent to place it under
+
+== Delete a taxon element
+
+Remove a taxon element from the classification
+
+== Merge
+
+image::draft-tree-cycle.svg[]

@@ -1,0 +1,218 @@
+= Name Construction (Plants)
+v1.0, June 2015
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: New tree structure documentation
+:keywords: documentation, NSL, APNI, API, APC, tree
+:links:
+:numbered:
+
+Plant names are governed by the http://www.iapt-taxon.org/nomen/main.php?page=title[International Code Of Nomenclature
+For Algae, Fungi, and Plants]
+
+We construct names from name parts in the NSL using the rank and the name parents. This document is meant to describe
+our understanding of the name construction process for different types of names. The Types of names we currently build
+for Plant names are:
+
+* scientific
+  - binomial
+  - polynomial
+  - mononomial
+  - hybrid
+  - hybrid formula
+  - autonym
+* cultivar
+  - hybrid
+* informal
+* common
+
+== Scientific names
+
+scientific names are constructed differently depending on the name types:
+
+* hybrid formula
+* autonym
+* not formula or autonym i.e. just scientific.
+
+We construct a simple name and a full name. The simple name is the full name without the author.
+
+Names are constructed from:
+
+. preceding name
+. rank
+. name element
+. author
+. manuscript marker
+
+in that order.
+
+The different parts are optional and depend on a number of conditions outlined in the following sections.
+
+=== preceding name
+
+A preceding name is used in polynomial names (most commonly binomial names like Genus Species).
+The preceding name it the simple name (no author) of the Name Parent.
+
+A name has a preceding name if it is ranked below Genus OR it has a rank that has show rank set.
+
+Each name has a name parent. At the moment the name parent is the name directly above the name normally according to the
+publication the name is in. It is a name that can participate in name construction, or a preceding name.
+
+The preceding name is found by finding the parent rank of the names' rank, and following the name parent id up until
+you find the name with that rank. The parent ranks below family are currently set as per the following table:
+
+|===
+| Rank | Parent Rank | show rank
+
+|Familia| - | -
+|Subfamilia|Familia| -
+|Tribus|Familia| -
+|Subtribus|Familia| -
+|Genus| [-ne, mo-mial]| -
+|Subgenus|Genus| *yes*
+|Sectio|Genus| *yes*
+|Subsectio|Genus| *yes*
+|Series|Genus| *yes*
+|Subseries|Genus| *yes*
+|Superspecies|Genus| *yes*
+|Species|Genus| -
+|Subspecies|Species| *yes*
+|-thovarietas|Species| *yes*
+|Varietas|Species| *yes*
+|Subvarietas|Species| *yes*
+|Forma|Species| *yes*
+|Subforma|Species| *yes*
+|form taxon|Species| -
+|morphological var.|Species| -
+|nothomorph.|Species| -
+|[infrafamily]|Familia| *yes*
+|[infraspecies]|Species| *yes*
+|[infragenus]|Genus| *yes*
+
+|===
+
+As you can see this can be expressed as:
+
+[source]
+.parentRank
+----
+parentRank(rank) {
+    if(rank >= Genus) return none // we don't care above Genus
+    if(rank >= Species) return Genus
+    //now the infas
+    if(rank == [infraspecies]) return Species
+    if(rank == [infragenus]) return Genus
+}
+----
+
+but it is better to use the database rank records for configurability and readability, e.g.
+
+[source]
+.parentRank
+----
+parentRank = rank.parentRank
+----
+
+Because there will never be more than a couple of names between the name and its' preceding name we use this pseudo code
+to find the preceding name:
+
+[source,groovy]
+.getPreviousName.groovy
+----
+Name getPreviousName(Name name) {
+    if(name.rank >= Genus) return null
+    Rank parentRank = name.rank.parentRank
+    Name prev = name.parent
+    while (prev && prev.rank < parentRank) {
+        prev = prev.parent
+    }
+    if(prev.rank = parentRank) {
+        return prev
+    }
+    return null
+}
+----
+
+==== hybrid formula
+
+The preceding name for a hybrid formula name is the name parent.
+
+=== Rank
+
+We show the rank string if the name has a preceding name and the rank.visible_in_name is set. The rank string we use
+is determined by rank.use_verbatim_rank. If we should use verbatim rank then we use it if it has been set on the name,
+otherwise we use the rank abbreviation.
+
+We never display the rank in a formula name.
+
+We currently make the rank string using the following method.
+
+[source,groovy]
+.makeRank.groovy
+----
+String makeRankString(Name parent, Name name) {
+        if (parent && name.nameRank?.visibleInName && !name.nameType.formula) {
+            if (name.nameRank.useVerbatimRank && name.verbatimRank) {
+                return "<rank data-id='${name.nameRank?.id}'>${name.verbatimRank}</rank>"
+            }
+            return "<rank data-id='${name.nameRank?.id}'>${name.nameRank?.abbrev}</rank>"
+        }
+        return ''
+    }
+----
+
+=== Name element
+
+This is purely name.name_element. We encode the htmNameElement and wrap that part in an <element> tag.
+
+=== Author
+
+Authorship is only included if the name is scientific and not a formula or autonym.
+
+The Authors section of a name is made up of the following bits in order:
+
+ * base Authorship (ex-base + base author)
+ * ex Author
+ * Author
+ * sanctioning Author
+
+This is the code we currently use to build the authorship part of the name.
+
+[source,groovy]
+.constructAuthor.groovy
+----
+String constructAuthor(Name name) {
+        List<String> bits = []
+        if (name.author) {
+            if (name.baseAuthor) {
+                if (name.exBaseAuthor) {
+                    bits << "(<ex-base data-id='$name.exBaseAuthor.id' title='${name.exBaseAuthor.name.encodeAsHTML()}'>$name.exBaseAuthor.abbrev</ex-base> ex <base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
+                } else {
+                    bits << "(<base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
+                }
+            }
+            if (name.exAuthor) {
+                bits << "<ex data-id='$name.exAuthor.id' title='${name.exAuthor.name.encodeAsHTML()}'>$name.exAuthor.abbrev</ex> ex"
+            }
+            bits << "<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>"
+            if (name.sanctioningAuthor) {
+                bits << ": <sanctioning data-id='$name.sanctioningAuthor.id' title='${name.sanctioningAuthor.name.encodeAsHTML()}'>$name.sanctioningAuthor.abbrev</sanctioning>"
+            }
+        }
+        return bits.size() ? "<authors>${join(bits)}</authors>" : ''
+    }
+----
+
+=== Manuscript marker
+
+If the name status indicates manuscript (name.nameStatus.manuscript == true) then we add '<manuscript>MS</manuscript>'
+to the name.
+
+
+

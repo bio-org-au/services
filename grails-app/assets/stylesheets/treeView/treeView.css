@@ -1,0 +1,34 @@
+.tree-block  {
+}
+
+.tree-block .row {	
+	margin: 0px; padding: 0px;
+}
+
+.tree-row .head .handle {
+	width: 2em; text-align:center;
+	font-size: 80%;
+	display: inline-block;
+}
+
+.tree-row .subnames {
+	padding-left: 1em;
+}
+
+
+.tree-row.apc-voc.apc-excluded > .head > .name {
+	color: red;	
+}
+
+.tree-row.apc-voc.declared-bt > .head > .name {
+	color: gray;	
+}
+
+.tree-row.selected > .head {
+	background-color: #FFFFC0;	
+}
+
+.tree-row.selected > .head > .name {
+	background-color: #FFFFA0;	
+	font-weight: bold;
+}
