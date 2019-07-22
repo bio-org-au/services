@@ -315,7 +315,7 @@ class JsonRendererService {
                 title            : reference.title,
                 displayTitle     : reference.displayTitle,
                 abbrevTitle      : reference.abbrevTitle,
-                year             : reference.getIsoYear(),
+                year             : reference.getIsoYear()?.toInteger(),
                 volume           : reference.volume,
                 edition          : reference.edition,
                 pages            : reference.pages,
