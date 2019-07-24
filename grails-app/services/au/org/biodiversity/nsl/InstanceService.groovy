@@ -163,7 +163,7 @@ class InstanceService {
         Instance a = (sortOn ? a1[sortOn] : a1) as Instance
         Instance b = (sortOn ? b1[sortOn] : b1) as Instance
         if (a && b) {
-            if (a.reference.isoPublicationYear == b.reference.isoPublicationYear) {
+            if (a.reference.getIsoYear() == b.reference.getIsoYear()) {
                 if (a.reference == b.reference) {
                     if (a.page == b.page) {
                         return b.id <=> a.id
@@ -172,7 +172,7 @@ class InstanceService {
                 }
                 return a.reference.citation <=> b.reference.citation
             }
-            return (a.reference.isoPublicationYear) <=> (b.reference.isoPublicationYear)
+            return (a.reference.getIsoYear()) <=> (b.reference.getIsoYear())
         }
         return a <=> b
 
