@@ -17,9 +17,8 @@
 package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.*
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import org.apache.shiro.SecurityUtils
-import org.grails.plugins.metrics.groovy.Timed
 
 import static org.springframework.http.HttpStatus.*
 
@@ -70,13 +69,13 @@ class NameController implements WithTarget {
             taxonSearch       : ["GET", "POST"]
     ]
 
-    @Timed()
-    index() {
+    
+    def index() {
         redirect(uri: '/docs/main.html')
     }
 
-    @Timed()
-    apniFormat(Name name) {
+
+    def apniFormat(Name name) {
         if (name) {
             if (params.embed) {
                 forward(controller: 'apniFormat', action: 'name', id: name.id)
@@ -88,8 +87,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    apniFormatEmbed(Name name) {
+
+    def apniFormatEmbed(Name name) {
         if (name) {
             forward(controller: 'apniFormat', action: 'name', id: name.id)
         } else {
@@ -97,8 +96,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    apcFormat(Name name) {
+
+    def apcFormat(Name name) {
         if (name) {
             if (params.embed) {
                 forward(controller: 'apcFormat', action: 'name', id: name.id)
@@ -110,8 +109,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    apcFormatEmbed(Name name) {
+
+    def apcFormatEmbed(Name name) {
         if (name) {
             forward(controller: 'apcFormat', action: 'name', id: name.id)
         } else {
@@ -119,8 +118,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    nameStrings(Name name) {
+
+    def nameStrings(Name name) {
         withTarget(name) { ResultObject result, target ->
             result.result = nameConstructionService.constructName(name)
             result.result.fullName = nameConstructionService.stripMarkUp(result.result.fullMarkedUpName as String)
@@ -138,8 +137,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    delete(Name name, String reason) {
+
+    def delete(Name name, String reason) {
         withTarget(name) { ResultObject result, target ->
             if (request.method == 'DELETE') {
                 SecurityUtils.subject.checkRole('admin')
@@ -155,8 +154,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    family(Name name) {
+
+    def family(Name name) {
         withTarget(name) { ResultObject result, target ->
             if (name.family) {
                 result << [familyName: name.family]
@@ -167,8 +166,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    branch(Name name) {
+
+    def branch(Name name) {
         withTarget(name) { ResultObject result, target ->
             List<TreeVersionElement> tvePath = treeService.getElementPath(treeService.findCurrentElementForName(name, treeService.getAcceptedTree()))
             List<Name> namesInBranch = tvePath.collect { it.treeElement.name }
@@ -176,8 +175,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    apc(Name name) {
+
+    def apc(Name name) {
         withTarget(name) { ResultObject result, target ->
             TreeVersionElement tve = treeService.findCurrentElementForName(name, treeService.getAcceptedTree())
             if (tve == null) {
@@ -206,8 +205,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    apni(Name name) {
+
+    def apni(Name name) {
         withTarget(name) { ResultObject result, target ->
             result << ["inAPNI"  : name != null,
                        operation : params.action,
@@ -217,8 +216,8 @@ class NameController implements WithTarget {
         }
     }
 
-    @Timed()
-    nameUpdateEventUri(String uri) {
+
+    def nameUpdateEventUri(String uri) {
         if (request.method == 'PUT') {
             log.info "Adding $uri to event notification list"
             nameService.nameEventRegister(uri)
@@ -235,8 +234,8 @@ class NameController implements WithTarget {
      *
      * @param name
      */
-    @Timed()
-    acceptableName(String name) {
+
+    def acceptableName(String name) {
         if (name) {
             List<String> status = ['legitimate', 'manuscript', 'nom. alt.', 'nom. cons.', 'nom. cons., nom. alt.', 'nom. cons., orth. cons.', 'nom. et typ. cons.', 'orth. cons.', 'typ. cons.']
             List<Name> names = Name.executeQuery('''
@@ -267,8 +266,8 @@ order by n.simpleName asc''',
 
     }
 
-    @Timed()
-    findConcept(Name name, String term) {
+
+    def findConcept(Name name, String term) {
         log.debug "search concepts for $term"
         withTarget(name) { ResultObject result, target ->
             List<String> terms = term.replaceAll('([,&])', '').split(' ')
@@ -294,8 +293,8 @@ order by n.simpleName asc''',
         } as Integer
     }
 
-    @Timed()
-    apniConcepts(Name name, Boolean relationships) {
+
+    def apniConcepts(Name name, Boolean relationships) {
         if (relationships == null) {
             relationships = true
         }
@@ -408,8 +407,7 @@ order by n.simpleName asc''',
 
     //TODO the taxon view needs to be re-written to make this work again
     //see NSL-1805
-    @Timed
-    taxonSearch() {
+    def taxonSearch() {
         def json = request.JSON
         Map searchParams = params
         if (json) {

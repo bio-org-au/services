@@ -17,10 +17,9 @@
 package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.*
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authz.annotation.RequiresRoles
-import org.grails.plugins.metrics.groovy.Timed
 
 import java.sql.Timestamp
 
@@ -44,8 +43,8 @@ class InstanceController extends BaseApiController {
 
     def index() {}
 
-    @Timed()
-    delete(Instance instance, String reason) {
+    
+    def delete(Instance instance, String reason) {
         withTarget(instance) { ResultObject result, target ->
             if (request.method == 'DELETE') {
                 SecurityUtils.subject.checkRole('admin')

@@ -17,7 +17,6 @@
 package au.org.biodiversity.nsl
 
 
-import org.grails.plugins.metrics.groovy.Timed
 import org.springframework.cache.Cache
 import org.springframework.cache.CacheManager
 
@@ -38,7 +37,7 @@ class LinkService {
     }
 
 
-    @Timed()
+    
     List<Map> getLinksForObject(target) {
         return doUsingCache(getLinksCache(), target?.id) {
             try {
@@ -73,7 +72,7 @@ class LinkService {
         } as List<Map>
     }
 
-    @Timed()
+    
     String addTargetLink(target) {
         //noinspection GroovyAssignabilityCheck
         String identity = new TargetParam(target, nameSpace()).addIdentityParamString()
@@ -200,7 +199,7 @@ class LinkService {
         getPreferredLinkForObject(target) - "${getPreferredHost()}/"
     }
 
-    @Timed()
+    
     String getPreferredLinkForObject(Object target) {
         if (target == null) {
             log.warn "Can't get link for null object"
@@ -245,7 +244,7 @@ class LinkService {
      * Ask the mapper for the preferred host name and context path (sans protocol e.g. http://)
      * @return
      */
-    @Timed()
+    
     String getPreferredHost() {
         if (!preferredHost) {
             String host = null
@@ -286,7 +285,7 @@ class LinkService {
      * @param uri a uri perhaps known to the mapper
      * @return a domain object matching the object type returned by the mapper identity
      */
-    @Timed()
+    
     Object getObjectForLink(String uri) {
         Map identity = getMapperIdentityForLink(uri)
         if (!identity) {
@@ -351,7 +350,7 @@ class LinkService {
      * @return The Mapper Identity as a Map including nameSpace, objectType, and idNumber.
      */
 
-    @Timed()
+    
     Map getMapperIdentityForLink(String uri) {
         doUsingCache(getIdentityCache(), uri) {
             Map identity = null

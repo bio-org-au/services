@@ -20,7 +20,7 @@ import au.org.biodiversity.nsl.*
 import grails.converters.JSON
 import grails.converters.XML
 import grails.core.GrailsApplication
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.OK
@@ -31,7 +31,7 @@ class RestResourceController {
     def apniFormatService
     def treeService
 
-    @Timed()
+
     def name(String shard, Long idNumber) {
         Name name = Name.get(idNumber)
         if (name == null) {
@@ -43,7 +43,7 @@ class RestResourceController {
         respond name, [model: model, status: OK]
     }
 
-    @Timed()
+
     def instance(String shard, Long idNumber) {
         Instance instance = Instance.get(idNumber)
         if (instance == null) {
@@ -53,7 +53,7 @@ class RestResourceController {
         respond instance, [model: [instance: instance, links: links], status: OK]
     }
 
-    @Timed()
+
     def author(String shard, Long idNumber) {
         Author author = Author.get(idNumber)
         if (author == null) {
@@ -63,7 +63,7 @@ class RestResourceController {
         respond author, [model: [author: author, links: links], status: OK]
     }
 
-    @Timed()
+
     def reference(String shard, Long idNumber) {
         Reference reference = Reference.get(idNumber)
         if (reference == null) {
@@ -73,7 +73,7 @@ class RestResourceController {
         respond reference, [model: [reference: reference, links: links], status: OK]
     }
 
-    @Timed()
+
     def instanceNote(String shard, Long idNumber) {
         InstanceNote instanceNote = InstanceNote.get(idNumber)
         if (instanceNote == null) {
@@ -83,7 +83,7 @@ class RestResourceController {
         respond instanceNote, [model: [instanceNote: instanceNote, links: links], status: OK]
     }
 
-    @Timed()
+
     def tree(String shard, Long idNumber) {
         TreeVersion treeVersion
         Tree tree = Tree.get(idNumber)
@@ -109,7 +109,7 @@ class RestResourceController {
         }
     }
 
-    @Timed()
+
     def treeVersion(String shard, Long idNumber) {
         TreeVersion treeVersion
         treeVersion = TreeVersion.get(idNumber)
@@ -128,7 +128,7 @@ class RestResourceController {
      * @param idNumber of the tree Element
      * @return
      */
-    @Timed()
+
     def treeElement(Long shard, Long idNumber) {
         if (idNumber == 0) {
             forward(action: 'tree', model: [version: shard])
@@ -156,7 +156,7 @@ class RestResourceController {
      * @param idNumber
      * @return
      */
-    @Timed()
+
     def node(String shard, Long idNumber) {
         Object[] result = TreeVersionElement.executeQuery('''select tve.treeElement.id, max(tve.treeVersion.id) as mx 
 from TreeVersionElement tve 
@@ -201,7 +201,7 @@ order by mx''', [idNumber: idNumber]).last()
     }
 
     // not sure why this needs to be wrapped in a transaction
-    @Timed()
+
     @Transactional
     def bulkFetch() {
         log.debug "Bulk Fetch request: $request.JSON"

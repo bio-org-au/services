@@ -15,8 +15,9 @@
 */
 package au.org.biodiversity.nsl
 
+import au.org.biodiversity.nsl.config.ApplicationUser
 import grails.core.GrailsApplication
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import org.apache.commons.logging.LogFactory
 
@@ -96,7 +97,7 @@ class ConfigService {
         try {
             return getShardConfigOrfail('classification tree key')
         } catch (e) {
-            LogFactory.getLog(this).error e.message
+            log.error e.message
         }
         return getShardConfigOrfail('classification tree label')
     }
@@ -127,7 +128,7 @@ class ConfigService {
 
     /**
      * Disable the checkPolynomialsBelowNameParent function for virus shard
-      */
+     */
     Boolean getDisableCheckPolynomialsBelowNameParent() {
         return getShardConfigOrfail("disable checkPolynomialsBelowNameParent") == 'true'
     }
@@ -154,17 +155,29 @@ class ConfigService {
     }
 
     Map getLdapConfig() {
-        if(grailsApplication.config.containsKey('ldap')) {
+        if (grailsApplication.config.containsKey('ldap')) {
             return grailsApplication.config.ldap as Map
         }
         throw new Exception("Config error. Add ldap config.")
     }
 
-    Map getApiAuth() {
-        if (grailsApplication.config.api?.auth instanceof Map) {
-            return grailsApplication.config.api?.auth as Map
+    Map<String, ApplicationUser> applicationUsers
+
+    Map<String, ApplicationUser> getApiAuth() {
+        if (!applicationUsers) {
+            if (!grailsApplication.config.api) {
+                throw new Exception("Config error. Add api config.")
+            }
+            if (grailsApplication.config.api.auth instanceof Map) {
+                applicationUsers = [:]
+                (Map) (grailsApplication.config.api.auth).each { k, v ->
+                    applicationUsers.put(k, new ApplicationUser(k, v as Map))
+                }
+            } else {
+                throw new Exception("Config error, api config is malformed, should be a Map.")
+            }
         }
-        throw new Exception("Config error. Add api config.")
+        return applicationUsers
     }
 
     String getJWTSecret() {
@@ -191,7 +204,7 @@ class ConfigService {
         configOrThrow('services.mapper.apikey')
     }
 
-    String getSystemMessageFilename(){
+    String getSystemMessageFilename() {
         configOrThrow('shard.system.message.file')
     }
 
@@ -199,7 +212,7 @@ class ConfigService {
         configOrThrow('shard.colourScheme')
     }
 
-    String getEditorlink(){
+    String getEditorlink() {
         configOrThrow('services.link.editor')
     }
 
@@ -221,10 +234,10 @@ class ConfigService {
     }
 
     Sql getSqlForNSLDB() {
-        String dbUrl = grailsApplication.config.dataSource_nsl.url
-        String username = grailsApplication.config.dataSource_nsl.username
-        String password = grailsApplication.config.dataSource_nsl.password
-        String driverClassName = grailsApplication.config.dataSource_nsl.driverClassName
+        String dbUrl = grailsApplication.config.dataSource.url
+        String username = grailsApplication.config.dataSource.username
+        String password = grailsApplication.config.dataSource.password
+        String driverClassName = grailsApplication.config.dataSource.driverClassName
         Sql.newInstance(dbUrl, username, password, driverClassName)
     }
 

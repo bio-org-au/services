@@ -14,8 +14,8 @@
 <g:set var="panelClass"
        value="panel ${st.panelClass(product: params.product)}"/>
 
-<div class="${panelClass}">
-  <div class="panel-heading">
+<div>
+  <div class="results-header ${panelClass}">
     <strong>Showing ${name.simpleName}</strong>
 
     <div class="btn-group">

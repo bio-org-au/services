@@ -21,10 +21,10 @@
 <div class="${params.product}">
   <g:render template="/search/searchTabs"/>
   <g:set var="panelClass"
-         value="panel ${st.panelClass(product: params.product)}"/>
+         value="${st.panelClass(product: params.product)}"/>
 
-  <div class="${panelClass}">
-    <div class="panel-heading">
+  <div class="">
+    <div class="results-header ${panelClass}">
       <strong>Showing ${name.simpleName}</strong>
 
       <div class="btn-group">

@@ -17,7 +17,7 @@
 package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.*
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 

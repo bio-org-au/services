@@ -13,112 +13,100 @@
   </div>
 </div>
 
-<div class="navbar navbar-inverse" role="navigation">
-  <div class="">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="${createLink(uri: '/')}">
-        NSL
-      </a>
-    </div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation">
+  <a class="navbar-brand" href="${createLink(uri: '/')}">
+    NSL
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
 
-    <div class="collapse navbar-collapse">
-      <ul class="nav navbar-nav">
-        <li class="${params.controller == 'dashboard' ? 'active' : ''}">
-          <a class="dashboard" href="${createLink(controller: 'dashboard', action: 'index')}"><i
-              class="fa fa-bar-chart-o"></i> Dashboard</a>
-        </li>
-        <g:if test="${SecurityUtils.subject?.principal}">
-          <li class="${params.controller == 'search' ? 'active' : ''}">
-            <a class="search" href="${createLink(controller: 'search', action: 'search')}"><i
-                class="fa fa-search"></i> Search</a>
-          </li>
-        </g:if>
-        <li class="${params.product == st.nameTree().toString() ? 'active' : ''}">
-          <a class="search"
-             href="${createLink(controller: 'search', action: 'search', params: [product: st.nameTree().toString()])}"><i
-              class="fa fa-search"></i> Names (<st:nameTree/>)</a>
-        </li>
-        <li class="${params.product == st.primaryClassification().toString() ? 'active' : ''}">
-          <a class="search"
-             href="${createLink(controller: 'search', action: 'search', params: [product: st.primaryClassification().toString()])}"><i
-              class="fa fa-search"></i> Taxonomy (<st:primaryClassification/>)</a>
-        </li>
-        <li class="${params.controller == 'tree' ? 'active' : ''}">
-          <a href="${createLink(namespace: 'api', controller: 'tree')}">Classifications</a>
-        </li>
-        <li class="${params.controller == 'export' ? 'active' : ''}">
-          <a href="${createLink(namespace: 'api', controller: 'export', action: 'index')}">Exports</a>
-        </li>
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item ${params.controller == 'dashboard' ? 'active' : ''}">
+        <a class="nav-link dashboard" href="${createLink(controller: 'dashboard', action: 'index')}"><i
+            class="fa fa-bar-chart-o"></i> Dashboard</a>
+      </li>
+      <li class="nav-item ${params.product == st.nameTree().toString() ? 'active' : ''}">
+        <a class="nav-link search"
+           href="${createLink(controller: 'search', action: 'names')}"><i
+            class="fa fa-search"></i> Names (<st:nameTree/>)</a>
+      </li>
+      <li class="nav-item ${params.product == st.primaryClassification().toString() ? 'active' : ''}">
+        <a class="nav-link search"
+           href="${createLink(controller: 'search', action: 'taxonomy')}"><i
+            class="fa fa-search"></i> Taxonomy (<st:primaryClassification/>)</a>
+      </li>
+      <li class="nav-item ${params.controller == 'tree' ? 'active' : ''}">
+        <a class="nav-link" href="${createLink(namespace: 'api', controller: 'tree')}">Classifications</a>
+      </li>
+      <li class="nav-item ${params.controller == 'export' ? 'active' : ''}">
+        <a class="nav-link" href="${createLink(namespace: 'api', controller: 'export', action: 'index')}">Exports</a>
+      </li>
 
-      </ul>
+    </ul>
 
-      <ul class="nav navbar-nav navbar-right">
+    <ul class="navbar-nav">
 
-        <li>
-          <st:documentationLink/>
-        </li>
+      <li class="nav-item">
+        <st:documentationLink/>
+      </li>
 
-        <shiro:isLoggedIn>
-          <shiro:hasRole name="QA">
-            <li>
-              <a class="home" href="${createLink(controller: 'dashboard', action: 'audit')}">
-                <i class="fa fa-file-text-o"></i> audit
-              </a>
-            </li>
-          </shiro:hasRole>
-          <shiro:hasRole name="admin">
-            <li>
-              <a class="home" href="${createLink(controller: 'admin', action: 'index')}">
-                <i class="fa fa-gears"></i> admin
-              </a>
-            </li>
-          </shiro:hasRole>
-          <li class="active">
-            <a class="logout" href="${createLink(controller: 'auth', action: 'signOut')}">
-              <i class="fa fa-user${shiro.hasRole(name: 'admin') {
-                '-plus'
-              }}"></i> <span>${SecurityUtils.subject?.principal}</span>
-              -
-              <i class="fa fa-power-off"></i> Logout
+      <shiro:isLoggedIn>
+        <shiro:hasRole name="QA">
+          <li class="nav-item">
+            <a class="nav-link home" href="${createLink(controller: 'dashboard', action: 'audit')}">
+              <i class="fa fa-file-text-o"></i> audit
             </a>
           </li>
-        </shiro:isLoggedIn>
-        <shiro:isNotLoggedIn>
-          <li class="dropdown">
-            <a id="dLabel" data-target="#" href="${createLink(controller: 'auth', action: 'login')}"
-               data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
-              <i class="fa fa-power-off"></i> Login
-              <span class="caret"></span>
+        </shiro:hasRole>
+        <shiro:hasRole name="admin">
+          <li class="nav-item">
+            <a class="nav-link home" href="${createLink(controller: 'admin', action: 'index')}">
+              <i class="fa fa-gears"></i> admin
             </a>
-            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-              <li>
-                <div class="navbar-form">
+          </li>
+        </shiro:hasRole>
+        <li class="nav-item active">
+          <a class="nav-link logout" href="${createLink(controller: 'auth', action: 'signOut')}">
+            <i class="fa fa-user${shiro.hasRole(name: 'admin') {
+              '-plus'
+            }}"></i> <span>${SecurityUtils.subject?.principal}</span>
+            -
+            <i class="fa fa-power-off"></i> Logout
+          </a>
+        </li>
+      </shiro:isLoggedIn>
+      <shiro:isNotLoggedIn>
+        <li class="nav-item dropdown login-form">
+          <a class="nav-link" id="dLabel" data-target="#" href="${createLink(controller: 'auth', action: 'login')}"
+             data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+            <i class="fa fa-power-off"></i> Login
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+            <li>
+              <div class="navbar-form">
                 <g:form controller="auth" action="signIn">
                   <input type="hidden" name="targetUri" value="${request.forwardURI - request.contextPath}"/>
                   <label>Username:
-                    <input class="form-control" type="text" name="username" value=""/>
+                    <input class="" type="text" name="username" value=""/>
                   </label>
                   <label>Password:
-                    <input class="form-control" type="password" name="password" value=""/>
+                    <input class="" type="password" name="password" value=""/>
                   </label>
-                  <input class="btn btn-default" type="submit" value="Login"/>
+                  <input class="" type="submit" value="Login"/>
                 </g:form>
-                </div>
-              </li>
-            </ul>
-          </li>
-        </shiro:isNotLoggedIn>
-      </ul>
+              </div>
+            </li>
+          </ul>
+        </li>
+      </shiro:isNotLoggedIn>
+    </ul>
 
-    </div><!--/.nav-collapse -->
-  </div>
-</div>
+  </div><!--/.nav-collapse -->
+</nav>
 <g:if test="${flash.message}">
   <div class="alert alert-warning" role="alert">
     <span class="fa fa-warning" aria-hidden="true"></span>&nbsp;${flash.message}</div>

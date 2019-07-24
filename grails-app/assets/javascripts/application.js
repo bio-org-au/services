@@ -5,12 +5,9 @@
 // You're free to add application-wide JavaScript to this file, but it's generally better 
 // to create separate JavaScript files as needed.
 //
-//= require jquery
-//= require js/jquery-ui-1.10.4.custom
 //= require jquery.cookie
-//= require bootstrap
-//= require apniFormat
 //= require jquery-dateformat.min
+//= require apniFormat
 //= require_self
 
 var pendingReload = false;

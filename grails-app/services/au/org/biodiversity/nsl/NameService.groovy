@@ -16,8 +16,8 @@
 
 package au.org.biodiversity.nsl
 
-import grails.transaction.Transactional
-import org.apache.shiro.grails.annotations.RoleRequired
+import grails.gorm.transactions.Transactional
+import org.apache.shiro.authz.annotation.RequiresRoles
 import org.quartz.Scheduler
 import org.springframework.transaction.TransactionStatus
 
@@ -84,7 +84,7 @@ class NameService {
      *
      * @param name
      */
-    @RoleRequired('admin')
+    @RequiresRoles('admin')
 
     Map deleteName(Name name, String reason) {
         Map canWeDelete = canDelete(name, reason)
@@ -191,7 +191,7 @@ class NameService {
         return report
     }
 
-    @RoleRequired('admin')
+    @RequiresRoles('admin')
     Map deduplicate(Name duplicate, Name target, String user) {
         if (!user) {
             return [success: false, errors: ['You must supply a user.']]

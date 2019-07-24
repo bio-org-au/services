@@ -16,27 +16,30 @@
 
 package au.org.biodiversity.nsl
 
+import au.org.biodiversity.nsl.config.ApplicationUser
+import org.apache.shiro.authc.AuthenticationException
+import org.apache.shiro.authc.AuthenticationInfo
+import org.apache.shiro.authc.AuthenticationToken
+import org.apache.shiro.authc.SimpleAuthenticationInfo
 import org.apache.shiro.authc.UnknownAccountException
+import org.apache.shiro.authz.Permission
+import org.apache.shiro.grails.GrailsShiroRealm
+import org.apache.shiro.grails.SimplifiedRealm
 
-class ApiRealm {
+class ApiRealm implements SimplifiedRealm {
 
     static authTokenClass = ApiKeyToken
     def configService
 
-    @SuppressWarnings("GroovyUnusedDeclaration")
-    List<String> authenticate(ApiKeyToken authToken) {
-        log.info "trying API Realm login for ${authToken}"
-        Map details = configService.apiAuth?.get(authToken.key) as Map
-        if (details) {
-            if (details.host) { //if host is set then ensure it matches
-                if (details.host == authToken.host) {
-                    return [details.application, 'api']
-                }
-                throw new UnknownAccountException("No account found for api user [${authToken.key}]")
+    AuthenticationInfo authenticate(AuthenticationToken authToken) throws AuthenticationException {
+        if (authToken instanceof ApiKeyToken) {
+            log.info "trying API Realm login for ${authToken}"
+            ApplicationUser details = configService.apiAuth?.get(authToken.key)
+            if (details && (!details.host || details.host == authToken.host)) {
+                return new SimpleAuthenticationInfo(details.application, authToken.key, "ApiRealm")
             }
-            return [details.application, 'api']
+            throw new UnknownAccountException("No account found for api user [${authToken.key}]")
         }
-        throw new UnknownAccountException("No account found for api user [${authToken.key}]")
     }
 
     private Map getDetailByPrincipal(String principal) {
@@ -44,16 +47,17 @@ class ApiRealm {
         return entry?.value as Map
     }
 
-    @SuppressWarnings("GroovyUnusedDeclaration")
-    Boolean hasRole(principal, String roleName) {
+    boolean hasRole(Object principal, String roleName) {
         Map details = getDetailByPrincipal(principal.toString())
         details?.roles && details.roles.contains(roleName)
     }
 
-    @SuppressWarnings("GroovyUnusedDeclaration")
-    Boolean hasAllRoles(principal, roles) {
+    boolean hasAllRoles(Object principal, Collection<String> roles) {
         Map details = getDetailByPrincipal(principal.toString())
         details?.roles && details.roles.containsAll(roles)
+    }
+
+    boolean isPermitted(Object principal, Permission requiredPermission) {
     }
 
 }

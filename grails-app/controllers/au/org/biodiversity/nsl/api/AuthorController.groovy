@@ -2,10 +2,9 @@ package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.Author
 import au.org.biodiversity.nsl.AuthorService
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authz.annotation.RequiresRoles
-import org.grails.plugins.metrics.groovy.Timed
 import org.springframework.http.HttpStatus
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
@@ -28,7 +27,7 @@ class AuthorController implements WithTarget {
 
     def index() {}
 
-    @Timed
+    
     @RequiresRoles('admin')
     deduplicate(long id, long target, String user) {
         Author targetAuthor = Author.get(target)

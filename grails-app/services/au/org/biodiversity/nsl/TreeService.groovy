@@ -1,7 +1,7 @@
 package au.org.biodiversity.nsl
 
 import au.org.biodiversity.nsl.api.ValidationUtils
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import groovy.transform.Synchronized
 import org.apache.shiro.SecurityUtils

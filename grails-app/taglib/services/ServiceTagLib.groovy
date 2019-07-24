@@ -17,13 +17,14 @@
 package services
 
 import au.org.biodiversity.nsl.*
+import grails.core.GrailsApplication
 
 class ServiceTagLib {
 
-    def grailsApplication
-    def linkService
-    def instanceService
-    def configService
+    GrailsApplication grailsApplication
+    LinkService linkService
+    InstanceService instanceService
+    ConfigService configService
 
     @SuppressWarnings("GroovyUnusedDeclaration")
     static defaultEncodeAs = 'raw'
@@ -104,7 +105,7 @@ class ServiceTagLib {
     def preferredUrl = { attrs ->
         def target = attrs.target
         if (target) {
-            target = HibernateDomainUtils.initializeAndUnproxy(target)
+//            target = HibernateDomainUtils.initializeAndUnproxy(target)
             try {
                 String link = linkService.getPreferredLinkForObject(target)
                 if (link) {
@@ -120,7 +121,7 @@ class ServiceTagLib {
         def target = attrs.target
         def api = attrs.api
         if (target) {
-            target = HibernateDomainUtils.initializeAndUnproxy(target)
+//            target = HibernateDomainUtils.initializeAndUnproxy(target)
             try {
                 String link = linkService.getPreferredLinkForObject(target)
                 if (link) {
@@ -241,7 +242,8 @@ class ServiceTagLib {
 
     private void printObject(obj) {
         if (obj.properties.containsKey('id')) {
-            def target = HibernateDomainUtils.initializeAndUnproxy(obj)
+//            def target = HibernateDomainUtils.initializeAndUnproxy(obj)
+            def target = obj
             try {
                 String link = linkService.getPreferredLinkForObject(target)
                 if (link) {
@@ -287,7 +289,7 @@ class ServiceTagLib {
         String serverURL = grailsApplication?.config?.grails?.serverURL
         if (serverURL) {
             serverURL -= '/services'
-            out << "<a class=\"doco\" href=\"$serverURL/docs/main.html\">"
+            out << "<a class=\"nav-link doco\" href=\"$serverURL/docs/main.html\">"
             out << '<i class="fa fa-book"></i> docs </a>'
         }
     }
@@ -333,7 +335,7 @@ class ServiceTagLib {
 
     def panelClass = { attrs ->
         String product = attrs.product
-        out << (product == configService.classificationTreeName ? 'panel-success' : 'panel-info')
+        out << (product == configService.classificationTreeName ? 'tree' : 'bibliography')
     }
 
     def alertClass = { attrs ->

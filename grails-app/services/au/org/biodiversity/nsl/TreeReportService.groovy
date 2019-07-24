@@ -2,7 +2,7 @@ package au.org.biodiversity.nsl
 
 import au.org.biodiversity.nsl.api.ValidationUtils
 import grails.converters.JSON
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import org.grails.web.json.JSONObject
 

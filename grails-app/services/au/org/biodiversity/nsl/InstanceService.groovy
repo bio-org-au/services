@@ -16,8 +16,8 @@
 
 package au.org.biodiversity.nsl
 
-import grails.transaction.Transactional
-import org.apache.shiro.grails.annotations.RoleRequired
+import grails.gorm.transactions.Transactional
+import org.apache.shiro.authz.annotation.RequiresRoles
 import org.springframework.transaction.TransactionStatus
 
 @Transactional
@@ -38,7 +38,7 @@ class InstanceService {
      * @param reason
      * @return
      */
-    @RoleRequired('admin')
+    @RequiresRoles('admin')
     Map deleteInstance(Instance instance, String reason) {
         Map canWeDelete = canDelete(instance, reason)
         if (canWeDelete.ok) {

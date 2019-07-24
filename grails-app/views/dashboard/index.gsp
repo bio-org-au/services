@@ -10,7 +10,6 @@
 </head>
 
 <body>
-<div class="container">
 
   <h2>APNI NSL statistics</h2>
   <ul>
@@ -30,6 +29,5 @@
     </g:each>
   </ul>
 
-</div>
 </body>
 </html>

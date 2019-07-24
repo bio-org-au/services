@@ -23,17 +23,13 @@
  */
 package au.org.biodiversity.nsl
 
-import grails.transaction.Transactional
 import groovy.sql.GroovyResultSet
 import groovy.sql.Sql
 
-import java.util.concurrent.atomic.AtomicBoolean
-
-@Transactional
 class FlatViewService implements WithSql {
 
     def grailsApplication
-    def configService
+    ConfigService configService
 
     private static String TAXON_VIEW = 'taxon_view'
     private static String NAME_VIEW = 'name_view'

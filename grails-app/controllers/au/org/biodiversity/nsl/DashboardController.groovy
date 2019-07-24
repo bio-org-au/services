@@ -16,16 +16,17 @@
 
 package au.org.biodiversity.nsl
 
+import grails.core.GrailsApplication
 import org.apache.shiro.authz.annotation.RequiresRoles
 
 import java.sql.Timestamp
 
 class DashboardController {
 
-    def grailsApplication
+    GrailsApplication grailsApplication
     VocabularyTermsService vocabularyTermsService
-    def auditService
-    def configService
+    AuditService auditService
+    ConfigService configService
     private static final WEEK_MS = 604800000l
 
     def index() {

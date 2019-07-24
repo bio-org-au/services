@@ -1,7 +1,8 @@
-<g:form name="search" role="form" controller="search" action="search" method="GET">
-  <div class="form-group">
-    <g:render template="/search/using-tree"/>
-    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8">
+<g:form name="search" role="form" controller="search" action="${params.action}" method="GET">
+  <div class="row">
+    <input type="hidden" name="product" value="${query.product}">
+    <input type="hidden" name="tree.id" value="${query.tree?.id}">
+    <div class="col">
       <label>name
         <help><i class="fa fa-info-circle"></i>
 
@@ -23,7 +24,7 @@
       </label>
     </div>
 
-    <div class="col-lg-3 col-md-3 col-sm-5 col-xs-8">
+    <div class="col">
       <h4>Include
         <help>
           <i class="fa fa-info-circle"></i>
@@ -45,20 +46,17 @@
           </label>
         </div>
         <g:if test="${params.product != st.primaryClassification().toString()}">
-        <div class="checkbox">
-          <label><g:checkBox name="inc.other" value="${query.inc?.other}"/>Other names, e.g. common</label>
-        </div>
+          <div class="checkbox">
+            <label><g:checkBox name="inc.other" value="${query.inc?.other}"/>Other names, e.g. common</label>
+          </div>
         </g:if>
       </div>
     </div>
 
     <g:set var="formName" value="search"/>
-    <div class="col-lg-3 col-md-3 col-sm-3 col-xs-8">
+    <div class="col">
       <g:render template="/search/submit"/>
     </div>
 
-    <div class="col-lg-2 col-md-2 col-sm-1 col-xs-1">
-      &nbsp;
-    </div>
   </div>
 </g:form>

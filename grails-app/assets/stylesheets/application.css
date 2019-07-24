@@ -7,10 +7,10 @@
 * You're free to add application-wide styles to this file and they'll appear at the top of the
 * compiled file, but it's generally better to create a new file per style scope.
 *
-*= require bootstrap.min
+*= require jquery-ui.min
+*= require jquery-ui.theme
 *= require apni-format
 *= require sparql-search
-*= require themes/ui-lightness/jquery-ui-1.10.4.custom.css
 *= require_self
 */
 
@@ -18,15 +18,19 @@
     a[href]:after {
         content: none;
     }
+
     a {
         color: blue;
     }
+
     .footer {
         display: none;
     }
+
     branch {
         display: inline;
     }
+
     branch ul {
         position: relative;
         display: inline;
@@ -69,19 +73,33 @@ div.logo {
     padding: 6px;
 }
 
+#main-content {
+    margin-top: 1rem;
+}
+
 .nsl {
     display: inline;
 }
 
-/* data table */
-div.row {
-    display: table-row;
+.tree {
+    background-color: #0080002b;
 }
 
-span.cell {
-    display: table-cell;
-    padding: 0.5em;
-    border-top: 1px solid grey;
+.bibliography {
+    background-color: #0d8fff2b;
+}
+
+.nav-tabs {
+    margin-top: 1rem;
+}
+
+.tab-content {
+    padding-top: 1rem;
+}
+
+.results-header {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .ui-autocomplete {
@@ -108,7 +126,7 @@ span.cell {
 }
 
 
-@media(min-width:992px) and (max-width:1100px){
+@media (min-width: 992px) and (max-width: 1100px) {
     div.logo img {
         -ms-transform: rotate(90deg) translate(50px, 50px);
         -webkit-transform: rotate(90deg) translate(50px, 50px);
@@ -118,16 +136,16 @@ span.cell {
     }
 }
 
-@media(min-width:1100px) {
+@media (min-width: 1100px) {
     .nsl {
         white-space: nowrap;
         display: block;
     }
 }
 
-@media(max-width:1030px) {
+@media (max-width: 1030px) {
     twitter {
-         display: none;
+        display: none;
     }
 }
 
@@ -156,7 +174,7 @@ div#page-footer {
     bottom: 0;
     height: 4em;
     position: fixed;
-    width: 100vh;
+    width: 100vw;
     padding-top: 0.5em;
     padding-left: 1em;
     padding-right: 1em;
@@ -165,7 +183,7 @@ div#page-footer {
 }
 
 div#page-footer a.twitter-link {
-    color: black;
+    color: #55acee;
 }
 
 span#page-footer-inner-right {
@@ -177,7 +195,14 @@ div#main-content {
     margin-bottom: 5em;
 }
 
+li.login-form {
+    margin-right: 5em;
+    min-width: 10em;
+}
 
+.navbar-form {
+    padding: 0.5em;
+}
 
 /* styles for basic CRUD pages */
 li.fieldcontain {
@@ -205,13 +230,14 @@ li.fieldcontain span.property-value {
     display: table-cell;
     padding-right: 1em;
 }
+
 div.pagination a,
 div.pagination span {
     padding: 5px 10px;
     margin-right: 5px;
 }
 
-div.pagination span.currentStep{
+div.pagination span.currentStep {
     border: solid #017cc6 1px;
     border-radius: 5px;
 }
@@ -228,9 +254,11 @@ div.pagination a {
 a {
     color: #023C6E;
 }
+
 a:hover {
     color: #0271c2;
 }
+
 .well {
     background-color: #FAFAF8;
 }
@@ -259,6 +287,7 @@ a:hover {
 
 .rest-resource-content {
     padding-left: 15px;
+
 }
 
 .see-through {
@@ -270,7 +299,7 @@ a:hover {
 }
 
 .form-control {
-    !important;
+!important;
     font-weight: normal;
 }
 
@@ -464,22 +493,24 @@ a:hover {
     position: relative;
     overflow: hidden;
 }
+
 .imageAndText img {
     float: right;
     margin-right: 0px;
     margin-left: auto;
 }
+
 .imageAndText .col {
     position: absolute;
     z-index: 1;
     top: 0;
     left: 0;
-    text-shadow:
-            -1px -1px 0 #eee,
-            1px -1px 0 #eee,
-            -1px 1px 0 #eee,
-            1px 1px 0 #eee;
+    text-shadow: -1px -1px 0 #eee,
+    1px -1px 0 #eee,
+    -1px 1px 0 #eee,
+    1px 1px 0 #eee;
 }
+
 .imageAndText h1 {
     font-size: 46px;
 }
@@ -499,6 +530,7 @@ label.disabled {
     border-left: 2px solid red;
     padding-left: 1em;
 }
+
 .nonConflicting {
     border-left: 2px solid green;
     padding-left: 1em;
@@ -508,6 +540,7 @@ label.disabled {
     border-left: 10px solid rgba(235, 21, 31, 0.1);
     background-color: rgba(235, 21, 31, 0.02);
 }
+
 .diffAfter, .Added {
     border-left: 10px solid rgba(12, 235, 2, 0.1);
     background-color: rgba(12, 235, 2, 0.02);
@@ -590,16 +623,18 @@ table.audit-report td.data {
     text-align: center;
 }
 
-@media(max-width: 1500px) {
+@media (max-width: 1500px) {
     .imageAndText h1 {
         font-size: calc(12px + 2vw);
     }
 }
-@media(max-width: 400px) {
+
+@media (max-width: 400px) {
     .imageAndText h1 {
         font-size: 20px;
     }
 }
+
 div.debug {
     border: 1px solid green;
     padding: 1em;

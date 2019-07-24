@@ -17,7 +17,7 @@
 package au.org.biodiversity.nsl
 
 import au.org.biodiversity.nsl.api.ResultObject
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authz.annotation.RequiresRoles
 

@@ -18,6 +18,7 @@ package au.org.biodiversity.nsl
 
 import grails.converters.JSON
 import grails.converters.XML
+import grails.core.GrailsApplication
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authc.AuthenticationException
 import org.apache.shiro.authc.UsernamePasswordToken
@@ -31,8 +32,8 @@ import javax.crypto.spec.SecretKeySpec
 import java.security.Key
 
 class AuthController {
-    def grailsApplication
-    def configService
+    GrailsApplication grailsApplication
+    ConfigService configService
 
     def index() {
         redirect(action: "login", params: params)

@@ -8,17 +8,44 @@
 
   <meta name="description" content="${st.pageTitle()} biodiversity taxonomy services"/>
   <meta property="og:title" content="${st.pageTitle()}"/>
-  <meta property="og:description" content="Biodiversity taxonomy services providing bibiliography and classification data in ${params.product}"/>
+  <meta property="og:description"
+        content="Biodiversity taxonomy services providing bibiliography and classification data in ${params.product}"/>
   <meta property="og:url" content="${request.getContextPath()}"/>
-  <meta property="og:image" content="${asset.assetPath(src:"${st.bannerImage().toString()}")}"/>
+  <meta property="og:image" content="${asset.assetPath(src: "${st.bannerImage().toString()}")}"/>
 
   <script type="application/javascript">
     baseContextPath = "${request.getContextPath()}";
   </script>
 
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  %{--Fontawesome--}%
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+  %{-- Bootstrap --}%
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
   <asset:stylesheet src="application.css"/>
   <asset:stylesheet src="application.css" media="print"/>
+  %{-- JQuery --}%
+  <script
+      src="https://code.jquery.com/jquery-3.4.1.min.js"
+      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+      crossorigin="anonymous"></script>
+
+  %{-- bootstrap 4.3, Popper --}%
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+          integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+          crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+          integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+          crossorigin="anonymous"></script>
+
+  %{-- jQuery UI --}%
+  <script
+      src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+      integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+      crossorigin="anonymous"></script>
 
   <asset:javascript src="application.js"/>
   <!--[if lt IE 9 ]>
@@ -47,11 +74,7 @@
 
 <st:systemNotification/>
 <div id="main-content" class="container-fluid">
-  <div class="row">
-    <div class="col-sm-12 col-md-12 col-lg-12">
-      <g:layoutBody/>
-    </div>
-  </div>
+  <g:layoutBody/>
 </div>
 
 <div id="page-footer" class="footer">
@@ -63,19 +86,18 @@
       </a>
     </span>
     <span id="page-footer-inner-right" class="pull-right">
-      <a href="https://twitter.com/aubiodiversity" class="twitter-link"><i class="fa fa-twitter fa-2x"
-                                                                           style="color: #55acee"></i>
+      <a href="https://twitter.com/aubiodiversity" class="twitter-link">
+        <i class="fab fa-twitter fa-2x"></i>
       </a>
     </span>
 
-    <div>
-    </div>
-    <!-- Version: <g:meta name="app.version"/> -->
+    <!-- Version: span<g:meta name="app.version"/> -->
 
     <div id="spinner" class="spinner" style="display:none;"><g:message code="spinner.alt"
                                                                        default="Loading&hellip;"/></div>
 
     <st:googleAnalytics/>
-
+  </div>
+</div>
 </body>
 </html>

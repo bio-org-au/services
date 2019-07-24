@@ -130,7 +130,7 @@ class SearchService {
         String query = "select distinct(n), n.sortName, n.nameRank.sortOrder $fromClause $whereClause order by n.namePath"
 
         log.debug query
-        log.debug queryParams
+        log.debug queryParams.toString()
         Long start = System.currentTimeMillis()
         List<List> counter = (Name.executeQuery(countQuery, queryParams, [max: max])) as List<List>
         Integer total = 0

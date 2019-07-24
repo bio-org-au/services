@@ -16,8 +16,8 @@
 
 package au.org.biodiversity.nsl
 
-import grails.transaction.Transactional
-import org.apache.shiro.grails.annotations.RoleRequired
+import grails.gorm.transactions.Transactional
+import org.apache.shiro.authz.annotation.RequiresRoles
 
 import java.sql.Timestamp
 
@@ -59,7 +59,7 @@ class AuthorService {
         }
     }
 
-    @RoleRequired('admin')
+    @RequiresRoles('admin')
     Map deduplicate(Author duplicate, Author target, String user) {
         if (!user) {
             return [success: false, errors: ['You must supply a user.']]

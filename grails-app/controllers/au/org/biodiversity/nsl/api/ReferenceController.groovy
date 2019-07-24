@@ -20,10 +20,9 @@ import au.org.biodiversity.nsl.Author
 import au.org.biodiversity.nsl.NameConstructionService
 import au.org.biodiversity.nsl.RefAuthorRole
 import au.org.biodiversity.nsl.Reference
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authz.annotation.RequiresRoles
-import org.grails.plugins.metrics.groovy.Timed
 
 import static org.springframework.http.HttpStatus.*
 
@@ -54,8 +53,8 @@ class ReferenceController implements WithTarget {
         respond(refs, [status: OK, view: '/common/serviceResult', model: [data: [max: params.max, references: refs]]])
     }
 
-    @Timed()
-    citationStrings(Reference reference) {
+
+    def citationStrings(Reference reference) {
         withTarget(reference) { ResultObject result, target ->
 
             Author unknownAuthor = Author.findByName('-')
@@ -76,8 +75,8 @@ class ReferenceController implements WithTarget {
         }
     }
 
-    @Timed()
-    delete(Reference reference, String reason) {
+    
+    def delete(Reference reference, String reason) {
         withTarget(reference) { ResultObject result, target ->
             if (request.method == 'DELETE') {
                 SecurityUtils.subject.checkRole('admin')
@@ -93,9 +92,9 @@ class ReferenceController implements WithTarget {
         }
     }
 
-    @Timed()
+    
     @RequiresRoles('admin')
-    move(Reference reference, Long target, String user) {
+    def move(Reference reference, Long target, String user) {
         Reference targetRef = null
         if (target) {
             targetRef = Reference.get(target)
@@ -118,9 +117,9 @@ class ReferenceController implements WithTarget {
         }
     }
 
-    @Timed()
+    
     @RequiresRoles('admin')
-    deduplicateMarked(String user) {
+    def deduplicateMarked(String user) {
         if (!user) {
             user = SecurityUtils.subject.principal.toString()
         }

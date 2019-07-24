@@ -20,7 +20,6 @@ import au.org.biodiversity.nsl.Name
 import au.org.biodiversity.nsl.RankUtils
 import au.org.biodiversity.nsl.TreeVersion
 import grails.converters.JSON
-import org.grails.plugins.metrics.groovy.Timed
 
 /**
  * This controller replaces the cgi-bin/apni output. It takes a name and prints out informaiton in the APNI format as
@@ -46,8 +45,8 @@ class ApniFormatController {
      * Display a name in APNI format
      * @param Name
      */
-    @Timed()
-    display(Name name, Long versionId, Boolean drafts) {
+    
+    def display(Name name, Long versionId, Boolean drafts) {
         if (name) {
             params.product = configService.nameTreeName
             String inc = g.cookie(name: 'searchInclude')
@@ -76,8 +75,8 @@ class ApniFormatController {
         }
     }
 
-    @Timed()
-    name(Name name, Long versionId, Boolean drafts) {
+    
+    def name(Name name, Long versionId, Boolean drafts) {
         if (name) {
             log.info "getting ${configService.nameTreeName} name $name"
             ResultObject model = new ResultObject(apniFormatService.getNameModel(name, TreeVersion.get(versionId), drafts))

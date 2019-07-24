@@ -1,8 +1,5 @@
 package au.org.biodiversity.nsl.api
 
-import org.grails.plugins.metrics.groovy.Timed
-
-
 class ExportController {
 
     def flatViewService
@@ -31,8 +28,8 @@ class ExportController {
             taxonCsv: ["GET"],
     ]
 
-    @Timed()
-    namesCsv() {
+    
+    def namesCsv() {
         File exportFile = null
         try {
             exportFile = flatViewService.exportNamesToCSV()
@@ -43,8 +40,8 @@ class ExportController {
         }
     }
 
-    @Timed()
-    taxonCsv() {
+    
+    def taxonCsv() {
         File exportFile = null
         try {
             exportFile = flatViewService.exportTaxonToCSV()
@@ -54,8 +51,8 @@ class ExportController {
         }
     }
 
-    @Timed()
-    commonCsv() {
+    
+    def commonCsv() {
         File exportFile = null
         try {
             exportFile = flatViewService.exportCommonToCSV()

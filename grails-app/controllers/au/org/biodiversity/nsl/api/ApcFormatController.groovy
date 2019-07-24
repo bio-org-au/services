@@ -18,7 +18,6 @@ package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.*
 import grails.converters.JSON
-import org.grails.plugins.metrics.groovy.Timed
 
 class ApcFormatController {
 
@@ -36,8 +35,8 @@ class ApcFormatController {
         redirect(action: 'search')
     }
 
-    @Timed()
-    display(Name name) {
+
+    def display(Name name) {
         if (name) {
             params.product = configService.classificationTreeName
             String inc = g.cookie(name: 'searchInclude')
@@ -54,8 +53,8 @@ class ApcFormatController {
         }
     }
 
-    @Timed()
-    name(Name name) {
+
+    def name(Name name) {
         if (name) {
             log.info "getting ${configService.classificationTreeName} name $name"
             ResultObject model = new ResultObject(getNameModel(name))

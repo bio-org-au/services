@@ -1,8 +1,9 @@
 <%@ page import="au.org.biodiversity.nsl.NameRank; au.org.biodiversity.nsl.NameTag" %>
-<g:form name="search" role="form" controller="search" action="search" method="GET" class="closable checkbig">
+<g:form name="search" role="form" controller="search" action="${params.action}" method="GET" class="closable checkbig">
   <div class="row">
       <div class="col-md-2">
-        <g:render template="/search/using-tree"/>
+        <input type="hidden" name="product" value="${query.product}">
+        <input type="hidden" name="tree.id" value="${query.tree?.id}">
 
         <div class="checkbox" title="Search only for names on the selected tree. i.e. Accepted names on APC.">
           <label>

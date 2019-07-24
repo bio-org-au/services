@@ -857,7 +857,7 @@ html, body, .st-container, .st-pusher, .st-content {
 }
 
 .sign-in-fa-icon:before {
-    font-family: FontAwesome;
+    font-family: "FontAwesome", "Font Awesome 5 Free";
     content: '\f090';
     padding-right: 10px;
 }

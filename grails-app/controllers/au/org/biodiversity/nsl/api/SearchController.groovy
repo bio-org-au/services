@@ -24,86 +24,63 @@ import org.apache.shiro.SecurityUtils
 import javax.servlet.http.Cookie
 
 class SearchController implements RequestUtil {
-    def configService
-    def searchService
+    ConfigService configService
+    SearchService searchService
     FlatViewService flatViewService
 
-    def search(Integer max, String product) {
+    def product(String product) {
+        log.debug "Search product $product"
+        String prod = product.toLowerCase()
+        Tree productTree = Tree.list().find { Tree t ->
+            t.name.toLowerCase() == prod
+        }
+        if (productTree) {
+            redirect(action: 'taxonomy')
+        } else {
+            redirect(action: 'names')
+        }
+    }
 
-        log.debug "Product set to $product"
+    def taxonomy(Integer max) {
+
+        log.debug "Taxon search"
 
         String referer = request.getHeader('Referer')
         String remoteIP = remoteAddress(request)
         log.info "Search params $params, Referer: ${referer}, Remote: ${remoteIP}"
         max = max ?: 100
-        List<Tree> trees = Tree.list()
-
-        String lowerProductName = (params.product as String)?.toLowerCase()
-        String defaultProduct = configService.nameTreeName
-
-        Map treeProducts = [:]
-        Tree.list().each { Tree t ->
-            treeProducts.put(t.name.toLowerCase(), t.name)
-        }
-
-        Boolean knownTreeProduct = treeProducts.keySet().contains(lowerProductName)
-
-        // this is quick fix - ultimate fix is split the search into taxonomic and name
-        params.display = params.display ?: (knownTreeProduct ? 'apc' : 'apni') //if not set and not a tree0 'product' set it to apni by default
-
-        if (knownTreeProduct) {
-            params.product = treeProducts[lowerProductName] //preserve case ??
-        } else {
-            if (!SecurityUtils.subject?.authenticated) {
-                params.product = defaultProduct
-            }
-        }
-        String productName = params.product
-
-        Tree tree = determineTree(params.tree?.id ?: productName)
-
-        if (tree) {
-            params.tree = [id: tree.id]
-            params.display = params.display ?: 'apc'
-            if (productName != tree.name && !SecurityUtils.subject?.authenticated) {
-                params.product = tree.name
-            }
-        } else {
-            params.remove('tree.id')
-            params.remove('tree')
-        }
-
-        Map incMap = searchService.checked(params, 'inc')
-
+        params.display = 'apc'
         //cater for searches that dont use the form
         if (params.name && params.search != 'true' && params.advanced != 'true' && params.nameCheck != 'true') {
             params.search = 'true'
         }
 
-        if (incMap.isEmpty() && params.search != 'true' && params.advanced != 'true' && params.nameCheck != 'true') {
-            String inc = g.cookie(name: 'searchInclude')
-            if (inc) {
-                if (!inc.startsWith('{')) {
-                    inc = new String(inc.decodeBase64())
-                }
-                log.debug "cookie $inc"
-                try {
-                    incMap = JSON.parse(inc) as Map
-                } catch (e) {
-                    log.error "cookie $inc caused error $e.message"
-                    incMap = [scientific: 'on']
-                }
-            } else {
-                incMap = [scientific: 'on']
-            }
+        List<Tree> trees = Tree.list()
+
+        String lowerProductName = (params.product as String)?.toLowerCase()
+
+        Tree productTree = Tree.list().find { Tree t ->
+            t.name.toLowerCase() == lowerProductName
+        }
+
+        Tree tree = productTree ?: Tree.findByAcceptedTree(true)
+
+        String productName = params.product = tree.name
+
+        if (!tree) {
+            redirect(view: '404')
+            return
+        }
+        params.tree = [id: tree.id]
+
+        Map incMap = searchService.checked(params, 'inc')
+
+        if (incMap.isEmpty()) {
+            incMap = defaultIncMap()
         }
 
         params.inc = incMap
-
-        String cookieData = (incMap as JSON).toString()
-        Cookie incCookie = new Cookie("searchInclude", cookieData.encodeAsBase64())
-        incCookie.maxAge = 3600 //1 hour
-        response.addCookie(incCookie)
+        saveIncludeCookie(incMap)
 
         List displayFormats = ['apni', 'apc']
         if (params.search == 'true' || params.advanced == 'true' || params.nameCheck == 'true') {
@@ -115,7 +92,8 @@ class SearchController implements RequestUtil {
             }
             withFormat {
                 html {
-                    return render(view: 'search',
+                    String viewName = models.size() ? 'taxonomy-results' : 'taxonomy-no-results'
+                    return render(view: viewName,
                             model: [names         : models,
                                     query         : params,
                                     treeSearch    : tree != null,
@@ -136,61 +114,107 @@ class SearchController implements RequestUtil {
                 }
             }
         }
-
-
-        if (params.sparql && !params.product) {
-            // we do not do the searching here, instead we re-render the page in sparql mode
-            // when the page is re-rendered like this, it will fire off its client-side search.
-            log.debug "re-rendering in sparql mode"
-
-            Map uriPrefixes = [
-                    'http://www.w3.org/2001/XMLSchema#'                   : 'xs',
-                    'http://www.w3.org/1999/02/22-rdf-syntax-ns#'         : 'rdf',
-                    'http://www.w3.org/2000/01/rdf-schema#'               : 'rdfs',
-                    'http://www.w3.org/2002/07/owl#'                      : 'owl',
-                    'http://purl.org/dc/elements/1.1/'                    : 'dc',
-                    'http://purl.org/dc/terms/'                           : 'dcterms',
-                    'http://rs.tdwg.org/ontology/voc/TaxonName#'          : 'tdwg_tn',
-                    'http://rs.tdwg.org/ontology/voc/TaxonConcept#'       : 'tdwg_tc',
-                    'http://rs.tdwg.org/ontology/voc/PublicationCitation#': 'tdwg_pc',
-                    'http://rs.tdwg.org/ontology/voc/Common#'             : 'tdwg_comm',
-                    'http://biodiversity.org.au/voc/ibis/IBIS#'           : 'ibis',
-                    'http://biodiversity.org.au/voc/afd/AFD#'             : 'afd',
-                    'http://biodiversity.org.au/voc/apni/APNI#'           : 'apni',
-                    'http://biodiversity.org.au/voc/apc/APC#'             : 'apc',
-                    'http://biodiversity.org.au/voc/afd/profile#'         : 'afd_prf',
-                    'http://biodiversity.org.au/voc/apni/profile#'        : 'apni_prf',
-                    'http://biodiversity.org.au/voc/graph/GRAPH#'         : 'g',
-                    'http://creativecommons.org/ns#'                      : 'cc',
-                    'http://biodiversity.org.au/voc/boa/BOA#'             : 'boa',
-                    'http://biodiversity.org.au/voc/boa/Name#'            : 'boa-name',
-                    'http://biodiversity.org.au/voc/boa/Tree#'            : 'boa-tree',
-                    'http://biodiversity.org.au/voc/boa/Instance#'        : 'boa-inst',
-                    'http://biodiversity.org.au/voc/boa/Reference#'       : 'boa-ref',
-                    'http://biodiversity.org.au/voc/boa/Author#'          : 'boa-auth',
-                    'http://biodiversity.org.au/voc/nsl/NSL#'             : 'nsl',
-                    'http://biodiversity.org.au/voc/nsl/Tree#'            : 'nsl-tree',
-                    'http://biodiversity.org.au/voc/nsl/APC#'             : 'nsl-apc',
-                    'http://biodiversity.org.au/voc/nsl/Namespace#'       : 'nsl-ns'
-            ]
-
-            // if we have an item in UriNs, then it will override these handy prefixes.
-
-            UriNs.all.each { uriPrefixes.put(it.uri, it.label) }
-
-            return [query: params, max: max, displayFormats: displayFormats, uriPrefixes: uriPrefixes, stats: [:]]
-        }
-        return [query: params, max: max, displayFormats: displayFormats, treeSearch: tree != null, trees: trees]
+        return [query: params, max: max, displayFormats: displayFormats, treeSearch: false, trees: []]
 
     }
 
+    def names(Integer max) {
+        log.debug "Name search"
+
+        String referer = request.getHeader('Referer')
+        String remoteIP = remoteAddress(request)
+        log.info "Search params $params, Referer: ${referer}, Remote: ${remoteIP}"
+
+        max = max ?: 100
+
+        params.product = configService.nameTreeName
+        params.display = 'apni'
+        //cater for searches that dont use the form
+        if (params.name && params.search != 'true' && params.advanced != 'true' && params.nameCheck != 'true') {
+            params.search = 'true'
+        }
+
+        Map incMap = searchService.checked(params, 'inc')
+
+        if (incMap.isEmpty()) {
+            incMap = defaultIncMap()
+        }
+
+        params.inc = incMap
+
+        saveIncludeCookie(incMap)
+
+        List displayFormats = ['apni', 'apc']
+        if (params.search == 'true' || params.advanced == 'true' || params.nameCheck == 'true') {
+            log.debug "doing search"
+            Map results = searchService.searchForName(params, max)
+            List models = results.names
+            if (results.message) {
+                flash.message = results.message
+            }
+            withFormat {
+                html {
+                    String viewName = models.size() ? 'names-results' : 'names-no-results'
+                    return render(view: viewName,
+                            model: [names         : models,
+                                    query         : params,
+                                    count         : results.count,
+                                    total         : results.total,
+                                    queryTime     : results.queryTime,
+                                    max           : max,
+                                    displayFormats: displayFormats
+                            ]
+                    )
+                }
+                json {
+                    return render(contentType: 'application/json') { models }
+                }
+                xml {
+                    return render(models as XML)
+                }
+            }
+        }
+        return [query: params, max: max, displayFormats: displayFormats]
+    }
+
+    private saveIncludeCookie(Map incMap) {
+        String cookieData = (incMap as JSON).toString()
+        Cookie incCookie = new Cookie("searchInclude", (String) cookieData.encodeAsBase64())
+        incCookie.maxAge = 3600 //1 hour
+        response.addCookie(incCookie)
+    }
+
+    @SuppressWarnings("GrMethodMayBeStatic")
+    private Map defaultIncMap() {
+        Map incMap = [scientific: 'on']
+        String inc = g.cookie(name: 'searchInclude')
+        if (inc) {
+            if (!inc.startsWith('{')) {
+                inc = new String(inc.decodeBase64())
+            }
+            log.debug "cookie $inc"
+            if (inc == '{}') {
+                return incMap
+            }
+            try {
+                incMap = JSON.parse(inc) as Map
+
+            } catch (Exception e) {
+                log.error "cookie $inc caused error $e.message"
+            }
+        }
+        return incMap
+    }
+
     private static Tree determineTree(String treeId) {
-        if (treeId?.isLong()) {
+        if (!treeId) {
+            return null
+        }
+        if (treeId.isLong()) {
             return Tree.get(treeId as Long)
         }
         Tree.findByNameIlike(treeId)
     }
-
 
     def searchForm() {
         if (!params.product && !SecurityUtils.subject?.authenticated) {
@@ -223,7 +247,7 @@ class SearchController implements RequestUtil {
         if (params.csv) {
             render(file: renderCsvResults(results).bytes, contentType: 'text/csv', fileName: 'name-check.csv')
         } else {
-            render(view: 'search', model: [results: results, query: params, max: max, treeName: treeName])
+            render(view: 'name-check-results', model: [results: results, query: params, max: max, treeName: treeName])
         }
     }
 

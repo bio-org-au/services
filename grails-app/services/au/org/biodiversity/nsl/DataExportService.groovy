@@ -16,7 +16,7 @@
 
 package au.org.biodiversity.nsl
 
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import groovy.xml.MarkupBuilder
 import org.codehaus.groovy.runtime.IOGroovyMethods

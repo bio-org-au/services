@@ -18,6 +18,7 @@ package au.org.biodiversity.nsl.api
 
 import grails.converters.JSON
 import grails.converters.XML
+import grails.core.GrailsApplication
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.shiro.authz.AuthorizationException
 import org.apache.shiro.authz.UnauthenticatedException
@@ -26,11 +27,10 @@ import org.springframework.http.HttpStatus
 
 class ErrorController {
 
-    def grailsApplication
-//    static responseFormats = ['html', 'json', 'xml']
+    GrailsApplication grailsApplication
 
     def index() {
-        def e = request.exception.cause
+        def e = exception ?: request.getAttribute('javax.servlet.error.exception')
         def err = e
         def status = request.getAttribute('javax.servlet.error.status_code') as int
 
