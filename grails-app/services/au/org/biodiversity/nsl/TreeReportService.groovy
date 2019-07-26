@@ -11,7 +11,7 @@ import javax.sql.DataSource
 @Transactional
 class TreeReportService implements ValidationUtils {
 
-    DataSource dataSource_nsl
+    DataSource dataSource
 
     def treeService
     def eventService
@@ -303,7 +303,7 @@ order by common_synonym;
 
     private Sql getSql() {
         //noinspection GroovyAssignabilityCheck
-        return Sql.newInstance(dataSource_nsl)
+        return Sql.newInstance(dataSource)
     }
 
     Map checkCurrentSynonymy(TreeVersion treeVersion, Integer limit = 100) {

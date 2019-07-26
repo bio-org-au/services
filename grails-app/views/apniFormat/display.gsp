@@ -19,7 +19,7 @@
 
 <body>
 <div class="${params.product}">
-  <g:render template="/search/searchTabs"/>
+  <g:render template="/search/nameSearchTabs"/>
   <g:set var="panelClass"
          value="${st.panelClass(product: params.product)}"/>
 

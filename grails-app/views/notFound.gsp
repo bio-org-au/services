@@ -7,8 +7,11 @@
     </head>
     <body>
         <ul class="errors">
-            <li>Error: Page Not Found (404)</li>
+            <li>Error: Resource Not Found (404)</li>
             <li>Path: ${request.forwardURI}</li>
+            <g:if test="${message}">
+                <li>${message}</li>
+            </g:if>
         </ul>
     </body>
 </html>

@@ -247,7 +247,8 @@ class SearchController implements RequestUtil {
         if (params.csv) {
             render(file: renderCsvResults(results).bytes, contentType: 'text/csv', fileName: 'name-check.csv')
         } else {
-            render(view: 'name-check-results', model: [results: results, query: params, max: max, treeName: treeName])
+            String viewName = results ? 'name-check-results' : 'name-check'
+            render(view: viewName, model: [results: results, query: params, max: max, treeName: treeName])
         }
     }
 
@@ -301,9 +302,12 @@ class SearchController implements RequestUtil {
 
                     ]
                     flatViewExportFields.each { fieldName ->
-                        values.add(flatViewRow[fieldName] ?: '')
+                        if (flatViewRow) {
+                            values.add(flatViewRow[fieldName] ?: '')
+                        } else {
+                            values.add('Not available')
+                        }
                     }
-
                     csvResults.add(values)
                 }
             }

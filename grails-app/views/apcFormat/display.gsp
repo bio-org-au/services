@@ -10,7 +10,7 @@
 </head>
 
 <body>
-<g:render template="/search/searchTabs"/>
+<g:render template="/search/nameSearchTabs"/>
 <g:set var="panelClass"
        value="panel ${st.panelClass(product: params.product)}"/>
 

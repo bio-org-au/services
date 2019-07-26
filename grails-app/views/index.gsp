@@ -11,18 +11,14 @@
 <div id="page-body" role="main" class="container">
   <h1 class="header"><st:bannerText/> NSL Services</h1>
 
-  <div class="card horizontal">
+  <div class="boxed">
 
-    <div class="card-image">
-      <asset:image src="${st.cardImage().toString()}" height="300px"/>
-    </div>
+    <asset:image src="${st.cardImage().toString()}" height="300px" class="left"/>
 
-    <div class="card-stacked">
-      <div class="card-content">
-        <st:shardDescription/>
-      </div>
+    <div class="boxed-content">
+      <st:shardDescription/>
 
-      <div class="card-action">
+      <div>
         <p>In the menu above you can:-</p>
         <ul>
           <li>

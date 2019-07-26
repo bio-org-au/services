@@ -1,5 +1,7 @@
 package au.org.biodiversity.nsl.api
 
+import org.postgresql.util.PSQLException
+
 class ExportController {
 
     def flatViewService
@@ -28,38 +30,48 @@ class ExportController {
             taxonCsv: ["GET"],
     ]
 
-    
+
     def namesCsv() {
         File exportFile = null
         try {
             exportFile = flatViewService.exportNamesToCSV()
-            render(file: exportFile, fileName: exportFile.name, contentType: 'text/plain')
+            render(file: exportFile, fileName: exportFile.name, contentType: 'text/csv')
         } finally {
             exportFile?.delete()
-
         }
     }
 
-    
+
     def taxonCsv() {
         File exportFile = null
         try {
             exportFile = flatViewService.exportTaxonToCSV()
-            render(file: exportFile, fileName: exportFile.name, contentType: 'text/plain')
+            render(file: exportFile, fileName: exportFile.name, contentType: 'text/csv')
         } finally {
             exportFile?.delete()
         }
     }
 
-    
+
     def commonCsv() {
         File exportFile = null
         try {
             exportFile = flatViewService.exportCommonToCSV()
-            render(file: exportFile, fileName: exportFile.name, contentType: 'text/plain')
+            render(file: exportFile, fileName: exportFile.name, contentType: 'text/csv')
         } finally {
             exportFile?.delete()
         }
     }
 
+    def handlePSQLException(PSQLException e) {
+        flash.message = "Error getting export. Please contact us via \"Provide Feedback\" tab."
+        log.error("Error getting view $e.message")
+        redirect(action: 'index', status: 404)
+    }
+
+    def handleException(Exception e) {
+        flash.message = "Error getting export. Please contact us via \"Provide Feedback\" tab."
+        log.error("Error getting view $e.message")
+        redirect(action: 'index', status: 404)
+    }
 }

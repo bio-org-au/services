@@ -30,7 +30,7 @@ class ErrorController {
     GrailsApplication grailsApplication
 
     def index() {
-        def e = exception ?: request.getAttribute('javax.servlet.error.exception')
+        def e = request.getAttribute('javax.servlet.error.exception')
         def err = e
         def status = request.getAttribute('javax.servlet.error.status_code') as int
 

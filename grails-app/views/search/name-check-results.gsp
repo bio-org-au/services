@@ -23,8 +23,6 @@
 
 <div class="${params.product}">
 
-  <g:render template="/search/nameSearchTabs"/>
-
   <g:render template="name-check-results"/>
 </body>
 </html>

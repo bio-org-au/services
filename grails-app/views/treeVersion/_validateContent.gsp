@@ -1,12 +1,12 @@
 <div class="rest-resource-content tree-gsp">
-  <h2>Validate ${data.treeVersion.tree.name} ${data.treeVersion.draftName}</h2>
+  <h2>Validate ${treeVersion.tree.name} ${treeVersion.draftName}</h2>
 
-  <g:if test="${data.payload?.synonymsOfAcceptedNames}">
+  <g:if test="${payload?.synonymsOfAcceptedNames}">
     <h3>Synonyms that are also accepted names <span
-        class="text-muted small">(${data.payload?.synonymsOfAcceptedNames.size()})</span></h3>
+        class="text-muted small">(${payload?.synonymsOfAcceptedNames.size()})</span></h3>
 
     <table class="table">
-      <g:each in="${data.payload?.synonymsOfAcceptedNames}" var="record">
+      <g:each in="${payload?.synonymsOfAcceptedNames}" var="record">
         <tr class="titleRow">
           <td colspan="2">
             <div class="smaller text-muted"><tree:prettyNamePath path="${record.accepted_name_path}"/></div>
@@ -26,11 +26,11 @@
     </table>
   </g:if>
 
-  <g:if test="${data.payload?.commonSynonyms}">
-    <h3>Synonyms in common <span class="text-muted small">(${data.payload?.commonSynonyms.size()})</span></h3>
+  <g:if test="${payload?.commonSynonyms}">
+    <h3>Synonyms in common <span class="text-muted small">(${payload?.commonSynonyms.size()})</span></h3>
 
     <table class="table">
-      <tree:commonSynonyms results="${data.payload?.commonSynonyms}">
+      <tree:commonSynonyms results="${payload?.commonSynonyms}">
         <tr class="titleRow">
           <td colspan="2">
             <div class="smaller text-muted"><tree:prettyNamePath path="${namePath}"/></div>

@@ -9,12 +9,12 @@
 
 <body>
 
-<h1>Merge <g:if test="${!data.payload.complete}">in</g:if>complete. </h1>
+<h1>Merge <g:if test="${!payload.complete}">in</g:if>complete. </h1>
 
-<p>${data.payload.message}</p>
+<p>${payload.message}</p>
 
 <ul>
-  <g:each in="${data.payload.report}" var="msg">
+  <g:each in="${payload.report}" var="msg">
     <li>${msg}</li>
   </g:each>
 </ul>

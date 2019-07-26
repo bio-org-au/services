@@ -73,7 +73,7 @@
 <g:render template="/common/service-navigation"/>
 
 <st:systemNotification/>
-<div id="main-content" class="container-fluid">
+<div id="main-content" class="container">
   <g:layoutBody/>
 </div>
 

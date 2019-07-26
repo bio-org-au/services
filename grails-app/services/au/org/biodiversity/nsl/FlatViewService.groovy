@@ -96,10 +96,14 @@ class FlatViewService implements WithSql {
     }
 
     Map findNameRow(Name name, String namespace = configService.nameSpace.name.toLowerCase()) {
-        String query = "select * from $NAME_VIEW where \"scientificNameID\" like '%/name/$namespace/$name.id'"
-        List<Map> results = executeQuery(query, [])
-        if (results.size()) {
-            return results.first()
+        try {
+            String query = "select * from $NAME_VIEW where \"scientificNameID\" like '%/name/$namespace/$name.id'"
+            List<Map> results = executeQuery(query, [])
+            if (results.size()) {
+                return results.first()
+            }
+        } catch (Exception e) {
+            log.error("Couldn't get name row. $e.message")
         }
         return null
     }

@@ -17,9 +17,9 @@ class TreeVersionController extends BaseApiController {
             delete                    : ['json', 'html'],
             setDefaultDraftTreeVersion: ['json', 'html'],
             edit                      : ['json', 'html'],
-            validate                  : ['json', 'html'],
+            validate                  : ['html', 'json'],
             publish                   : ['json', 'html'],
-            diff                      : ['json', 'html'],
+            diff                      : ['html', 'json'],
     ]
 
     static allowedMethods = [
@@ -133,9 +133,9 @@ class TreeVersionController extends BaseApiController {
             params.keySet()
                   .findAll { key -> (key as String).startsWith('diff-') }
                   .each { key ->
-                Integer diffId = (key - 'diff-') as Integer
-                report.setUse(diffId, params[key] as String)
-            }
+                      Integer diffId = (key - 'diff-') as Integer
+                      report.setUse(diffId, params[key] as String)
+                  }
             TreeVersion draft = TreeVersion.get(params.draftVersion as Long)
             if (!draft) {
                 throw new ObjectNotFoundException("Version ${params.draftVersion}, not found.")
@@ -148,13 +148,8 @@ class TreeVersionController extends BaseApiController {
 
     private viewRespond(String view, ResultObject resultObject, Boolean embed) {
         log.debug "result status is ${resultObject.status}"
-        if (embed) {
-            //noinspection GroovyAssignabilityCheck
-            respond(resultObject, [view: "_${view}Content", model: [data: resultObject], status: resultObject.remove('status')])
-        } else {
-            //noinspection GroovyAssignabilityCheck
-            respond(resultObject, [view: view, model: [data: resultObject], status: resultObject.remove('status')])
-        }
+        resultObject.put('embed', embed)
+        respond(resultObject)
     }
 
 }

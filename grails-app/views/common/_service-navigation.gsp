@@ -28,15 +28,20 @@
         <a class="nav-link dashboard" href="${createLink(controller: 'dashboard', action: 'index')}"><i
             class="fa fa-bar-chart-o"></i> Dashboard</a>
       </li>
-      <li class="nav-item ${params.product == st.nameTree().toString() ? 'active' : ''}">
+      <li class="nav-item ${params.action == 'names' ? 'active' : ''}">
         <a class="nav-link search"
            href="${createLink(controller: 'search', action: 'names')}"><i
             class="fa fa-search"></i> Names (<st:nameTree/>)</a>
       </li>
-      <li class="nav-item ${params.product == st.primaryClassification().toString() ? 'active' : ''}">
+      <li class="nav-item ${params.action == 'taxonomy' ? 'active' : ''}">
         <a class="nav-link search"
            href="${createLink(controller: 'search', action: 'taxonomy')}"><i
             class="fa fa-search"></i> Taxonomy (<st:primaryClassification/>)</a>
+      </li>
+      <li class="nav-item ${params.action == 'name-check' ? 'active' : ''}">
+        <a class="nav-link search"
+           href="${createLink(controller: 'search', action: 'nameCheck')}"><i
+            class="fa fa-search"></i> Name Check (<st:nameTree/>/<st:primaryClassification/>)</a>
       </li>
       <li class="nav-item ${params.controller == 'tree' ? 'active' : ''}">
         <a class="nav-link" href="${createLink(namespace: 'api', controller: 'tree')}">Classifications</a>

@@ -23,7 +23,7 @@
 
 <div class="${params.product}">
 
-  <g:render template="/search/searchTabs"/>
+  <g:render template="/search/nameSearchTabs"/>
 
   <div class="panel">
     <div class="results-header ${panelClass}">

@@ -70,7 +70,7 @@ dependencies {
     compile "org.grails.plugins:gsp"
 
     // application plugins
-    compile "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:1.17-SNAPSHOT"
+    compile "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:1.18-SNAPSHOT"
     
     compile 'com.nerderg.plugins:SimpleSuggestions3:1.1'
 

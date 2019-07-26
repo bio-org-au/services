@@ -17,12 +17,6 @@
         Advanced search
       </a>
     </li>
-    <li role="presentation" class="nav-item">
-      <a href="#nameCheck" id="nameCheck-tab" aria-controls="nameCheck" role="tab" data-toggle="tab"
-         class="nav-link ${query.nameCheck ? 'active' : ''}">
-        Name check
-      </a>
-    </li>
   </ul>
 
   <div class="tab-content" id="searchTabContent">
@@ -34,10 +28,6 @@
 
     <div role="tabpanel" class="tab-pane fade ${query.advanced ? 'show active' : ''}" id="advanced">
         <g:render template="/search/advanced-name-search-form"/>
-    </div>
-
-    <div role="tabpanel" class="tab-pane fade ${query.nameCheck ? 'show active' : ''}" id="nameCheck">
-      <g:render template="/search/name-check-form"/>
     </div>
 
   </div>
