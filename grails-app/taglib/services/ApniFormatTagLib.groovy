@@ -221,7 +221,7 @@ class ApniFormatTagLib {
 
     def harvard = { attrs ->
         Reference reference = attrs.reference
-        out << "<span title=\"${reference.citation}\">${reference.author.name} ($reference.year)</span>"
+        out << "<span title=\"${reference.citation}\">${reference.author.name} ($reference.getIsoYear())</span>"
     }
 
     def branch = { attrs, body ->

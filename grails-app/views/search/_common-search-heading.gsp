@@ -31,6 +31,3 @@
 <g:if test="${count == 0}">
   <span class="text text-info">- No results found.</span>
 </g:if>
-<g:if test="${flash.message}">
-  <div class="text text-warning"><i class="fa fa-warning"></i> ${flash.message}</div>
-</g:if>

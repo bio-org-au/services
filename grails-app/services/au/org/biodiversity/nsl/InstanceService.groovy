@@ -138,11 +138,11 @@ class InstanceService {
     List<Instance> sortInstances(List<Instance> instances) {
         instances.sort { a, b ->
             //NSL-1827 use parent details on references where appropriate
-            Integer aRefYear = ReferenceService.findReferenceYear(a.cites?.reference)
-            Integer bRefYear = ReferenceService.findReferenceYear(b.cites?.reference)
+            String aRefIsoYear = ReferenceService.findReferenceIsoPublicationYear(a.cites?.reference)
+            String bRefIsoYear = ReferenceService.findReferenceIsoPublicationYear(b.cites?.reference)
             if (a.citedBy == b.citedBy) {
                 if (a.instanceType.sortOrder == b.instanceType.sortOrder) {
-                    if (aRefYear == bRefYear) {
+                    if (aRefIsoYear == bRefIsoYear) {
                         if (a.reference == b.reference) {
                             if (a.page == b.page) {
                                 return b.id <=> a.id
@@ -151,7 +151,7 @@ class InstanceService {
                         }
                         return a.reference.citation <=> b.reference.citation
                     }
-                    return (aRefYear) <=> (bRefYear)
+                    return (aRefIsoYear) <=> (bRefIsoYear)
                 }
                 return a.instanceType.sortOrder <=> b.instanceType.sortOrder
             }
@@ -163,7 +163,7 @@ class InstanceService {
         Instance a = (sortOn ? a1[sortOn] : a1) as Instance
         Instance b = (sortOn ? b1[sortOn] : b1) as Instance
         if (a && b) {
-            if (a.reference.year == b.reference.year) {
+            if (a.reference.getIsoYear() == b.reference.getIsoYear()) {
                 if (a.reference == b.reference) {
                     if (a.page == b.page) {
                         return b.id <=> a.id
@@ -172,7 +172,7 @@ class InstanceService {
                 }
                 return a.reference.citation <=> b.reference.citation
             }
-            return (a.reference.year) <=> (b.reference.year)
+            return (a.reference.getIsoYear()) <=> (b.reference.getIsoYear())
         }
         return a <=> b
 
@@ -239,7 +239,7 @@ class InstanceService {
         //if this is a relationship instance we want to check if it's citedBy instance is on any tree and
         //create synonymy changed EventRecords
         if (instance.citedBy) {
-            treeService.checkSynonymyUpdated(instance.citedBy, instance.updatedBy)
+            treeService.checkSynonymyUpdated(instance.citedBy)
         }
     }
 
@@ -251,7 +251,7 @@ class InstanceService {
         //if this is a relationship instance we want to check if it's citedBy instance is on any tree and
         //create synonymy changed EventRecords
         if (instance.citedBy) {
-            treeService.checkSynonymyUpdated(instance.citedBy, instance.updatedBy)
+            treeService.checkSynonymyUpdated(instance.citedBy)
         }
     }
 
@@ -265,7 +265,7 @@ class InstanceService {
     def checkInstanceDelete(Long id) {
         Map instanceData = auditService.recoverDeletedInstanceData(id)
         if (instanceData) {
-            treeService.checkUsageOfDeletedInstance(id, instanceData.cited_by_id as Long, instanceData.updated_by ?: 'notification')
+            treeService.checkUsageOfDeletedInstance(id, instanceData.cited_by_id as Long, (instanceData.updated_by ?: 'notification') as String)
         } else {
             log.error "Audit does not contain deleted instance $id. Check audit is working."
         }

@@ -14,6 +14,11 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The 2.0 Tree service. This service is the central location for all interaction with the tree.
+ * TODO break this up - it crosses a couple of concerns and is too big. Delete unused methods where suppressed warnings.
+ * Consider breaking out as
+ *  - validation stuff
+ *  - search all read only stuff in one service
+ *  - edit
  */
 @Transactional
 class TreeService implements ValidationUtils {
@@ -24,6 +29,7 @@ class TreeService implements ValidationUtils {
     def restCallService
     def treeReportService
     def eventService
+    def distributionService
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)
 
     /**
@@ -202,33 +208,6 @@ class TreeService implements ValidationUtils {
                 [tree: tree, instanceId: instance.id])
     }
 
-    /**
-     * Find any synonym that uses this instance in the tree version. In a particular tree version there *should* only be
-     * one synonym instance usage, but there are some multiple usages of instance on the tree so we return a list.
-     * @param instance
-     * @param treeVersion
-     * @return
-     */
-    @Transactional(readOnly = true)
-    List<TreeVersionElement> findElementsForSynonymInstance(Long instanceId, TreeVersion treeVersion, Sql sql = getSql()) {
-        if (instanceId && treeVersion) {
-            List<TreeVersionElement> tves = []
-            sql.eachRow('''
-        SELECT
-          tve.element_link as element_link
-        FROM tree_element el join tree_version_element tve on el.id = tve.tree_element_id,
-              jsonb_array_elements(synonyms -> 'list') AS tax_syn
-        WHERE tve.tree_version_id = :versionId
-            AND synonyms is not null 
-            AND synonyms ->> 'list' is not null
-            AND (tax_syn ->> 'instance_id'):: NUMERIC :: BIGINT = :instanceId''', [versionId: treeVersion.id, instanceId: instanceId]) { row ->
-                tves.add(TreeVersionElement.get(row.element_link as String))
-            }
-            return tves
-        }
-        return null
-    }
-
     @Transactional(readOnly = true)
     List<TreeVersionElement> findElementsForSynonym(Long nameId, TreeVersion treeVersion, Sql sql = getSql()) {
         if (nameId && treeVersion) {
@@ -293,19 +272,6 @@ WHERE tve.tree_version_id = :versionId
         return history
     }
 
-    /**
-     * Find all the trees on this shard that contain this instance
-     * @param instance
-     * @return List < Tree >
-     */
-    List<Tree> findTreesByInstance(Instance instance) {
-        Tree.executeQuery('''select distinct t 
-    from Tree t, TreeVersionElement as tve 
-    where tve.treeElement.instanceId = :instanceId
-        and t = tve.treeVersion.tree''',
-                [instanceId: instance.id]) as List<Tree>
-    }
-
     /************* End Finds *************/
 
     /**
@@ -325,6 +291,7 @@ WHERE tve.tree_version_id = :versionId
         return path.reverse()
     }
 
+    @SuppressWarnings("unused")
     @Transactional(readOnly = true)
     List<TreeVersionElement> getChildElementsToDepth(TreeVersionElement parent, int depth) {
         mustHave(parent: parent, 'parent.treeElement': parent.treeElement, 'parent.treeVersion': parent.treeVersion)
@@ -376,6 +343,7 @@ WHERE tve.tree_version_id = :versionId
      * @param treeVersionElement
      * @return List of DisplayElements
      */
+    @SuppressWarnings("unused")
     @Transactional(readOnly = true)
     List<DisplayElement> childDisplayElementsToDepth(TreeVersionElement treeVersionElement, int depth) {
         mustHave(treeVersionElement: treeVersionElement)
@@ -395,6 +363,7 @@ WHERE tve.tree_version_id = :versionId
         fetchDisplayElements(pattern, treeVersion)
     }
 
+    @SuppressWarnings("unused")
     @Transactional(readOnly = true)
     List<DisplayElement> displayElementsToLimit(TreeVersionElement treeVersionElement, Integer limit) {
         displayElementsToLimit(treeVersionElement.treeVersion, "^${treeVersionElement.treePath}", limit)
@@ -485,7 +454,7 @@ select count(tve)
     @Transactional(readOnly = true)
     Map profileDistribution(TreeVersionElement tve) {
         mustHave('Tree version element': tve)
-        profileItem(tve, distributionKey(tve.treeVersion.tree))
+        profileItem(tve, distributionKey(tve))
     }
 
     @Transactional(readOnly = true)
@@ -517,6 +486,11 @@ select count(tve)
     @Transactional(readOnly = true)
     private String distributionKey(TreeVersionElement tve) {
         distributionKey(tve.treeVersion.tree)
+    }
+
+    @Transactional(readOnly = true)
+    private String distributionKey(TreeVersion version) {
+        distributionKey(version.tree)
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
@@ -688,7 +662,7 @@ DROP TABLE IF EXISTS orphans;
             if (!instance.reference.published) {
                 instance.reference.published = true
                 instance.reference.publicationDate = today
-                instance.reference.year = now[Calendar.YEAR]
+                instance.reference.isoPublicationDate = now[Calendar.YEAR]
                 instance.reference.save()
             }
             instance.updatedAt = timeStamp
@@ -842,6 +816,11 @@ INSERT INTO tree_version_element (tree_version_id,
         List<String> warnings = validateNewElementPlacement(parentElement, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, null, userName)
+
+        String distKey = distributionKey(parentElement)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeElement, distString)
+
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, parentElement, nextSequenceId(), null, userName)
         updateParentTaxaId(parentElement)
 
@@ -877,6 +856,11 @@ INSERT INTO tree_version_element (tree_version_id,
         List<String> warnings = validateNewElementTopPlacement(treeVersion, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, null, userName)
+
+        String distKey = distributionKey(treeVersion)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeElement, distString)
+
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, null, treeVersion, nextSequenceId(), null, userName)
 
         return [childElement: childElement, warnings: warnings, message: "#### Placed ${childElement.treeElement.name.fullName} ####"]
@@ -919,6 +903,11 @@ INSERT INTO tree_version_element (tree_version_id,
         List<String> warnings = validateReplacementElement(parentTve, currentTve, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, currentTve.treeElement, userName)
+
+        String distKey = distributionKey(currentTve)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeElement, distString)
+
         TreeVersionElement replacementTve = saveTreeVersionElement(treeElement, parentTve, nextSequenceId(), null, userName)
 
         updateParentId(currentTve, replacementTve)
@@ -1117,11 +1106,15 @@ INSERT INTO tree_version_element (tree_version_id,
         //if there is an element that matches the new data use that element
         Map elementComparators = comparators(treeVersionElement.treeElement)
 
+        String distKey = distributionKey(treeVersionElement)
+
+        excludedValidation(elementComparators.excluded, profile, distKey)
+
         //we don't want to check the whole profile, just the *values* of the comment and distribution
         //so remove the profile and then compare the values for all the matches
 
         elementComparators.remove('profile')
-        //order by latest first so the first match will be the latest. (yes there are mutilple exact matches in some datasets)
+        //order by latest first so the first match will be the latest. (yes there are multiple exact matches in some data sets)
         List<TreeElement> matchingElements = TreeElement.findAllWhere(elementComparators).sort { a, b -> b.id <=> a.id }
         log.debug "Found ${matchingElements.size()} matching elements"
 
@@ -1147,6 +1140,9 @@ INSERT INTO tree_version_element (tree_version_id,
             //don't update taxonId above as the taxon hasn't changed
         }
 
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString)
+
         Timestamp now = new Timestamp(System.currentTimeMillis())
 
         treeVersionElement.treeElement.profile = profile
@@ -1158,20 +1154,25 @@ INSERT INTO tree_version_element (tree_version_id,
         return treeVersionElement
     }
 
-    private static boolean compareProfileMapValues(Map m, Map n) {
+    static boolean compareProfileMapValues(Map m, Map n) {
         if (m.keySet() == n.keySet()) {
-            String result = m.keySet().find { key ->
-                log.debug "Comparing ${m[key].value} to ${n[key].value} : (${n[key]})"
-                m[key].value != n[key].value
+            //find first example of values *not* matching
+            boolean result = m.keySet().find { key ->
+                m[key]['value'] != n[key]['value']
             }
-            return result == null
+            return !result
         }
         return false
     }
 
-
     TreeVersionElement minorEditDistribution(TreeVersionElement treeVersionElement, String distribution, String reason, String userName) {
+        excludedValidation(treeVersionElement.treeElement.excluded,distribution)
         String distKey = distributionKey(treeVersionElement)
+        //this will throw an exception if the distribution string is bad.
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution)
+        //re-order the distribution string correctly
+        distribution = distributionService.constructDistributionString(treeVersionElement.treeElement)
+        treeVersionElement.treeElement.save(flush: true)
         return minorEditProfile(treeVersionElement, distribution, reason, userName, distKey)
     }
 
@@ -1189,13 +1190,13 @@ INSERT INTO tree_version_element (tree_version_id,
         log.debug profile.toString()
         if (profile[key]?.value == value) {
             //value hasn't changed do nothing
-            log.debug "no change in comment, doing nothing."
+            log.debug "no change in $key, doing nothing."
             return treeVersionElement
         }
 
-        ProfileValue newComment = new ProfileValue(value, userName, profile[key] as Map, reason)
+        ProfileValue profileValue = new ProfileValue(value, userName, profile[key] as Map, reason)
 
-        treeVersionElement.treeElement.profile[key] = newComment.toMap()
+        treeVersionElement.treeElement.profile[key] = profileValue.toMap()
         treeVersionElement.treeElement.save()
         log.debug treeVersionElement.treeElement.profile.toString()
         return treeVersionElement
@@ -1213,6 +1214,9 @@ INSERT INTO tree_version_element (tree_version_id,
         //if there is an element that matches the new data use that element
         Map elementComparators = comparators(treeVersionElement.treeElement)
         elementComparators.excluded = excluded
+
+        excludedValidation(excluded,elementComparators.profile, distributionKey(treeVersionElement))
+
         TreeElement foundElement = findTreeElement(elementComparators)
         if (foundElement) {
             return changeElement(treeVersionElement, foundElement, userName)
@@ -1287,17 +1291,18 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     /**
-     * Checks if an instances synonymy has changed and creates an 'Synonymy Updated' EventRecord
+     * just update the cached synonymy
      * @param instance
      * @param userName
      */
-    def checkSynonymyUpdated(Instance instance, String userName) {
+    def checkSynonymyUpdated(Instance instance) {
         String synonyms = getSynonymsHtmlViaDBFunction(instance.id)
         instance.cachedSynonymyHtml = synonyms
         instance.save()
     }
 
     def refreshSynonymHtmlCache() {
+        log.debug "Refreshing synonymy cache"
         Sql sql = getSql()
         sql.executeUpdate("update instance set cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>') where id in (select distinct instance_id from tree_element);")
     }
@@ -1319,6 +1324,7 @@ INSERT INTO tree_version_element (tree_version_id,
         }
     }
 
+    @SuppressWarnings("unused")
     Integer countChangedDisplayHtml() {
         Sql sql = getSql()
         sql.firstRow('''select count(te)
@@ -1331,7 +1337,7 @@ where te.display_html <> ('<data>' || n.full_name_html || ' <citation>' || r.cit
     }
 
     /**
-     * rewrite all the displayHtml fields on all tree elements. use as daily refresh to catch any chnages missed by lost
+     * rewrite all the displayHtml fields on all tree elements. use as daily refresh to catch any changes missed by lost
      * triggers.
      */
     def refreshDisplayHtml() {
@@ -1371,7 +1377,7 @@ update tree_element te
             } else if (citedById) {
                 Instance instance = Instance.get(citedById)
                 if (instance) {
-                    checkSynonymyUpdated(instance, userName)
+                    checkSynonymyUpdated(instance)
                 }
             }
         }
@@ -1651,6 +1657,18 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         sql.firstRow("SELECT nextval('nsl_global_seq')")[0] as Long
     }
 
+    protected static excludedValidation(Boolean excluded, String distribution){
+        if(excluded && distribution) {
+            throw new BadArgumentsException("An excluded taxon can't have a distribution.")
+        }
+    }
+
+    protected static excludedValidation(Boolean excluded, Map profile, String distKey){
+        if(excluded && profile && profile[distKey] && profile[distKey].value) {
+            throw new BadArgumentsException("An excluded taxon can't have a distribution.")
+        }
+    }
+
     /**
      * Checks name validity and parent validations i.e. rank and matching Name parent
      * @param parentElement
@@ -1661,6 +1679,8 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
     protected List<String> basicPlacementValidation(TreeVersionElement parentElement, TaxonData taxonData) {
 
         List<String> warnings = checkNameValidity(taxonData)
+
+        excludedValidation(taxonData.excluded, taxonData.profile, distributionKey(parentElement))
 
         NameRank taxonRank = NameRank.findByName(taxonData.rank)
         NameRank parentRank = NameRank.findByName(parentElement.treeElement.rank)
@@ -1779,7 +1799,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         synonyms.each { Synonym synonym ->
             TreeVersionElement tve = TreeVersionElement
                     .find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.nameId = :nameId and tve.elementLink <> :excluding',
-                    [treeVersion: treeVersion, nameId: synonym.nameId, excluding: excluding?.elementLink ?: ''])
+                            [treeVersion: treeVersion, nameId: synonym.nameId, excluding: excluding?.elementLink ?: ''])
             if (tve) {
                 String message = "Can’t place this concept - synonym is accepted concept **${tve.treeElement.displayHtml}**"
                 throw new BadArgumentsException("$message")
@@ -1846,12 +1866,6 @@ and tve.element_link not in ($excludedLinks)
             synonymsFound << [nameId: row.name_id, simpleName: row.simple_name, displayHtml: row.display_html, synonym: row.synonym, type: row.syn_type, synonymId: row.syn_id, existing: row.element_link]
         }
         return synonymsFound
-    }
-
-    protected static List<Synonym> filterSynonyms(TaxonData taxonData) {
-        taxonData.synonyms.findAll { Synonym synonym ->
-            !(synonym.type ==~ '.*(misapp|pro parte|common|vernacular).*')
-        }
     }
 
     protected static checkPolynomialsBelowNameParent(String simpleName, Boolean excluded, NameRank taxonRank,
@@ -1995,18 +2009,10 @@ and tve.element_link not in ($excludedLinks)
         return Sql.newInstance(dataSource_nsl)
     }
 
-    boolean isNameInAnyTree(Name name) {
-        TreeElement.findByNameId(name.id) != null
-    }
-
     List<TreeVersionElement> nameInAnyCurrentTree(Name name) {
         TreeVersionElement.executeQuery("""from TreeVersionElement tve 
             where (tve.treeVersion.published = false or tve.treeVersion = tve.treeVersion.tree.currentTreeVersion)
                 and tve.treeElement.nameId = :id""", [id: name.id])
-    }
-
-    boolean isInstanceInAnyTree(Instance instance) {
-        !findTreesByInstance(instance).empty
     }
 
     List<TreeVersionElement> instanceInAnyCurrentTree(Instance instance) {
@@ -2056,27 +2062,27 @@ and tve.element_link not in ($excludedLinks)
         report.getUseToType(TveDiff.REMOVED)
               .sort { a, b -> b.to.namePath <=> a.to.namePath }
               .each { diff ->
-            if (diff.from) {
-                removeTreeVersionElement(diff.from)
-                mergeLog.add "Removed ${diff.to.treeElement.simpleName}"
-            }
-        }
+                  if (diff.from) {
+                      removeTreeVersionElement(diff.from)
+                      mergeLog.add "Removed ${diff.to.treeElement.simpleName}"
+                  }
+              }
 
         // collect all useTo added - sort top down by treePath and call placePublished on toTve
         report.getUseToType(TveDiff.ADDED)
               .sort { a, b -> a.to.namePath <=> b.to.namePath }
               .each { diff ->
-            TreeVersionElement newTve = placePublishedTve(diff.to, draftVersion, userName)
-            mergeLog.add "Added ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
-        }
+                  TreeVersionElement newTve = placePublishedTve(diff.to, draftVersion, userName)
+                  mergeLog.add "Added ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
+              }
 
         // collect all useTo modified where tree_element differs between from and to tve and change the element
         // collect all useTo modified where tree_element is the same for from and to tve and update the placement/tve data(?)
         report.getUseToType(TveDiff.MODIFIED)
               .each { diff ->
-            TreeVersionElement newTve = updateFromPublised(diff.from, diff.to, userName)
-            mergeLog.add "Updated ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
-        }
+                  TreeVersionElement newTve = updateFromPublised(diff.from, diff.to, userName)
+                  mergeLog.add "Updated ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
+              }
 
         List<TreeVersionElement> conflicted = TreeVersionElement.findAllByMergeConflictAndTreeVersion(true, draftVersion)
         if (conflicted.size()) {

@@ -1,6 +1,7 @@
 package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.*
+import org.apache.shiro.authz.AuthorizationException
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
@@ -47,7 +48,7 @@ class TreeElementController extends BaseApiController {
             String parentTaxonUri = data.parentElementUri
             String instanceUri = data.instanceUri
             Boolean excluded = data.excluded
-            Map profile = data.profile
+            Map profile = data.profile as Map
             TreeVersionElement treeVersionElement = TreeVersionElement.get(parentTaxonUri)
             if (treeVersionElement) {
                 String userName = treeService.authorizeTreeOperation(treeVersionElement.treeVersion.tree)
@@ -62,10 +63,10 @@ class TreeElementController extends BaseApiController {
     def placeTopElement() {
         withJsonData(request.JSON, false, ['versionId', 'instanceUri', 'excluded']) { ResultObject results, Map data ->
             log.debug "place top element $data"
-            Long treeVersionId = data.versionId
+            Long treeVersionId = data.versionId as Long
             String instanceUri = data.instanceUri
             Boolean excluded = data.excluded
-            Map profile = data.profile
+            Map profile = data.profile as Map
             TreeVersion treeVersion = TreeVersion.get(treeVersionId)
             if (treeVersion) {
                 String userName = treeService.authorizeTreeOperation(treeVersion.tree)
@@ -83,7 +84,7 @@ class TreeElementController extends BaseApiController {
             String currentElementUri = data.currentElementUri
             String newParentElementUri = data.newParentElementUri
             Boolean excluded = data.excluded ?: false
-            Map profile = data.profile
+            Map profile = data.profile as Map
 
             TreeVersionElement currentElement = TreeVersionElement.get(currentElementUri)
             TreeVersionElement newParentElement = TreeVersionElement.get(newParentElementUri)
@@ -139,7 +140,7 @@ class TreeElementController extends BaseApiController {
                 throw new ObjectNotFoundException("Can't find taxon with URI $data.taxonUri")
             }
             String userName = treeService.authorizeTreeOperation(treeVersionElement.treeVersion.tree)
-            Map profile = data.profile.size() > 0 ? data.profile : null
+            Map profile = (data.profile.size() > 0 ? data.profile as Map : null)
             results.payload = treeService.editProfile(treeVersionElement, profile, userName)
         }
     }
@@ -171,21 +172,35 @@ class TreeElementController extends BaseApiController {
      *
      * It needs post parameters
      * * taxonUri - the tree version element elementLink
-     * * comment - the comment text
+     * * distribution - the distribution text
      * * reason - the reason for the change
      *
-     * if comment text is blank the comment is removed.
+     * if distribution text is blank it is removed.
      *
      * @return
      */
     def editDistribution(String taxonUri, String distribution, String reason) {
         TreeVersionElement treeVersionElement = TreeVersionElement.get(taxonUri)
-        if (!treeVersionElement) {
-            throw new ObjectNotFoundException("Can't find taxon with URI $taxonUri")
+        try {
+            if (!treeVersionElement) {
+                throw new ObjectNotFoundException("Can't find taxon with URI $taxonUri")
+            }
+            String userName = treeService.authorizeTreeOperation(treeVersionElement.treeVersion.tree)
+            treeService.minorEditDistribution(treeVersionElement, distribution, reason, userName)
+            redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
+        } catch (AuthorizationException authException) {
+            log.error(authException.message)
+            flash.message = "You need to be logged in to edit."
+            redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
+        } catch (e) {
+            log.error(e.message)
+            flash.message = e.message
+            if (treeVersionElement) {
+                redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
+            } else {
+                redirect(controller: 'search', action: 'search')
+            }
         }
-        String userName = treeService.authorizeTreeOperation(treeVersionElement.treeVersion.tree)
-        treeService.minorEditDistribution(treeVersionElement, distribution, reason, userName)
-        redirect(url: "${treeVersionElement.treeElement.nameLink}/api/apni-format")
     }
 
     def editElementStatus() {

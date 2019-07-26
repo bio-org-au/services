@@ -6,6 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="${assetPath(src: 'gears.png')}?v=2.1">
 
+  <meta name="description" content="${st.pageTitle()} biodiversity taxonomy services"/>
+  <meta property="og:title" content="${st.pageTitle()}"/>
+  <meta property="og:description" content="Biodiversity taxonomy services providing bibiliography and classification data in ${params.product}"/>
+  <meta property="og:url" content="${request.getContextPath()}"/>
+  <meta property="og:image" content="${asset.assetPath(src:"${st.bannerImage().toString()}")}"/>
+
   <script type="application/javascript">
     baseContextPath = "${request.getContextPath()}";
   </script>
