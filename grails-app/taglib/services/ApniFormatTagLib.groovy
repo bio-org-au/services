@@ -365,7 +365,7 @@ class ApniFormatTagLib {
     }
 
     def legacyAPCInstanceNotes = { attrs, body ->
-        Instance instance = attrs.instance
+        Instance instance = attrs.instance as Instance
         Map notes = [:]
         notes.comment = instance.instanceNotes.find { InstanceNote note ->
             note.instanceNoteKey.name == 'APC Comment'
@@ -375,6 +375,13 @@ class ApniFormatTagLib {
         }
         if (notes.comment || notes.dist) {
             out << body(notes: notes)
+        }
+    }
+
+    def nameResources = { attrs, body ->
+        Name name = attrs.name as Name
+        name.resources.each { Resource r ->
+            out << body(res: r)
         }
     }
 }
