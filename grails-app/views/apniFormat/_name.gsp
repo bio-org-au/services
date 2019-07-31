@@ -27,8 +27,8 @@
 
       <af:nameResources name="${name}">
         <span class="vertbar hidden-print">
-          <a href="${res.site.url}/${res.path}"><i title="Link to ${res.resourceType.name}"
-                                                   class="fa fa-link"></i> ${res.resourceType.name}</a>
+          <a href="${res.site.url}/${res.path}">
+            <af:resourceIcon resource="${res}"/> ${res.resourceType.name}</a>
         </span>
       </af:nameResources>
 

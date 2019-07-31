@@ -381,7 +381,16 @@ class ApniFormatTagLib {
     def nameResources = { attrs, body ->
         Name name = attrs.name as Name
         name.resources.each { Resource r ->
-            out << body(res: r)
+            if (r.resourceType.display) {
+                out << body(res: r)
+            }
+        }
+    }
+
+    def resourceIcon = {attrs ->
+        Resource r = attrs.resource as Resource
+        if(r.resourceType.cssIcon){
+            out << "<i class='${r.resourceType.cssIcon}></i>"
         }
     }
 }
