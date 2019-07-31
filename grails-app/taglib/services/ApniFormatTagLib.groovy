@@ -390,7 +390,7 @@ class ApniFormatTagLib {
     def resourceIcon = {attrs ->
         Resource r = attrs.resource as Resource
         if(r.resourceType.cssIcon){
-            out << "<i class='${r.resourceType.cssIcon}></i>"
+            out << "<i class='${r.resourceType.cssIcon}'></i>"
         }
     }
 }
