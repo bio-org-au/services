@@ -16,14 +16,11 @@
 
 package au.org.biodiversity.nsl
 
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.services.ServiceUnitTest
 import spock.lang.Specification
 
-/**
- * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
- */
-@TestFor(DataExportService)
-class DataExportServiceSpec extends Specification {
+class DataExportServiceSpec extends Specification implements ServiceUnitTest<DataExportService>, DataTest {
 
     def setup() {
     }

@@ -2,7 +2,6 @@ package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.Author
 import au.org.biodiversity.nsl.AuthorService
-import grails.gorm.transactions.Transactional
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authz.annotation.RequiresRoles
 import org.springframework.http.HttpStatus
@@ -10,7 +9,6 @@ import org.springframework.http.HttpStatus
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import static org.springframework.http.HttpStatus.OK
 
-@Transactional
 class AuthorController implements WithTarget {
 
     static responseFormats = [
@@ -19,7 +17,7 @@ class AuthorController implements WithTarget {
     ]
 
     static allowedMethods = [
-            deduplicate: ["DELETE"]
+            deduplicate: 'DELETE'
     ]
 
     AuthorService authorService
@@ -27,7 +25,7 @@ class AuthorController implements WithTarget {
 
     def index() {}
 
-    
+
     @RequiresRoles('admin')
     deduplicate(long id, long target, String user) {
         Author targetAuthor = Author.get(target)
@@ -44,16 +42,19 @@ class AuthorController implements WithTarget {
             }
             try {
                 Map dedupeResults = authorService.deduplicate(duplicate, targetAuthor, user)
-                result << dedupeResults
-                //rename success to OK for consistency
-                result.ok = dedupeResults.success
-                result.remove('success')
+                if (dedupeResults) {
+                    //rename success to OK for consistency
+                    result.ok = dedupeResults.remove('success')
+                    result << dedupeResults
+                } else { //probably only happens with a Mock in testing
+                    result.ok = false
+                    result.error = "Author deduplication failed: No results from service."
+                }
                 if (result.ok) {
                     result.status = OK
                 } else {
                     result.status = INTERNAL_SERVER_ERROR
                 }
-
             } catch (e) {
                 e.printStackTrace()
                 result.error "Could not deduplicate: $e.message"

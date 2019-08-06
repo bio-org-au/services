@@ -49,6 +49,7 @@ class BootStrap {
             development {
                 photoService.refresh()
                 nameService.startUpdatePolling()
+                println grailsApplication.config.updates.dir
             }
             production {
                 photoService.refresh()

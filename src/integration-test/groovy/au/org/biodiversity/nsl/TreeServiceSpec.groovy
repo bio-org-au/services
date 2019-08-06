@@ -1,44 +1,51 @@
 package au.org.biodiversity.nsl
 
-import grails.test.spock.IntegrationSpec
-import grails.transaction.Rollback
+import grails.core.GrailsApplication
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.validation.ValidationException
+import org.hibernate.SessionFactory
 import org.hibernate.engine.spi.Status
+import spock.lang.Specification
 
 import javax.sql.DataSource
 import java.sql.Timestamp
 
-/**
- * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
- */
 @Rollback
-class TreeServiceSpec extends IntegrationSpec {
+@Integration
+class TreeServiceSpec extends Specification {
 
-    def grailsApplication
-    DataSource dataSource_nsl
-    def treeService
+    GrailsApplication grailsApplication
+    DataSource dataSource
+    TreeService treeService
+    SessionFactory sessionFactory
 
     def setup() {
-        treeService.dataSource_nsl = dataSource_nsl
+        treeService.dataSource = dataSource
         treeService.configService = new ConfigService(grailsApplication: grailsApplication)
         treeService.linkService = Mock(LinkService)
+        treeService.linkService.addTargetLink(_) >> 'Ignored mock'
         treeService.eventService = Mock(EventService)
         treeService.treeReportService = new TreeReportService()
-        treeService.treeReportService.transactionManager = getTransactionManager()
-        treeService.treeReportService.dataSource_nsl = dataSource_nsl
+        treeService.treeReportService.dataSource = dataSource
         treeService.linkService.getPreferredHost() >> 'http://localhost:7070/nsl-mapper'
         treeService.eventService.createDraftTreeEvent(_, _) >> { data, user ->
             return new EventRecord(data: data, dealtWith: false, updatedBy: user, createdBy: user)
         }
+        println "\n---- $specificationContext.currentIteration.name ----\n"
     }
 
     def cleanup() {
     }
 
     void "test create new tree"() {
+        given:
+        int treeCount = Tree.count()
 
         when: 'I create a new unique tree'
-        Tree tree = treeService.createNewTree('aTree', 'aGroup', null, '<p>A description</p>', 'http://trees.org/aTree', false)
+        Tree tree = treeService.createNewTree('aTree', 'aGroup', null,
+                    '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'It should work'
         tree
@@ -48,27 +55,32 @@ class TreeServiceSpec extends IntegrationSpec {
         tree.currentTreeVersion == null
         tree.defaultDraftTreeVersion == null
         tree.id != null
+        Tree.count() == treeCount + 1
 
         when: 'I try and create another tree with the same name'
         treeService.createNewTree('aTree', 'aGroup', null, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'It will fail with an exception'
         thrown ObjectExistsException
 
         when: 'I try and create another tree with null name'
         treeService.createNewTree(null, 'aGroup', null, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'It will fail with an exception'
         thrown ValidationException
 
         when: 'I try and create another tree with null group name'
         treeService.createNewTree('aNotherTree', null, null, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'It will fail with an exception'
         thrown ValidationException
 
         when: 'I try and create another tree with reference ID'
         Tree tree2 = treeService.createNewTree('aNotherTree', 'aGroup', 12345l, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'It will work'
         tree2
@@ -76,6 +88,7 @@ class TreeServiceSpec extends IntegrationSpec {
         tree2.groupName == 'aGroup'
         tree2.referenceId == 12345l
         tree2.hostName == 'http://localhost:7070/nsl-mapper'
+        Tree.count() == treeCount + 2
     }
 
     void "Test editing tree"() {
@@ -90,9 +103,12 @@ class TreeServiceSpec extends IntegrationSpec {
         atree.name == 'aTree'
         btree
         btree.name == 'bTree'
+        Tree.findByName('aTree') == atree
+        Tree.findByName('bTree') == btree
 
         when: 'I change the name of a tree'
         Tree tree2 = treeService.editTree(atree, 'A new name', atree.groupName, 123456, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'The name and referenceID are changed'
         atree == tree2
@@ -103,6 +119,7 @@ class TreeServiceSpec extends IntegrationSpec {
         when: 'I change nothing'
 
         Tree tree3 = treeService.editTree(atree, 'A new name', atree.groupName, 123456, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'everything remains the same'
         atree == tree3
@@ -113,6 +130,7 @@ class TreeServiceSpec extends IntegrationSpec {
         when: 'I change the group and referenceId'
 
         Tree tree4 = treeService.editTree(atree, atree.name, 'A different group', null, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'changes as expected'
         atree == tree4
@@ -123,6 +141,7 @@ class TreeServiceSpec extends IntegrationSpec {
         when: 'I give a null name'
 
         treeService.editTree(atree, null, atree.groupName, null, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'I get a bad argument exception'
         thrown BadArgumentsException
@@ -130,6 +149,7 @@ class TreeServiceSpec extends IntegrationSpec {
         when: 'I give a null group name'
 
         treeService.editTree(atree, atree.name, null, null, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'I get a bad argument exception'
         thrown BadArgumentsException
@@ -137,6 +157,7 @@ class TreeServiceSpec extends IntegrationSpec {
         when: 'I give a name that is the same as another tree'
 
         treeService.editTree(atree, btree.name, atree.groupName, null, '<p>A description</p>', 'http://trees.org/aTree', false)
+        mockTxCommit()
 
         then: 'I get a object exists exception'
         thrown ObjectExistsException
@@ -151,6 +172,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I create a new version on a new tree without a version'
         TreeVersion version = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
+        mockTxCommit()
 
         then: 'A new version is created on that tree'
         version
@@ -171,6 +193,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I make a new version from this version'
         TreeVersion version2 = treeService.createTreeVersion(tree, version, 'my second draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         println version2.treeVersionElements
 
         then: 'It should copy the elements and set the previous version'
@@ -187,6 +210,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I publish a draft version'
         TreeVersion version2published = treeService.publishTreeVersion(version2, 'testy mctestface', 'Publishing draft as a test')
+        mockTxCommit()
 
         then: 'It should be published and set as the current version on the tree'
         version2published
@@ -198,6 +222,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I create a default draft'
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
 
         then: 'It copies the current version and sets it as the defaultDraft'
         draftVersion
@@ -212,6 +237,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I set the first draft version as the default'
         TreeVersion draftVersion2 = treeService.setDefaultDraftVersion(version)
+        mockTxCommit()
 
         then: 'It replaces draftVersion as the defaultDraft'
         draftVersion2
@@ -220,6 +246,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I try and set a published version as the default draft'
         treeService.setDefaultDraftVersion(version2published)
+        mockTxCommit()
 
         then: 'It fails with bad argument'
         thrown BadArgumentsException
@@ -239,9 +266,12 @@ class TreeServiceSpec extends IntegrationSpec {
         treeService.linkService.bulkRemoveTargets(_) >> [success: true]
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         TreeVersion publishedVersion = treeService.publishTreeVersion(draftVersion, 'tester', 'publishing to delete')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my next draft', 'irma', 'This is a log entry')
+        mockTxCommit()
 
         expect:
         tree
@@ -254,6 +284,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I delete the tree'
         treeService.deleteTree(tree)
+        mockTxCommit()
 
         then: 'I get a published version exception'
         thrown(PublishedVersionException)
@@ -262,6 +293,7 @@ class TreeServiceSpec extends IntegrationSpec {
         publishedVersion.published = false
         publishedVersion.save()
         treeService.deleteTree(tree)
+        mockTxCommit()
 
         then: "the tree, it's versions and their elements are gone"
         Tree.get(tree.id) == null
@@ -277,9 +309,12 @@ class TreeServiceSpec extends IntegrationSpec {
         treeService.linkService.bulkRemoveTargets(_) >> [success: true]
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         TreeVersion publishedVersion = treeService.publishTreeVersion(draftVersion, 'tester', 'publishing to delete')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my next draft', 'irma', 'This is a log entry')
+        mockTxCommit()
 
         expect:
         tree
@@ -293,6 +328,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I delete the tree version'
         tree = treeService.deleteTreeVersion(draftVersion)
+        mockTxCommit()
         publishedVersion.refresh() //the refresh() is required by deleteTreeVersion
 
         then: "the draft version and it's elements are gone"
@@ -323,6 +359,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I get element data for ficus virens'
         TaxonData taxonData = treeService.elementDataFromInstance(ficusVirens)
+        mockTxCommit()
         println taxonData.synonymsHtml
         println taxonData.synonyms.asMap()
 
@@ -401,6 +438,7 @@ class TreeServiceSpec extends IntegrationSpec {
         given:
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion,
                 [TreeTstHelper.blechnaceaeElementData,
                  TreeTstHelper.doodiaElementData,
@@ -416,6 +454,7 @@ class TreeServiceSpec extends IntegrationSpec {
             println url
             return url
         }
+        mockTxCommit()
 
         expect:
         tree
@@ -440,6 +479,7 @@ class TreeServiceSpec extends IntegrationSpec {
         given:
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, [TreeTstHelper.blechnaceaeElementData, TreeTstHelper.asperaElementData],
                 [TreeTstHelper.blechnaceaeTVEData, TreeTstHelper.asperaTVEData])
         Instance doodiaInstance = Instance.get(578615)
@@ -479,6 +519,7 @@ class TreeServiceSpec extends IntegrationSpec {
         given:
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, [TreeTstHelper.blechnaceaeElementData, TreeTstHelper.asperaElementData],
                 [TreeTstHelper.blechnaceaeTVEData, TreeTstHelper.asperaTVEData])
         Instance doodiaInstance = Instance.get(578615)
@@ -520,6 +561,7 @@ class TreeServiceSpec extends IntegrationSpec {
         given:
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, [TreeTstHelper.blechnaceaeElementData, TreeTstHelper.doodiaElementData, TreeTstHelper.asperaElementData],
                 [TreeTstHelper.blechnaceaeTVEData, TreeTstHelper.doodiaTVEData, TreeTstHelper.asperaTVEData])
         Instance asperaInstance = Instance.get(781104)
@@ -552,9 +594,12 @@ class TreeServiceSpec extends IntegrationSpec {
         treeService.linkService.bulkAddTargets(_) >> [success: true]
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, [TreeTstHelper.blechnaceaeElementData, TreeTstHelper.doodiaElementData], [TreeTstHelper.blechnaceaeTVEData, TreeTstHelper.doodiaTVEData])
         treeService.publishTreeVersion(draftVersion, 'testy mctestface', 'Publishing draft as a test')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
 
         Instance asperaInstance = Instance.get(781104)
         TreeVersionElement blechnaceaeElement = treeService.findElementBySimpleName('Blechnaceae', draftVersion)
@@ -586,6 +631,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I try to place Doodia aspera under Doodia'
         Map result = treeService.placeTaxonUri(doodiaElement, instanceUri, false, null, 'A. User')
+        mockTxCommit()
         println result
 
         then: 'It should work'
@@ -616,12 +662,16 @@ class TreeServiceSpec extends IntegrationSpec {
 
     def "test replace a taxon"() {
         given:
+        println "\n\n----- test replace a taxon -----"
         Tree tree = makeATestTree()
         treeService.linkService.bulkAddTargets(_) >> [success: true]
         TreeVersion draftVersion = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         List<TreeElement> testElements = TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         treeService.publishTreeVersion(draftVersion, 'testy mctestface', 'Publishing draft as a test')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeVersionElement anthocerotaceaeTve = treeService.findElementBySimpleName('Anthocerotaceae', draftVersion)
         TreeVersionElement anthocerosTve = treeService.findElementBySimpleName('Anthoceros', draftVersion)
         TreeVersionElement dendrocerotaceaeTve = treeService.findElementBySimpleName('Dendrocerotaceae', draftVersion)
@@ -657,11 +707,7 @@ class TreeServiceSpec extends IntegrationSpec {
                 anthocerosTve.treeElement.excluded,
                 anthocerosTve.treeElement.profile,
                 'test move taxon')
-        println "\n*** $result\n"
-
-        TreeVersionElement.withSession { s ->
-            s.flush()
-        }
+        mockTxCommit()
         draftVersion.refresh()
 
         List<TreeVersionElement> anthocerosChildren = treeService.getAllChildElements(result.replacementElement)
@@ -678,6 +724,9 @@ class TreeServiceSpec extends IntegrationSpec {
         1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerosInstance.name) >> 'http://localhost:7070/nsl-mapper/name/apni/121601'
         1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerosInstance) >> 'http://localhost:7070/nsl-mapper/instance/apni/753948'
         1 * treeService.linkService.addTargetLink(_) >> { TreeVersionElement tve -> "http://localhost:7070/nsl-mapper/tree/$tve.treeVersion.id/$tve.treeElement.id" }
+        // 1 for new Anthoceros tve +
+        // 9 unique parents Plantae/Anthocerotophyta/Anthocerotopsida/Dendrocerotidae/Dendrocerotales/Dendrocerotaceae +
+        // Anthocerotidae/Anthocerotales/Anthocerotaceae
         10 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
             println "Adding taxonIdentifier for $tve"
             "http://localhost:7070/nsl-mapper/taxon/apni/$tve.taxonId"
@@ -709,11 +758,13 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I publish the version then try a move'
         treeService.publishTreeVersion(draftVersion, 'tester', 'publishing to delete')
+        mockTxCommit()
         treeService.replaceTaxon(anthocerosTve, anthocerotaceaeTve,
                 'http://localhost:7070/nsl-mapper/instance/apni/753948',
                 true,
                 [:],
                 'test move taxon')
+        mockTxCommit()
 
         then: 'I get a PublishedVersionException'
         thrown(PublishedVersionException)
@@ -724,9 +775,12 @@ class TreeServiceSpec extends IntegrationSpec {
         Tree tree = makeATestTree()
         treeService.linkService.bulkAddTargets(_) >> [success: true]
         TreeVersion draftVersion = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         List<TreeElement> testElements = TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         treeService.publishTreeVersion(draftVersion, 'testy mctestface', 'Publishing draft as a test')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
 
         TreeVersionElement anthocerotalesTve = treeService.findElementBySimpleName('Anthocerotales', draftVersion)
         TreeVersionElement dendrocerotidaeTve = treeService.findElementBySimpleName('Dendrocerotidae', draftVersion)
@@ -761,9 +815,11 @@ class TreeServiceSpec extends IntegrationSpec {
                 anthocerotalesTve.treeElement.excluded,
                 anthocerotalesTve.treeElement.profile,
                 'test move taxon')
-        println "\n*** $result\n"
+        mockTxCommit()
+
         List<TreeVersionElement> newAnthocerotalesChildren = treeService.getAllChildElements(result.replacementElement)
         List<TreeVersionElement> dendrocerotidaeChildren = treeService.getAllChildElements(dendrocerotidaeTve)
+
         printTve(anthocerotidaeTve)
         printTve(dendrocerotidaeTve)
         draftVersion.refresh()
@@ -776,6 +832,7 @@ class TreeServiceSpec extends IntegrationSpec {
         1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerotalesInstance.name) >> 'http://localhost:7070/nsl-mapper/name/apni/142301'
         1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerotalesInstance) >> 'http://localhost:7070/nsl-mapper/instance/apni/753978'
         1 * treeService.linkService.addTargetLink(_) >> { TreeVersionElement tve -> "http://localhost:7070/nsl-mapper/tree/$tve.treeVersion.id/$tve.treeElement.id" }
+        // old and new parent taxon need new taxon ids 4 + 4 = 8 - 2 the same or unique
         6 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
             println "Adding taxonIdentifier for $tve"
             "http://localhost:7070/nsl-mapper/taxon/apni/$tve.taxonId"
@@ -804,6 +861,7 @@ class TreeServiceSpec extends IntegrationSpec {
         treeService.linkService.bulkAddTargets(_) >> [success: true]
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
 
         Instance asperaInstance = Instance.get(781104)
         String instanceUri = 'http://localhost:7070/nsl-mapper/instance/apni/781104'
@@ -822,7 +880,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I try to place Doodia aspera in the version without a parent'
         Map result = treeService.placeTaxonUri(draftVersion, instanceUri, false, null, 'A. User')
-        println result
+        mockTxCommit()
 
         then: 'It should work'
         1 * treeService.linkService.getObjectForLink(instanceUri) >> asperaInstance
@@ -846,9 +904,12 @@ class TreeServiceSpec extends IntegrationSpec {
         treeService.linkService.bulkAddTargets(_) >> [success: true]
         treeService.linkService.bulkRemoveTargets(_) >> [success: true]
         TreeVersion draftVersion = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         List<TreeElement> testElements = TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         treeService.publishTreeVersion(draftVersion, 'testy mctestface', 'Publishing draft as a test')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
 
         TreeVersionElement anthocerotaceae = treeService.findElementBySimpleName('Anthocerotaceae', draftVersion)
         TreeVersionElement anthoceros = treeService.findElementBySimpleName('Anthoceros', draftVersion)
@@ -868,6 +929,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I try to remove a taxon'
         Map result = treeService.removeTreeVersionElement(anthoceros)
+        mockTxCommit()
 
         then: 'It works'
         6 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
@@ -889,9 +951,12 @@ class TreeServiceSpec extends IntegrationSpec {
         treeService.linkService.bulkRemoveTargets(_) >> [success: true]
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         TreeVersion publishedVersion = treeService.publishTreeVersion(draftVersion, 'tester', 'publishing to delete')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my next draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeVersionElement anthocerosTve = treeService.findElementBySimpleName('Anthoceros', draftVersion)
         TreeVersionElement pubAnthocerosTve = treeService.findElementBySimpleName('Anthoceros', publishedVersion)
 
@@ -918,6 +983,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I update the profile on the published version'
         treeService.editProfile(pubAnthocerosTve, ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]], 'test edit profile')
+        mockTxCommit()
 
         then: 'I get a PublishedVersionException'
         thrown(PublishedVersionException)
@@ -928,6 +994,7 @@ class TreeServiceSpec extends IntegrationSpec {
         Timestamp oldUpdatedAt = anthocerosTve.treeElement.updatedAt
         Long oldTaxonId = anthocerosTve.taxonId
         TreeVersionElement replacedAnthocerosTve = treeService.editProfile(anthocerosTve, ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]], 'test edit profile')
+        mockTxCommit()
         childTves.each {
             it.refresh()
         }
@@ -952,6 +1019,7 @@ class TreeServiceSpec extends IntegrationSpec {
         oldTaxonId = anthocerosCapricornii.taxonId
         Map oldProfile = new HashMap(anthocerosCapricornii.treeElement.profile)
         TreeVersionElement treeVersionElement1 = treeService.editProfile(anthocerosCapricornii, oldProfile, 'test edit profile')
+        mockTxCommit()
 
         then: 'nothing changes'
 
@@ -965,6 +1033,7 @@ class TreeServiceSpec extends IntegrationSpec {
         given:
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         TreeVersionElement anthoceros = treeService.findElementBySimpleName('Anthoceros', draftVersion)
 
@@ -990,6 +1059,7 @@ class TreeServiceSpec extends IntegrationSpec {
         Timestamp oldTimestamp = anthoceros.treeElement.updatedAt
         Long oldTaxonId = anthoceros.taxonId
         TreeVersionElement treeVersionElement = treeService.editProfile(anthoceros, ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]], 'test edit profile')
+        mockTxCommit()
 
         then: 'It updates the treeElement and updates the profile and not the taxonId'
         treeVersionElement
@@ -1008,9 +1078,17 @@ class TreeServiceSpec extends IntegrationSpec {
         treeService.linkService.bulkRemoveTargets(_) >> [success: true]
         Tree tree = makeATestTree()
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         TreeVersion publishedVersion = treeService.publishTreeVersion(draftVersion, 'tester', 'publishing to delete')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my next draft', 'irma', 'This is a log entry')
+        mockTxCommit()
+
+        sessionFactory.currentSession.clear()
+        publishedVersion.refresh()
+        draftVersion.refresh()
+
         TreeVersionElement anthoceros = treeService.findElementBySimpleName('Anthoceros', draftVersion)
         TreeVersionElement pubAnthoceros = treeService.findElementBySimpleName('Anthoceros', publishedVersion)
 
@@ -1027,6 +1105,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I update the profile on the published version'
         treeService.editExcluded(pubAnthoceros, true, 'test edit profile')
+        mockTxCommit()
 
         then: 'I get a PublishedVersionException'
         thrown(PublishedVersionException)
@@ -1035,6 +1114,7 @@ class TreeServiceSpec extends IntegrationSpec {
         Long oldTaxonId = anthoceros.taxonId
         TreeElement oldElement = anthoceros.treeElement
         TreeVersionElement treeVersionElement = treeService.editExcluded(anthoceros, true, 'test edit status')
+        mockTxCommit()
 
         then: 'It creates a new treeVersionElement and treeElement updates the children TVEs and updates the status'
         1 * treeService.linkService.bulkRemoveTargets(_) >> { List<TreeVersionElement> tves -> [success: true] }
@@ -1052,6 +1132,7 @@ class TreeServiceSpec extends IntegrationSpec {
         TreeElement oldACElement = anthocerosCapricornii.treeElement
         oldTaxonId = anthocerosCapricornii.taxonId
         TreeVersionElement treeVersionElement1 = treeService.editExcluded(anthocerosCapricornii, false, 'test edit status')
+        mockTxCommit()
 
         then: 'nothing changes'
         treeVersionElement1 == anthocerosCapricornii
@@ -1065,10 +1146,13 @@ class TreeServiceSpec extends IntegrationSpec {
         Tree tree = makeATestTree()
         treeService.linkService.bulkAddTargets(_) >> [success: true]
         TreeVersion draftVersion = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         TreeTstHelper.makeTestElements(draftVersion, [TreeTstHelper.doodiaElementData], [TreeTstHelper.doodiaTVEData]).first()
         treeService.publishTreeVersion(draftVersion, 'testy mctestface', 'Publishing draft as a test')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
 
         TreeVersionElement anthocerosTve = treeService.findElementBySimpleName('Anthoceros', draftVersion)
         TreeVersionElement doodiaTve = treeService.findElementBySimpleName('Doodia', draftVersion)
@@ -1086,6 +1170,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: "I update the tree path changing an element"
         treeService.updateChildTreePath(doodiaTve.treePath, anthocerosTve.treePath, anthocerosTve.treeVersion)
+        mockTxCommit()
 
         List<TreeVersionElement> doodiaChildren = treeService.getAllChildElements(doodiaTve)
 
@@ -1100,9 +1185,12 @@ class TreeServiceSpec extends IntegrationSpec {
         Tree tree = makeATestTree()
         treeService.linkService.bulkAddTargets(_) >> [success: true]
         TreeVersion draftVersion = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         List<TreeElement> testElements = TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         treeService.publishTreeVersion(draftVersion, 'testy mctestface', 'Publishing draft as a test')
+        mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
+        mockTxCommit()
         TreeVersionElement anthocerotaceaeTve = treeService.findElementBySimpleName('Anthocerotaceae', draftVersion)
         TreeVersionElement anthocerosTve = treeService.findElementBySimpleName('Anthoceros', draftVersion)
         TreeVersionElement dendrocerotaceaeTve = treeService.findElementBySimpleName('Dendrocerotaceae', draftVersion)
@@ -1134,11 +1222,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I try to move a taxon, anthoceros under dendrocerotaceae'
         Map result = treeService.changeParentTaxon(anthocerosTve, dendrocerotaceaeTve, 'test move taxon')
-        println "\n*** $result\n"
-
-        TreeVersionElement.withSession { s ->
-            s.flush()
-        }
+        mockTxCommit()
         draftVersion.refresh()
 
         List<TreeVersionElement> anthocerosChildren = treeService.getAllChildElements(result.replacementElement)
@@ -1148,12 +1232,11 @@ class TreeServiceSpec extends IntegrationSpec {
         printTve(anthocerotaceaeTve)
 
         then: 'It works'
-//        1 * service.linkService.bulkRemoveTargets(_) >> { List<TreeVersionElement> elements ->
-//            [success: true]
-//        }
         1 * treeService.linkService.getObjectForLink(_) >> replacementAnthocerosInstance
         1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerosInstance.name) >> 'http://localhost:7070/nsl-mapper/name/apni/121601'
         1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerosInstance) >> 'http://localhost:7070/nsl-mapper/instance/apni/753948'
+        // Plantae/Anthocerotophyta/Anthocerotopsida/Dendrocerotidae/Dendrocerotales/Dendrocerotaceae +
+        // Anthocerotidae/Anthocerotales/Anthocerotaceae
         9 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
             println "Adding taxonIdentifier for $tve"
             "http://localhost:7070/nsl-mapper/taxon/apni/$tve.taxonId"
@@ -1296,22 +1379,42 @@ class TreeServiceSpec extends IntegrationSpec {
     }
 
     private Tree makeATestTree() {
-        treeService.createNewTree('aTree', 'aGroup', null, '<p>A description</p>',
+        Tree t = treeService.createNewTree('aTree', 'aGroup', null, '<p>A description</p>',
                 'http://trees.org/aTree', false)
+        t.save(flush: true) //need this in tests because it doesn't persist, which means GORM can find it
+        return t
     }
 
     private Tree makeBTestTree() {
-        treeService.createNewTree('bTree', 'aGroup', null, '<p>B description</p>',
+        Tree t = treeService.createNewTree('bTree', 'aGroup', null, '<p>B description</p>',
                 'http://trees.org/bTree', false)
+        t.save(flush: true) //need this in tests because it doesn't persist, which means GORM can find it
+        return t
     }
 
     private printTve(TreeVersionElement target) {
-        println "*** Taxon $target.taxonId: $target.treeElement.name.simpleName Children ***"
+        println "\n*** Taxon $target.taxonId: $target.treeElement.name.simpleName Children ***"
         for (TreeVersionElement tve in treeService.getAllChildElements(target)) {
             tve.refresh()
             println "Taxon: $tve.taxonId, Names: $tve.namePath, Path: $tve.treePath"
         }
+        println "***\n"
     }
 
+    /**
+     * because this integration test uses @Rollback to revert all changes to the database made during a test, it
+     * circumvents flushing of the session on commit. This is because @Rollback creates a transaction around the test
+     * and therefore the service transaction. The hibernate flushmode = COMMIT, default setting means that the hibernate
+     * session is flushed to the database on the transaction commit. In these tests the commit doesn't happen at the end
+     * of the service method, so queries of the database will *not* see objects saved in the service method - they are
+     * in the session only.
+     *
+     * To fix this, and replicate what should happen in the running application as closely as possible, we need to flush
+     * the session after calls service methods.
+     * @return
+     */
+    private void mockTxCommit() {
+        sessionFactory.getCurrentSession().flush()
+    }
 
 }

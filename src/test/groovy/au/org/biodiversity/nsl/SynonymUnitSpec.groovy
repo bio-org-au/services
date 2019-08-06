@@ -1,27 +1,31 @@
 package au.org.biodiversity.nsl
 
-import grails.test.mixin.Mock
-import grails.test.mixin.TestMixin
-import grails.test.mixin.domain.DomainClassUnitTestMixin
+import grails.testing.gorm.DataTest
+import grails.testing.gorm.DomainUnitTest
 import org.grails.plugins.codecs.HTMLCodec
+import spock.lang.Shared
 import spock.lang.Specification
 
 import java.sql.Timestamp
 
-/**
- * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
- */
-@TestMixin(DomainClassUnitTestMixin)
-@Mock([Name, NameGroup, NameCategory, NameStatus, NameRank, NameType, Namespace, Instance, Reference, Author,
-        RefAuthorRole, RefType, Language, InstanceType])
-class SynonymUnitSpec extends Specification {
+class SynonymUnitSpec extends Specification implements DomainUnitTest<Name>, DataTest {
 
     def linkService = Mock(LinkService)
+
+    @Shared
     Name doodia
+    @Shared
     Instance instance1
+    @Shared
     Instance instance2
+    @Shared
     Reference r1
 
+    void setupSpec() {
+        mockDomains NameGroup, NameCategory, NameStatus, NameRank, NameType, Namespace, Instance, Reference, Author,
+                RefAuthorRole, RefType, Language, InstanceType
+    }
+    
     def setup() {
         linkService.getPreferredHost() >> {
             return "http://my.test.host"
@@ -48,8 +52,9 @@ class SynonymUnitSpec extends Specification {
         doodia.fullNameHtml = '<tag>Doodia R.Br.</tag>'
         doodia.fullName = 'Doodia R.Br.'
         doodia.save()
-        r1 = TestUte.genericReference()
-        Reference r2 = TestUte.genericReference()
+        Author author = TestUte.saveAuthor(abbrev: 'a1', name: 'Author One')
+        r1 = TestUte.genericReference(author, 'reference one')
+        Reference r2 = TestUte.genericReference(author, 'reference two')
         TestUte.setUpInstanceTypes()
 
         instance1 = new Instance(

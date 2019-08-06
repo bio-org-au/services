@@ -53,12 +53,6 @@ class BaseApiController implements WithTarget {
         handleResults(results, { serviceRespond(results) }, work)
     }
 
-    protected serviceRespond(ResultObject resultObject) {
-        log.debug "result status is ${resultObject.status} $resultObject"
-        //noinspection GroovyAssignabilityCheck
-        respond(resultObject, [view: '/common/serviceResult', model: [data: resultObject], status: resultObject.remove('status')])
-    }
-
     protected withJsonData(Object json, Boolean list, List<String> requiredKeys, Closure work) {
         ResultObject results = new ResultObject([action: params.action], jsonRendererService as JsonRendererService)
         results.ok = true

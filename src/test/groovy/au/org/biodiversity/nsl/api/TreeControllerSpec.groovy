@@ -2,10 +2,8 @@ package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.*
 import grails.converters.JSON
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-import grails.test.mixin.TestMixin
-import grails.test.mixin.domain.DomainClassUnitTestMixin
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.validation.ValidationException
 import org.apache.shiro.authz.AuthorizationException
 import org.springframework.validation.Errors
@@ -15,15 +13,13 @@ import spock.lang.Specification
 
 import java.sql.Timestamp
 
-/**
- * See the API for {@link grails.test.mixin.web.ControllerUnitTestMixin} for usage instructions
- */
-@TestFor(TreeController)
-@TestMixin(DomainClassUnitTestMixin)
-@Mock([Tree, TreeVersion, TreeElement])
-class TreeControllerSpec extends Specification {
+class TreeControllerSpec extends Specification implements ControllerUnitTest<TreeController>, DataTest {
 
     def treeService = Mock(TreeService)
+
+    void setupSpec() {
+        mockDomains Tree, TreeVersion, TreeElement
+    }
 
     def setup() {
         controller.jsonRendererService = new JsonRendererService()

@@ -1,7 +1,8 @@
 package au.org.biodiversity.nsl
 
-import grails.test.spock.IntegrationSpec
-import grails.transaction.Rollback
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import spock.lang.Specification
 
 import javax.sql.DataSource
 
@@ -9,14 +10,14 @@ import javax.sql.DataSource
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
 @Rollback
-class TreeReportServiceSpec extends IntegrationSpec {
+@Integration
+class TreeReportServiceSpec extends Specification  {
 
-    DataSource dataSource_nsl
+    DataSource dataSource
     def treeReportService
 
 
     def setup() {
-
     }
 
     def cleanup() {

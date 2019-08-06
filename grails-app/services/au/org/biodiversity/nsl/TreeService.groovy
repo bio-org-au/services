@@ -5,6 +5,7 @@ import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import groovy.transform.Synchronized
 import org.apache.shiro.SecurityUtils
+import org.hibernate.SessionFactory
 
 import javax.sql.DataSource
 import java.sql.Timestamp
@@ -23,13 +24,14 @@ import java.util.concurrent.TimeUnit
 @Transactional
 class TreeService implements ValidationUtils {
 
-    DataSource dataSource_nsl
-    def configService
-    def linkService
-    def restCallService
-    def treeReportService
-    def eventService
-    def distributionService
+    DataSource dataSource
+    ConfigService configService
+    LinkService linkService
+    RestCallService restCallService
+    TreeReportService treeReportService
+    EventService eventService
+    DistributionService distributionService
+    SessionFactory sessionFactory
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)
 
     /**
@@ -589,7 +591,7 @@ select count(tve)
         Long treeId = treeVersion.tree.id
 
         Map result = linkService.bulkRemoveTargets(treeVersion.treeVersionElements)
-        log.info result
+        log.info result.toString()
         if (!result.success) {
             throw new ServiceException("Error deleting tree links from the mapper: ${result.errors}")
         }
@@ -716,6 +718,7 @@ DROP TABLE IF EXISTS orphans;
                 createdBy: userName,
                 createdAt: new Timestamp(System.currentTimeMillis())
         )
+        newVersion.save() // set the ID before it's placed in the tree.treeVersions collection
         tree.addToTreeVersions(newVersion)
         tree.save(flush: true)
         EventRecord event = eventService.createDraftTreeEvent([tree: tree.id, version: newVersion.id], userName)
@@ -776,7 +779,7 @@ INSERT INTO tree_version_element (tree_version_id,
             throw new ServiceException("Error copying tree version $fromVersion to $toVersion. They are not the same size. ${fromVersion.treeVersionElements.size()} != ${toVersion.treeVersionElements.size()}")
         }
         Map result = linkService.bulkAddTargets(toVersion.treeVersionElements)
-        log.info result
+        log.info result.toString()
         if (!result.success) {
             throw new ServiceException("Error adding new tree links to the mapper: ${result.errors}")
         }
@@ -822,7 +825,7 @@ INSERT INTO tree_version_element (tree_version_id,
         distributionService.reconstructDistribution(treeElement, distString)
 
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, parentElement, nextSequenceId(), null, userName)
-        updateParentTaxaId(parentElement)
+        updateParentTaxonId(parentElement)
 
         String message = "#### Placed ${childElement.treeElement.name.fullName} ####"
         if (warnings && !warnings.empty) {
@@ -911,14 +914,13 @@ INSERT INTO tree_version_element (tree_version_id,
         TreeVersionElement replacementTve = saveTreeVersionElement(treeElement, parentTve, nextSequenceId(), null, userName)
 
         updateParentId(currentTve, replacementTve)
+        //using flush mode commit, means we have to flush here
+        sessionFactory.currentSession.flush()
         updateChildTreePath(replacementTve, currentTve)
         updateChildNamePath(replacementTve, currentTve)
         updateChildNameDepth(replacementTve)
-
-        updateParentTaxaId(parentTve)
-        if (parentTve != currentTve.parent) {
-            updateParentTaxaId(currentTve.parent)
-        }
+        Set<TreeVersionElement> parents = getParentTreeVersionElements(parentTve) + getParentTreeVersionElements(currentTve.parent)
+        updateParentTaxonId(parents, parentTve.treeVersion.hostPart())
 
         deleteTreeVersionElement(currentTve)
 
@@ -955,24 +957,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         List<String> warnings = validateChangeParentElement(newParentTve, taxonData)
 
-        String oldTreePath = currentTve.treePath
-        String oldNamePath = currentTve.namePath
-        TreeVersionElement oldParent = currentTve.parent
-        currentTve.parent = newParentTve
-        currentTve.treePath = makeTreePath(newParentTve, currentTve.treeElement)
-        currentTve.namePath = makeNamePath(newParentTve, currentTve.treeElement)
-        currentTve.depth = (newParentTve?.depth ?: 0) + 1
-        currentTve.updatedBy = userName
-        currentTve.updatedAt = new Timestamp(System.currentTimeMillis())
-
-        updateChildTreePath(currentTve.treePath, oldTreePath, currentTve.treeVersion)
-        updateChildNamePath(currentTve.namePath, oldNamePath, currentTve.treeVersion)
-        updateChildNameDepth(currentTve.namePath, currentTve.treeVersion)
-
-        updateParentTaxaId(newParentTve)
-        if (oldParent != currentTve.parent) {
-            updateParentTaxaId(oldParent)
-        }
+        updateExistingTve(currentTve, newParentTve, userName)
 
         String message = null
         if (warnings && !warnings.empty) {
@@ -994,12 +979,14 @@ INSERT INTO tree_version_element (tree_version_id,
      *
      * @param parent
      */
-    private void updateParentTaxaId(TreeVersionElement parent) {
-        if (parent) {
-            List<TreeVersionElement> branchElements = getParentTreeVersionElements(parent)
+    private void updateParentTaxonId(TreeVersionElement parent) {
+        updateParentTaxonId(getParentTreeVersionElements(parent), parent.treeVersion.hostPart())
+    }
+
+    private void updateParentTaxonId(Collection<TreeVersionElement> parents, String hostPart) {
+        if (parents) {
             Sql sql = getSql()
-            String hostPart = parent.treeVersion.hostPart()
-            branchElements.each { TreeVersionElement element ->
+            parents.each { TreeVersionElement element ->
                 if (!isUniqueTaxon(element)) {
                     element.taxonId = nextSequenceId(sql)
                     element.taxonLink = linkService.addTaxonIdentifier(element) - hostPart
@@ -1011,19 +998,23 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     private static boolean isUniqueTaxon(TreeVersionElement element) {
-        TreeVersionElement.countByTaxonId(element.taxonId) == 1
+        TreeVersionElement.countByTaxonId(element.taxonId) <= 1 //if 0 then it hasn't been saved/flushed yet
     }
 
     /**
-     * Fetch the tree version elements for each tree element in the tree path. This returns a List but in no guaranteed
-     * order.
+     * Fetch the tree version elements for each tree element in the tree path.
+     *
      * @param treeVersionElement
      * @return a set of TreeVersionElements
      */
-    protected static List<TreeVersionElement> getParentTreeVersionElements(TreeVersionElement treeVersionElement) {
-        List<Long> elementIds = treeVersionElement.treePath[1..-1].split('/').collect { it.toLong() }
-        TreeVersionElement.findAll("from TreeVersionElement where treeVersion = :version and treeElement.id in :elements",
-                [version: treeVersionElement.treeVersion, elements: elementIds])
+    static List<TreeVersionElement> getParentTreeVersionElements(TreeVersionElement treeVersionElement) {
+        List<TreeVersionElement> parents = [treeVersionElement]
+        TreeVersionElement parent = treeVersionElement.parent
+        while (parent) {
+            parents.add(parent)
+            parent = parent.parent
+        }
+        return parents
     }
 
     /**
@@ -1047,7 +1038,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         log.debug "Deleting ${count} tree version elements."
         Map result = linkService.bulkRemoveTargets(elements)
-        log.info result
+        log.info result.toString
         if (!result.success) {
             throw new ServiceException("Error deleting tree links from the mapper: ${result.errors}")
         }
@@ -1061,7 +1052,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         elements.clear()
 
-        updateParentTaxaId(parent)
+        updateParentTaxonId(parent)
 
         //if this is removing new elements in a draft we may orphan some tree elements so it pays to clean up
         //this may be moved to a background garbage collection task if it is too slow.
@@ -1122,7 +1113,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         if (matchingElements?.size()) {
             foundElement = matchingElements.find { TreeElement te ->
-                log.debug te
+                log.debug te.toString()
                 profile && te.profile &&
                         compareProfileMapValues(profile, te.profile)
             }
@@ -1166,7 +1157,7 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     TreeVersionElement minorEditDistribution(TreeVersionElement treeVersionElement, String distribution, String reason, String userName) {
-        excludedValidation(treeVersionElement.treeElement.excluded,distribution)
+        excludedValidation(treeVersionElement.treeElement.excluded, distribution)
         String distKey = distributionKey(treeVersionElement)
         //this will throw an exception if the distribution string is bad.
         distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution)
@@ -1202,6 +1193,14 @@ INSERT INTO tree_version_element (tree_version_id,
         return treeVersionElement
     }
 
+    /**
+     * Edit the excluded status on the TreeVersionElement. This will replace the TreeVersionElement
+     *
+     * @param treeVersionElement
+     * @param excluded
+     * @param userName
+     * @return
+     */
     TreeVersionElement editExcluded(TreeVersionElement treeVersionElement, Boolean excluded, String userName) {
         mustHave(treeVersionElement: treeVersionElement, userName: userName)
         notPublished(treeVersionElement)
@@ -1215,7 +1214,7 @@ INSERT INTO tree_version_element (tree_version_id,
         Map elementComparators = comparators(treeVersionElement.treeElement)
         elementComparators.excluded = excluded
 
-        excludedValidation(excluded,elementComparators.profile, distributionKey(treeVersionElement))
+        excludedValidation(excluded, elementComparators.profile, distributionKey(treeVersionElement))
 
         TreeElement foundElement = findTreeElement(elementComparators)
         if (foundElement) {
@@ -1238,6 +1237,8 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     /**
+     * Change the TreeElement based on the Instance Data provided. This will either create a new TreeElement
+     * or find a matching existing TreeElement to use. It will replace the TreeVersionElement which must not be published.
      *
      * @param treeVersionElement
      * @param userName
@@ -1428,13 +1429,13 @@ update tree_element te
      * @param oldElementId
      * @return
      */
-    protected TreeVersionElement updateChildTreePath(TreeVersionElement newTve, TreeVersionElement oldTve) {
+    TreeVersionElement updateChildTreePath(TreeVersionElement newTve, TreeVersionElement oldTve) {
         updateChildTreePath(newTve.treePath, oldTve.treePath, newTve.treeVersion)
         return newTve
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
-    protected void updateChildTreePath(String newPath, String oldPath, TreeVersion treeVersion) {
+    void updateChildTreePath(String newPath, String oldPath, TreeVersion treeVersion) {
         log.debug "Replacing tree path $oldPath with $newPath"
         TreeVersionElement.executeUpdate('''
 update TreeVersionElement set treePath = regexp_replace(treePath, :oldId, :newId)
@@ -1446,13 +1447,13 @@ and regex(treePath, :oldId) = true
                  version: treeVersion])
     }
 
-    protected TreeVersionElement updateChildNamePath(TreeVersionElement newTve, TreeVersionElement oldTve) {
+    TreeVersionElement updateChildNamePath(TreeVersionElement newTve, TreeVersionElement oldTve) {
         updateChildNamePath(newTve.namePath, oldTve.namePath, newTve.treeVersion)
         return newTve
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
-    protected void updateChildNamePath(String newPath, String oldPath, TreeVersion treeVersion) {
+    void updateChildNamePath(String newPath, String oldPath, TreeVersion treeVersion) {
         log.debug "Replacing name path $oldPath with $newPath"
         TreeVersionElement.executeUpdate('''
 update TreeVersionElement set namePath = regexp_replace(namePath, :oldPath, :newPath)
@@ -1464,13 +1465,13 @@ and regex(namePath, :oldPath) = true
                  version: treeVersion])
     }
 
-    protected TreeVersionElement updateChildNameDepth(TreeVersionElement newTve) {
+    TreeVersionElement updateChildNameDepth(TreeVersionElement newTve) {
         updateChildNameDepth(newTve.namePath, newTve.treeVersion)
         return newTve
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
-    protected void updateChildNameDepth(String newPath, TreeVersion treeVersion) {
+    void updateChildNameDepth(String newPath, TreeVersion treeVersion) {
         log.debug "Updating depth for path $newPath"
         TreeVersionElement.executeUpdate('''
 update TreeVersionElement set depth = array_length(regexp_split_to_array(treePath, '/'),1) - 1
@@ -1483,9 +1484,11 @@ and regex(namePath, :newPath) = true
 
     @SuppressWarnings("GrMethodMayBeStatic")
     private TreeVersionElement updateParentId(TreeVersionElement oldParent, TreeVersionElement newParent) {
-        TreeVersionElement.executeUpdate('''
-update TreeVersionElement set parent = :newParent
-where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
+        TreeVersionElement.findAllByParent(oldParent).each { child ->
+            child.parent = newParent
+            log.debug "Updating parent of tve $child.elementLink from $oldParent.elementLink to $newParent.elementLink"
+            child.save()
+        }
         return newParent
     }
 
@@ -1538,27 +1541,27 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         return treeElement
     }
 
-    protected static published(TreeVersionElement element) {
+    static published(TreeVersionElement element) {
         published(element.treeVersion)
     }
 
-    protected static published(TreeVersion version) {
+    static published(TreeVersion version) {
         if (!version.published) {
             throw new PublishedVersionException("You can't do this with an unpublished tree. $version.tree.name version $version.id is not published.")
         }
     }
 
-    protected static notPublished(TreeVersionElement element) {
+    static notPublished(TreeVersionElement element) {
         notPublished(element.treeVersion)
     }
 
-    protected static notPublished(TreeVersion version) {
+    static notPublished(TreeVersion version) {
         if (version.published) {
             throw new PublishedVersionException("You can't do this with a Published tree. $version.tree.name version $version.id is already published.")
         }
     }
 
-    protected
+
     static TreeElement makeTreeElementFromTaxonData(TaxonData taxonData, TreeElement previousElement, String userName) {
         TreeElement element = new TreeElement(taxonData.asMap())
         element.previousElement = previousElement
@@ -1575,11 +1578,11 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
      * @param treeElementData
      * @return
      */
-    protected static TreeElement findTreeElement(Map treeElementData) {
+    static TreeElement findTreeElement(Map treeElementData) {
         return TreeElement.findWhere(treeElementData)
     }
 
-    protected static TreeElement findTreeElement(TaxonData taxonData) {
+    static TreeElement findTreeElement(TaxonData taxonData) {
         findTreeElement(comparators(taxonData))
     }
 
@@ -1588,7 +1591,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
      * @param taxonData
      * @return
      */
-    protected static Map comparators(TaxonData taxonData) {
+    static Map comparators(TaxonData taxonData) {
         [
                 instanceId  : taxonData.instanceId,
                 nameId      : taxonData.nameId,
@@ -1601,7 +1604,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         ]
     }
 
-    protected static Map comparators(TreeElement treeElement) {
+    static Map comparators(TreeElement treeElement) {
         [
                 instanceId  : treeElement.instanceId,
                 nameId      : treeElement.nameId,
@@ -1657,14 +1660,14 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         sql.firstRow("SELECT nextval('nsl_global_seq')")[0] as Long
     }
 
-    protected static excludedValidation(Boolean excluded, String distribution){
-        if(excluded && distribution) {
+    static excludedValidation(Boolean excluded, String distribution) {
+        if (excluded && distribution) {
             throw new BadArgumentsException("An excluded taxon can't have a distribution.")
         }
     }
 
-    protected static excludedValidation(Boolean excluded, Map profile, String distKey){
-        if(excluded && profile && profile[distKey] && profile[distKey].value) {
+    static excludedValidation(Boolean excluded, Map profile, String distKey) {
+        if (excluded && profile && profile[distKey] && profile[distKey].value) {
             throw new BadArgumentsException("An excluded taxon can't have a distribution.")
         }
     }
@@ -1676,7 +1679,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
      * @return
      */
     @SuppressWarnings("GrMethodMayBeStatic")
-    protected List<String> basicPlacementValidation(TreeVersionElement parentElement, TaxonData taxonData) {
+    List<String> basicPlacementValidation(TreeVersionElement parentElement, TaxonData taxonData) {
 
         List<String> warnings = checkNameValidity(taxonData)
 
@@ -1697,7 +1700,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         return warnings
     }
 
-    protected List<String> validateNewElementPlacement(TreeVersionElement parentElement, TaxonData taxonData) {
+    List<String> validateNewElementPlacement(TreeVersionElement parentElement, TaxonData taxonData) {
         TreeVersion treeVersion = parentElement.treeVersion
 
         List<String> warnings = basicPlacementValidation(parentElement, taxonData)
@@ -1718,7 +1721,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
      * @param taxonData
      * @return
      */
-    protected List<String> validateReplacementElement(TreeVersionElement parentElement, TreeVersionElement currentTve, TaxonData taxonData) {
+    List<String> validateReplacementElement(TreeVersionElement parentElement, TreeVersionElement currentTve, TaxonData taxonData) {
 
         TreeVersion treeVersion = parentElement.treeVersion
 
@@ -1740,7 +1743,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
      * @param taxonData
      * @return
      */
-    protected List<String> validateChangeParentElement(TreeVersionElement parentElement, TaxonData taxonData) {
+    List<String> validateChangeParentElement(TreeVersionElement parentElement, TaxonData taxonData) {
 
         List<String> warnings = basicPlacementValidation(parentElement, taxonData)
 
@@ -1753,7 +1756,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
      * @param taxonData
      * @return
      */
-    protected List<String> validateNewElementTopPlacement(TreeVersion treeVersion, TaxonData taxonData) {
+    List<String> validateNewElementTopPlacement(TreeVersion treeVersion, TaxonData taxonData) {
         List<String> warnings = checkNameValidity(taxonData)
         checkInstanceIsNotOnTheTree(taxonData, treeVersion)
         checkNameIsNotOnTheTree(taxonData, treeVersion, null)
@@ -1794,7 +1797,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
-    protected void checkSynonymsOfNameNotOnTheTree(TaxonData taxonData, TreeVersion treeVersion, TreeVersionElement excluding) {
+    void checkSynonymsOfNameNotOnTheTree(TaxonData taxonData, TreeVersion treeVersion, TreeVersionElement excluding) {
         List<Synonym> synonyms = taxonData.synonyms.filtered()
         synonyms.each { Synonym synonym ->
             TreeVersionElement tve = TreeVersionElement
@@ -1832,7 +1835,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         }
     }
 
-    protected List<Map> checkNameIdsAgainstAllSynonyms(List<Long> nameIdList, TreeVersion treeVersion, List<TreeVersionElement> excluding, Sql sql = getSql()) {
+    List<Map> checkNameIdsAgainstAllSynonyms(List<Long> nameIdList, TreeVersion treeVersion, List<TreeVersionElement> excluding, Sql sql = getSql()) {
 
         List<Map> synonymsFound = []
 
@@ -1868,8 +1871,8 @@ and tve.element_link not in ($excludedLinks)
         return synonymsFound
     }
 
-    protected static checkPolynomialsBelowNameParent(String simpleName, Boolean excluded, NameRank taxonRank,
-                                                     String[] parentNameElements) {
+    static checkPolynomialsBelowNameParent(String simpleName, Boolean excluded, NameRank taxonRank,
+                                           String[] parentNameElements) {
 
         if (!excluded && RankUtils.rankLowerThan(taxonRank, 'Genus')) {
             //if this is a hybrid it takes the first part, if not it's just the name
@@ -1885,7 +1888,7 @@ and tve.element_link not in ($excludedLinks)
         }
     }
 
-    protected static NameRank rankOfElement(Map rankPath, String elementName) {
+    static NameRank rankOfElement(Map rankPath, String elementName) {
         String rankName = rankPath.keySet().find { key ->
             (rankPath[key] as Map).name == elementName
         }
@@ -1920,7 +1923,7 @@ and tve.element_link not in ($excludedLinks)
         )
     }
 
-    protected Synonyms getSynonyms(Instance instance) {
+    Synonyms getSynonyms(Instance instance) {
         Synonyms synonyms = new Synonyms()
         instance.instancesForCitedBy.each { Instance synonymInstance ->
             if (!synonymInstance.instanceType.unsourced) {
@@ -1936,12 +1939,12 @@ and tve.element_link not in ($excludedLinks)
      * @param sql
      * @return
      */
-    protected String getSynonymsHtmlViaDBFunction(Long instanceId, Sql sql = getSql()) {
+    String getSynonymsHtmlViaDBFunction(Long instanceId, Sql sql = getSql()) {
         def row = sql.firstRow('''select coalesce(synonyms_as_html(:instanceId), '<synonyms></synonyms>');''', [instanceId: instanceId])
         return row[0]
     }
 
-    protected TaxonData findInstanceByUri(String instanceUri) {
+    TaxonData findInstanceByUri(String instanceUri) {
         Instance taxon = linkService.getObjectForLink(instanceUri) as Instance
         TaxonData instanceData
         if (taxon) {
@@ -2005,8 +2008,7 @@ and tve.element_link not in ($excludedLinks)
     }
 
     private Sql getSql() {
-        //noinspection GroovyAssignabilityCheck
-        return Sql.newInstance(dataSource_nsl)
+        return Sql.newInstance(dataSource)
     }
 
     List<TreeVersionElement> nameInAnyCurrentTree(Name name) {
@@ -2114,7 +2116,7 @@ and tve.element_link not in ($excludedLinks)
         }
     }
 
-    private updateExistingTve(TreeVersionElement currentTve, TreeVersionElement newParentTve, String userName) {
+    private TreeVersionElement updateExistingTve(TreeVersionElement currentTve, TreeVersionElement newParentTve, String userName) {
         String oldTreePath = currentTve.treePath
         String oldNamePath = currentTve.namePath
         TreeVersionElement oldParent = currentTve.parent
@@ -2125,18 +2127,17 @@ and tve.element_link not in ($excludedLinks)
         currentTve.updatedBy = userName
         currentTve.updatedAt = new Timestamp(System.currentTimeMillis())
 
+        sessionFactory.currentSession.flush()
         updateChildTreePath(currentTve.treePath, oldTreePath, currentTve.treeVersion)
         updateChildNamePath(currentTve.namePath, oldNamePath, currentTve.treeVersion)
         updateChildNameDepth(currentTve.namePath, currentTve.treeVersion)
 
-        updateParentTaxaId(newParentTve)
-        if (oldParent != currentTve.parent) {
-            updateParentTaxaId(oldParent)
-        }
+        Set<TreeVersionElement> parents = getParentTreeVersionElements(newParentTve) + getParentTreeVersionElements(oldParent)
+        updateParentTaxonId(parents, currentTve.treeVersion.hostPart())
         return currentTve
     }
 
-    private copyPublishedTve(TreeVersionElement publishedTve, TreeVersionElement newParentTve, TreeVersionElement currentTve, String userName) {
+    private TreeVersionElement copyPublishedTve(TreeVersionElement publishedTve, TreeVersionElement newParentTve, TreeVersionElement currentTve, String userName) {
         TreeVersionElement replacementTve = saveTreeVersionElement(publishedTve.treeElement, newParentTve,
                 currentTve.treeVersion, publishedTve.taxonId, publishedTve.taxonLink, userName)
         updateParentId(currentTve, replacementTve)
@@ -2144,13 +2145,12 @@ and tve.element_link not in ($excludedLinks)
         updateChildNamePath(replacementTve, currentTve)
         updateChildNameDepth(replacementTve)
 
-        updateParentTaxaId(newParentTve)
+        updateParentTaxonId(newParentTve)
         if (newParentTve != currentTve.parent) {
-            updateParentTaxaId(currentTve.parent)
+            updateParentTaxonId(currentTve.parent)
         }
 
         deleteTreeVersionElement(currentTve)
         return replacementTve
     }
-
 }

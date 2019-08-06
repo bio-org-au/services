@@ -1,19 +1,15 @@
 package au.org.biodiversity.nsl
 
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
+import grails.testing.gorm.DataTest
+import grails.testing.services.ServiceUnitTest
 import org.grails.plugins.codecs.HTMLCodec
 import spock.lang.Specification
 
-/**
- * See the API for {@link grails.test.mixin.support.GrailsUnitTestMixin} for usage instructions
- */
-@TestMixin(GrailsUnitTestMixin)
-@Mock([NameGroup, NameRank, Name])
-@TestFor(NameConstructionService)
-class NameConstructionServiceSpec extends Specification {
+class NameConstructionServiceSpec extends Specification implements ServiceUnitTest<NameConstructionService>, DataTest {
+
+    void setupSpec() {
+        mockDomains NameGroup, NameRank, Name
+    }
 
     def setup() {
         String.metaClass.encodeAsHTML = {

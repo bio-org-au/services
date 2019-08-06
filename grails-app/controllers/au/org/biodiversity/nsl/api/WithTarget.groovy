@@ -46,8 +46,7 @@ trait WithTarget {
             result.error("$targetInfo not found.")
             result.status = NOT_FOUND
         }
-        log.debug "result status is ${result.status} $result"
-        respond(result, [view: '/common/serviceResult', model: [data: result], status: result.remove('status')])
+        serviceRespond(result)
     }
 
     def withTargets(Map targets, Closure work) {
@@ -68,8 +67,7 @@ trait WithTarget {
         } else {
             result.ok = false
         }
-        log.debug "result status is ${result.status} $result"
-        respond(result, [view: '/common/serviceResult', model: [data: result], status: result.remove('status')])
+        serviceRespond(result)
     }
 
     ResultObject require(Map requirements) {
@@ -99,6 +97,17 @@ trait WithTarget {
             result.ok = false
         }
         return result
+    }
+
+    void serviceRespond(ResultObject resultObject) {
+        log.debug "result status is ${resultObject.status} $resultObject"
+        withFormat {
+            html {
+                render(view: '/common/serviceResult', model: [data: resultObject], status: resultObject.remove('status'))
+            }
+            json { respond(resultObject, status: resultObject.remove('status')) }
+            xml { respond(resultObject, status: resultObject.remove('status')) }
+        }
     }
 
     static Object got(Closure c, String msg) {

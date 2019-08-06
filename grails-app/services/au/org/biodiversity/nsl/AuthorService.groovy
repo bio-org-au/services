@@ -16,17 +16,15 @@
 
 package au.org.biodiversity.nsl
 
-import grails.gorm.transactions.Transactional
 import org.apache.shiro.authz.annotation.RequiresRoles
 
 import java.sql.Timestamp
 
-@Transactional
 class AuthorService {
 
-    def linkService
+    LinkService linkService
 
-    def autoDeduplicate(String user) {
+    void autoDeduplicate(String user) {
         runAsync {
             List<Author> authorsMarkedAsDuplicates = Author.findAllByDuplicateOfIsNotNull()
             log.debug "duplicate authors: $authorsMarkedAsDuplicates"

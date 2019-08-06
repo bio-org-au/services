@@ -1,15 +1,14 @@
 package au.org.biodiversity.nsl
 
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.services.ServiceUnitTest
 import spock.lang.Specification
 
-/**
- * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
- */
-@TestFor(TreeService)
-@Mock([NameRank, NameGroup, Instance])
-class TreeServiceUnitSpec extends Specification {
+class TreeServiceUnitSpec extends Specification implements ServiceUnitTest<TreeService>, DataTest {
+
+    void setupSpec() {
+        mockDomains NameRank, NameGroup, Instance
+    }
 
     def setup() {
         TestUte.setUpNameGroups()

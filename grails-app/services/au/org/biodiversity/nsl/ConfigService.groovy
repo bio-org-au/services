@@ -19,7 +19,6 @@ import au.org.biodiversity.nsl.config.ApplicationUser
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
-import org.apache.commons.logging.LogFactory
 
 import javax.sql.DataSource
 
@@ -37,7 +36,7 @@ import javax.sql.DataSource
 @Transactional
 class ConfigService {
 
-    DataSource dataSource_nsl
+    DataSource dataSource
 
     GrailsApplication grailsApplication
 
@@ -68,7 +67,6 @@ class ConfigService {
         shardConfig = [:]
         sql.eachRow('SELECT * FROM shard_config') { row ->
             shardConfig.put(row.name, row.value)
-            log.debug "read config: $row.name: $row.value"
         }
         sql.close()
     }

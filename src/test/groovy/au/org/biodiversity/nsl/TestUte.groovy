@@ -379,12 +379,20 @@ class TestUte {
     }
 
     static Namespace namespace() {
-        new Namespace(name: 'test', rfId: 'blah', descriptionHtml: '<p>blah</p>')
+        Namespace ns = Namespace.first()
+        ns ?: new Namespace(name: 'test', rfId: 'blah', descriptionHtml: '<p>blah</p>')
     }
 
-    static Reference genericReference() {
-        Author author = saveAuthor(abbrev: 'a1', name: 'Author One', namespace())
-        saveReference(title: "reference one", author: author, year: 1999, namespace())
+    static Reference genericReference(Author author, String refTitle) {
+        saveReference(title: refTitle, author: author, year: 1999, namespace())
+    }
+
+    static Author saveAuthor(Map params) {
+        Author a = Author.findByAbbrev(params.abbrev)
+        if (a) {
+            return a
+        }
+        saveAuthor(params, namespace())
     }
 
     static Author saveAuthor(Map params, Namespace namespace) {
@@ -396,12 +404,12 @@ class TestUte {
                 namespace: namespace
         ] << params
         Author a = new Author(base)
-        a.save()
+        a.save(flush: true, failOnError: true)
         return a
     }
 
     static Reference saveReference(Map params, Namespace namespace) {
-        Author unknownAuthor = saveAuthor(abbrev: '-', name: '-', namespace)
+        Author unknownAuthor = saveAuthor(abbrev: '-', name: '-')
         RefAuthorRole authorRole = saveRefAuthorRole('Author')
         RefAuthorRole editorRole = saveRefAuthorRole('Editor')
         Language language = saveLanguage('au')
@@ -420,37 +428,46 @@ class TestUte {
                 namespace    : namespace
         ] << params
         Reference reference = new Reference(base)
-        reference.save()
+        reference.save(flush: true, failOnError: true)
         reference.citationHtml = ReferenceService.generateReferenceCitation(reference, unknownAuthor, editorRole)
         reference.citation = NameConstructionService.stripMarkUp(reference.citationHtml)
-        reference.save()
+        reference.save(flush: true, failOnError: true)
         return reference
     }
 
     static saveRefAuthorRole(String name) {
-        RefAuthorRole role = new RefAuthorRole(name: name, rdfId: name,
-                descriptionHtml: name)
-        role.save()
+        RefAuthorRole role = RefAuthorRole.findByName(name)
+        if (!role) {
+            role = new RefAuthorRole(name: name, rdfId: name,
+                    descriptionHtml: name)
+            role.save(flush: true, failOnError: true)
+        }
         return role
     }
 
     static saveLanguage(String language) {
-        Language l = new Language(iso6391Code: language, iso6393Code: language, name: language)
-        l.save()
-        return l
+        Language lang = Language.findByIso6391Code(language)
+        if (!lang) {
+            lang = new Language(iso6391Code: language, iso6393Code: language, name: language)
+            lang.save(flush: true, failOnError: true)
+        }
+        return lang
     }
 
     static saveRefType(String name) {
-        RefType t = new RefType(
-                name: name,
-                parentOptional: true,
-                parent: null,
-                rdfId: 'blah',
-                descriptionHtml: 'blah',
-                useParentDetails: false
-        )
-        t.save()
-        return t
+        RefType refType = RefType.findByName(name)
+        if (!refType) {
+            refType = new RefType(
+                    name: name,
+                    parentOptional: true,
+                    parent: null,
+                    rdfId: 'blah',
+                    descriptionHtml: 'blah',
+                    useParentDetails: false
+            )
+            refType.save(flush: true, failOnError: true)
+        }
+        return refType
     }
 
     static String setUpInstanceTypes() {

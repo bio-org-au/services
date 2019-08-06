@@ -16,14 +16,10 @@
 
 package au.org.biodiversity.nsl
 
-import grails.test.mixin.TestFor
+import grails.testing.services.ServiceUnitTest
 import spock.lang.Specification
 
-/**
- * See the API for {@link grails.test.mixin.support.GrailsUnitTestMixin} for usage instructions
- */
-@TestFor(ApniFormatService)
-class ApniFormatServiceSpec extends Specification {
+class ApniFormatServiceSpec extends Specification implements ServiceUnitTest<ApniFormatService> {
 
     def setup() {
     }

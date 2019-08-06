@@ -8,7 +8,7 @@ import java.sql.Timestamp
 
 class AuditService implements WithSql {
 
-    def configService
+    ConfigService configService
 
     List<Audit> list(String userName, Timestamp from, Timestamp to) {
         List rows = []
@@ -19,7 +19,7 @@ WHERE action_tstamp_tx > :from
  AND action_tstamp_tx < :to 
  AND (changed_fields -> 'updated_by' LIKE :user OR (row_data -> 'updated_by' LIKE :user AND changed_fields -> 'updated_by' IS NULL))
  ORDER BY event_id DESC LIMIT 500""", [from: from, to: to, user: userName]) { GroovyResultSet row ->
-                log.debug row
+                log.debug(row.toString())
                 rows.add(new Audit(row))
             }
         }

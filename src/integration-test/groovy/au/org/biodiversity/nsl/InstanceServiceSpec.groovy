@@ -1,7 +1,8 @@
 package au.org.biodiversity.nsl
 
-import grails.test.spock.IntegrationSpec
-import grails.transaction.Rollback
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import spock.lang.Specification
 
 /**
  * User: pmcneil
@@ -10,7 +11,8 @@ import grails.transaction.Rollback
  */
 
 @Rollback
-class InstanceServiceSpec extends IntegrationSpec {
+@Integration
+class InstanceServiceSpec extends Specification {
 
     def instanceService
 

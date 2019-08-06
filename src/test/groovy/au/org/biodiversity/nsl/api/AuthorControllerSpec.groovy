@@ -1,57 +1,49 @@
 package au.org.biodiversity.nsl.api
 
-import au.org.biodiversity.nsl.Author
-import au.org.biodiversity.nsl.AuthorService
-import au.org.biodiversity.nsl.JsonRendererService
-import au.org.biodiversity.nsl.LinkService
-import au.org.biodiversity.nsl.Namespace
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-import grails.test.mixin.TestMixin
-import grails.test.mixin.domain.DomainClassUnitTestMixin
+import au.org.biodiversity.nsl.*
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
-import java.sql.Timestamp
+class AuthorControllerSpec extends Specification implements ControllerUnitTest<AuthorController>, DataTest {
 
-/**
- * See the API for {@link grails.test.mixin.web.ControllerUnitTestMixin} for usage instructions
- */
-@TestFor(AuthorController)
-@TestMixin(DomainClassUnitTestMixin)
-@Mock([Author, Namespace])
-class AuthorControllerSpec extends Specification {
+    @Shared
+    AuthorService authorServiceMock
 
-    Namespace namespace = new Namespace(name: 'cosmos',
-            rdfId : 'cosmos',
-            descriptionHtml : '<b>cosmos</b>')
+    void setupSpec() {
+        mockDomains Author, Namespace
+    }
 
     def setup() {
-        controller.transactionManager = getTransactionManager()
         controller.jsonRendererService = new JsonRendererService()
-        def linkServiceMock = mockFor(LinkService)
-        linkServiceMock.demand.getLinksForObject(0..10) { Object thing -> ["first $thing link", "second $thing link"] }
-        linkServiceMock.demand.getPreferredLinkForObject(0..10) { Object thing -> "Link for $thing" }
-        controller.jsonRendererService.linkService = linkServiceMock.createMock()
-        def authorServiceMock = mockFor(AuthorService)
-        authorServiceMock.demand.deduplicate(0..10) {Author duplicate, Author target, String user -> [success : true]}
-        controller.authorService = (AuthorService)authorServiceMock.createMock()
+
+        LinkService linkServiceMock = Mock()
+        linkServiceMock.getLinksForObject(_) >> { Object thing -> ["first $thing link", "second $thing link"] }
+        linkServiceMock.getPreferredLinkForObject(_) >> { Object thing -> "Link for $thing" }
+        controller.jsonRendererService.linkService = linkServiceMock
+
+        authorServiceMock = Mock()
+        controller.authorService = authorServiceMock
     }
 
     def cleanup() {
     }
 
-    void "Test deduplicate accepts DELETE only"() {
+    @Unroll
+    void "Test deduplicate accepts DELETE only; #method"() {
         when: "no parameters are passed"
         request.method = method
         response.format = 'json'
         controller.deduplicate(1l, 2l, 'tester')
 
         then: "? is returned"
-        response.status == status
-        println controller.response.text
+        status == stat
+        println response.text
 
         where:
-        method   | status
+        method   | stat
         'GET'    | 405
         'PUT'    | 405
         'POST'   | 405
@@ -65,37 +57,41 @@ class AuthorControllerSpec extends Specification {
         controller.deduplicate(1l, 2l, 'tester')
 
         then:
-        response.status == 404
-        controller.response.text == '{"action":null,"error":"Target author not found.\\n Duplicate author not found.","ok":false}'
+        status == 404
+        response.text == '{"action":null,"error":"Target author not found.\\n Duplicate author not found.","ok":false}'
 
         when:
         resetCallToDedupe()
-        Author target = saveAuthor(abbrev: 'a1', name: 'Author One')
-        Author duplicate = saveAuthor(abbrev: 'a2', name: 'Duplicate Author')
+        Author target = TestUte.saveAuthor([abbrev: 'a1', name: 'Author One'])
+        Author duplicate = TestUte.saveAuthor([abbrev: 'a2', name: 'Duplicate Author'])
         controller.deduplicate(duplicate.id, target.id, 'tester')
 
         then:
-        println controller.response.text
-        response.status == 200
+        1 * authorServiceMock.deduplicate(_, _, 'tester') >> {
+            Author d, Author t, String user -> [success: true]
+        }
+        println response.text
+        response.text.contains('"ok":true')
+        status == 200
+
+        when: "service returns no result it's handled"
+        resetCallToDedupe()
+        controller.deduplicate(duplicate.id, target.id, 'break mock')
+
+        then:
+        1 * authorServiceMock.deduplicate(_, _, _) >> {
+            return null
+        }
+        println response.text
+        response.text.contains('Author deduplication failed: No results from service.')
+        status == 500
+
     }
 
     private resetCallToDedupe() {
         response.reset()
         response.format = 'json'
         request.method = 'DELETE'
-    }
-
-    private Author saveAuthor(Map params) {
-        Map base = [
-                updatedAt : new Timestamp(System.currentTimeMillis()),
-                updatedBy : 'test',
-                createdAt :new Timestamp(System.currentTimeMillis()),
-                createdBy : 'test',
-                namespace : namespace
-        ] << params
-        Author a = new Author(base)
-        a.save()
-        return a
     }
 
 }

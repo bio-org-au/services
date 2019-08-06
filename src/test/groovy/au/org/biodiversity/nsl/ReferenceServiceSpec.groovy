@@ -16,10 +16,8 @@
 
 package au.org.biodiversity.nsl
 
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-import grails.test.mixin.TestMixin
-import grails.test.mixin.domain.DomainClassUnitTestMixin
+import grails.testing.gorm.DataTest
+import grails.testing.services.ServiceUnitTest
 import org.grails.plugins.codecs.HTMLCodec
 import spock.lang.Specification
 
@@ -27,13 +25,7 @@ import java.sql.Timestamp
 
 //TODO convert to use TestUte
 
-/**
- * See the API for {@link grails.test.mixin.support.GrailsUnitTestMixin} for usage instructions
- */
-@TestFor(ReferenceService)
-@TestMixin(DomainClassUnitTestMixin)
-@Mock([Author, Namespace, Reference, RefAuthorRole, Language, RefType])
-class ReferenceServiceSpec extends Specification {
+class ReferenceServiceSpec extends Specification  implements ServiceUnitTest<ReferenceService>, DataTest {
 
     private Namespace namespace = new Namespace(name: 'cosmos',
             rdfId: 'cosmos',
@@ -44,6 +36,10 @@ class ReferenceServiceSpec extends Specification {
     private RefAuthorRole authorRole
     private Language language
     private RefType paper
+
+    void setupSpec() {
+        mockDomains Author, Namespace, Reference, RefAuthorRole, Language, RefType
+    }
 
     def setup() {
         service.transactionManager = getTransactionManager()
