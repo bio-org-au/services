@@ -480,3 +480,8 @@ div.debug {
     padding: 1em;
     background-color: rgba(92, 184, 92, 0.65);
 }
+
+.lines-6 {
+    max-height: 8rem;
+    overflow: auto;
+}

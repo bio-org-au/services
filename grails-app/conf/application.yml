@@ -104,6 +104,7 @@ hibernate:
     use_second_level_cache: false
     use_query_cache: false
 
+---
 grails:
   gorm:
     failOnError: true

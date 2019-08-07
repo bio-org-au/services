@@ -47,5 +47,7 @@ class UrlMappings {
 
         "/"(view: "/index")
         "500"(controller: 'error', action: 'index')
+        "401"(controller: "auth", action: "login")
+        "403"(controller: "auth", action: "unauthorized")
     }
 }

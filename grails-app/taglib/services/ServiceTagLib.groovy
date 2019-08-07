@@ -469,4 +469,11 @@ class ServiceTagLib {
         }
     }
 
+    def appConfig = {attrs, body ->
+        Properties props = grailsApplication.config.toProperties()
+                props.keySet().sort().each { key ->
+            out << body(key: key, value: props[key])
+        }
+    }
+
 }

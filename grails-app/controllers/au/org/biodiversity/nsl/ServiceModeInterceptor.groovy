@@ -11,12 +11,13 @@ class ServiceModeInterceptor {
 
     ServiceModeInterceptor() {
         matchAll()
+                .excludes(controller:"auth")
     }
 
     boolean before() {
         if (adminService.serviceMode()) {
             return accessControl() {
-                hasRole('admin')
+                role('admin')
             }
         }
         true
