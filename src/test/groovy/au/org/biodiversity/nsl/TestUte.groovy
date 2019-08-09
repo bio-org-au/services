@@ -384,7 +384,7 @@ class TestUte {
     }
 
     static Reference genericReference(Author author, String refTitle) {
-        saveReference(title: refTitle, author: author, year: 1999, namespace())
+        saveReference(title: refTitle, author: author, isoPublicationDate: '1999', year: 1999, namespace())
     }
 
     static Author saveAuthor(Map params) {

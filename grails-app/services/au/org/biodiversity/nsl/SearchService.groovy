@@ -76,10 +76,10 @@ class SearchService {
         }
 
         if (params.year) {
-            queryParams.year = params.year.toInteger()
+            queryParams.year = params.year
             from.add('Instance i')
             from.add('Reference r')
-            and << "r.year = :year"
+            and << "r.isoPublicationDate = :year"
             and << "i.reference = r"
             and << "i.name = n"
         }

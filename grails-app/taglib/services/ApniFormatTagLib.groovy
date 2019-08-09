@@ -221,7 +221,7 @@ class ApniFormatTagLib {
 
     def harvard = { attrs ->
         Reference reference = attrs.reference
-        out << "<span title=\"${reference.citation}\">${reference.author.name} ($reference.year)</span>"
+        out << "<span title=\"${reference.citation}\">${reference.author.name} ($reference.getIsoYear())</span>"
     }
 
     def branch = { attrs, body ->
@@ -365,7 +365,7 @@ class ApniFormatTagLib {
     }
 
     def legacyAPCInstanceNotes = { attrs, body ->
-        Instance instance = attrs.instance
+        Instance instance = attrs.instance as Instance
         Map notes = [:]
         notes.comment = instance.instanceNotes.find { InstanceNote note ->
             note.instanceNoteKey.name == 'APC Comment'
@@ -375,6 +375,22 @@ class ApniFormatTagLib {
         }
         if (notes.comment || notes.dist) {
             out << body(notes: notes)
+        }
+    }
+
+    def nameResources = { attrs, body ->
+        Name name = attrs.name as Name
+        name.resources.each { Resource r ->
+            if (r.resourceType.display) {
+                out << body(res: r)
+            }
+        }
+    }
+
+    def resourceIcon = {attrs ->
+        Resource r = attrs.resource as Resource
+        if(r.resourceType.cssIcon){
+            out << "<i class='${r.resourceType.cssIcon}'></i>"
         }
     }
 }

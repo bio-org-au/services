@@ -96,6 +96,9 @@ class NameService implements AsyncHelper {
                     Comment.findAllByName(name)*.delete()
                     notifyNameEvent(name, 'deleted')
                     NameTagName.findAllByName(name)*.delete()
+                    name.resources.each { resource ->
+                        name.removeFromResources(resource)
+                    }
                     name.delete()
                     Map response = linkService.deleteNameLinks(name, reason)
                     if (!response.success) {

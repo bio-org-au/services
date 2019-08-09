@@ -52,24 +52,31 @@ class ApniFormatService {
             Integer aPrimary = refGroups[a].find { Instance i -> i.instanceType.primaryInstance } ? 1 : 0
             Integer bPrimary = refGroups[b].find { Instance i -> i.instanceType.primaryInstance } ? 1 : 0
             //NSL-1827 use parent details for sorting
-            Integer aYear = ReferenceService.findReferenceYear(a)
-            Integer bYear = ReferenceService.findReferenceYear(b)
-            if (aYear == bYear) {
+            String aIsoDate = ReferenceService.findReferenceIsoPublicationDate(a)
+            String bIsoDate = ReferenceService.findReferenceIsoPublicationDate(b)
+
+            String aIsoYear = ReferenceService.findReferenceIsoPublicationYear(a)
+            String bIsoYear = ReferenceService.findReferenceIsoPublicationYear(b)
+
+            if (aIsoYear == bIsoYear) { // compare year component of IsoDates
                 if (aProto == bProto) {
                     if (aPrimary == bPrimary) {
-                        if (a == b) {
-                            if (a.pages == b.pages) {
-                                return a.id <=> b.id  //highest Id first
+                        if (aIsoDate == bIsoDate) { // compare full IsoDates
+                            if (a == b) {
+                                if (a.pages == b.pages) {
+                                    return a.id <=> b.id  //highest Id first
+                                }
+                                return a.pages <=> b.pages //reverse string sort 1s, then 2s
                             }
-                            return a.pages <=> b.pages //reverse string sort 1s, then 2s
+                            return a.citation <=> b.citation //alpha sort by reference citation
                         }
-                        return a.citation <=> b.citation //alpha sort by reference citation
+                        return (aIsoDate) <=> (bIsoDate) //lowest IsoDate first
                     }
                     return bPrimary <=> aPrimary // primary reference first (1)
                 }
                 return bProto <=> aProto // proto reference first (1)
             }
-            return (aYear) <=> (bYear) //lowest year first
+            return (aIsoDate) <=> (bIsoDate) //lowest IsoDate first
         }
         return [references: references, instancesByRef: refGroups]
     }

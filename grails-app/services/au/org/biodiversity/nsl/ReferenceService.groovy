@@ -184,8 +184,8 @@ class ReferenceService implements AsyncHelper {
 
     private static String pubDate(Reference reference) {
         use(ReferenceStringCategory) {
-            if (reference.year) {
-                return "(${reference.year})"
+            if (reference.isoPublicationDate) {
+                return "(${reference.isoPublicationDate})"
             }
             if (reference.publicationDate) {
                 return "(${reference.publicationDate.clean()})"
@@ -197,16 +197,28 @@ class ReferenceService implements AsyncHelper {
         }
     }
 
-    static Integer findReferenceYear(Reference reference) {
+    static String findReferenceIsoPublicationYear(Reference reference) {
         if (!reference) {
             return null
         }
-        if (reference.year) {
-            return reference.year
+        if (reference.isoPublicationDate) {
+            return reference.getIsoYear()
         }
-
         if (reference.refType.useParentDetails) {
-            return reference.parent.year
+            return reference.parent.getIsoYear()
+        }
+        return null
+    }
+
+    static String findReferenceIsoPublicationDate(Reference reference) {
+        if (!reference) {
+            return null
+        }
+        if (reference.isoPublicationDate) {
+            return reference.isoPublicationDate
+        }
+        if (reference.refType.useParentDetails) {
+            return reference.parent.isoPublicationDate
         }
         return null
     }

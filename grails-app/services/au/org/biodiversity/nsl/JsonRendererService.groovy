@@ -20,7 +20,6 @@ import grails.converters.JSON
 import grails.converters.XML
 import org.hibernate.Hibernate
 import org.hibernate.proxy.HibernateProxy
-import org.springframework.context.MessageSource
 
 class JsonRendererService {
 
@@ -62,7 +61,7 @@ class JsonRendererService {
     // we need this anywhere that citation and citationHtml appear as fields
     static String citationAuthYear(Reference reference) {
         if (reference) {
-            return "${reference.author?.abbrev ?: reference.author?.name ?: reference.author?.fullName}, ${reference.year}"
+            return "${reference.author?.abbrev ?: reference.author?.name ?: reference.author?.fullName}, ${reference.getIsoYear()}"
         } else {
             return null
         }
@@ -315,7 +314,7 @@ class JsonRendererService {
                 title            : reference.title,
                 displayTitle     : reference.displayTitle,
                 abbrevTitle      : reference.abbrevTitle,
-                year             : reference.year,
+                year             : reference.getIsoYear()?.toInteger(),
                 volume           : reference.volume,
                 edition          : reference.edition,
                 pages            : reference.pages,
