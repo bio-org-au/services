@@ -16,19 +16,30 @@
 
 package au.org.biodiversity.nsl
 
+import groovy.transform.CompileStatic
+import org.grails.plugins.codecs.HTMLCodec
+
 class NameConstructionService {
 
-    def icnNameConstructionService
-    def icznNameConstructionService
-    def icnpNameConstructionService
-    def icvcnNameConstructionService
+    NameConstructor icnNameConstructionService
+    NameConstructor icznNameConstructionService
+    NameConstructor icnpNameConstructionService
+    NameConstructor icvcnNameConstructionService
 
     static transactional = false
 
+    private static HTMLCodec htmlCodec = new HTMLCodec()
+
+    @CompileStatic
     static String stripMarkUp(String string) {
-        string?.replaceAll(/<[^>]*>/, '')?.replaceAll(/(&lsquo;|&rsquo;)/, "'")?.decodeHTML()?.trim()
+        if (string) {
+            String s = htmlCodec.decoder.decode(string.replaceAll(/<[^>]*>/, '')?.replaceAll(/(&lsquo;|&rsquo;)/, "'")).toString()
+            return s.trim()
+        }
+        return string
     }
 
+    @CompileStatic
     static String join(List<String> bits) {
         bits.findAll { it }.join(' ')
     }
@@ -42,6 +53,7 @@ class NameConstructionService {
      * @param simpleName
      * @return sort name string
      */
+    @CompileStatic
     String makeSortName(Name name, String simpleName) {
 
         String abbrev = name.nameRank.abbrev
@@ -53,7 +65,8 @@ class NameConstructionService {
         return sortName
     }
 
-    Map constructName(Name name) {
+    @CompileStatic
+    ConstructedName constructName(Name name) {
         if (!name) {
             throw new NullPointerException("Name can't be null.")
         }
@@ -77,6 +90,7 @@ class NameConstructionService {
         throw new UnsupportedNomCode("Unsupported Nomenclatural code for name construction $name.nameType.nameGroup.name")
     }
 
+    @CompileStatic
     String constructAuthor(Name name) {
         if (!name) {
             throw new NullPointerException("Name can't be null.")

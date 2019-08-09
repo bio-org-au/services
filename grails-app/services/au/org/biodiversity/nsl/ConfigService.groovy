@@ -16,9 +16,16 @@
 package au.org.biodiversity.nsl
 
 import au.org.biodiversity.nsl.config.ApplicationUser
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.Appender
+import ch.qos.logback.core.FileAppender
+import ch.qos.logback.core.recovery.ResilientFileOutputStream
 import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
+import org.slf4j.LoggerFactory
 
 import javax.sql.DataSource
 
@@ -229,6 +236,38 @@ class ConfigService {
 
     String printAppConfig() {
         appConfig().toString()
+    }
+
+    List<FileAppender> getLogFiles() {
+        LoggerContext context = (LoggerContext)LoggerFactory.getILoggerFactory()
+        List<FileAppender> logFiles = []
+        for (Logger logger : context.getLoggerList()) {
+            for (Iterator<Appender<ILoggingEvent>> index = logger.iteratorForAppenders(); index.hasNext();) {
+                Appender<ILoggingEvent> appender = index.next()
+
+                if (appender instanceof FileAppender) {
+                    FileAppender<ILoggingEvent> fa = (FileAppender<ILoggingEvent>)appender
+                    logFiles.add(fa)
+                }
+            }
+        }
+        return logFiles
+    }
+
+    File getLogFile(String name) {
+        LoggerContext context = (LoggerContext)LoggerFactory.getILoggerFactory()
+
+        for (Logger logger : context.getLoggerList()) {
+            for (Iterator<Appender<ILoggingEvent>> index = logger.iteratorForAppenders(); index.hasNext();) {
+                Appender<ILoggingEvent> appender = index.next()
+
+                if (appender instanceof FileAppender && appender.name == name) {
+                    FileAppender<ILoggingEvent> fa = (FileAppender<ILoggingEvent>)appender
+                    ResilientFileOutputStream rfos = (ResilientFileOutputStream)fa.getOutputStream()
+                    return rfos.getFile()
+                }
+            }
+        }
     }
 
     Sql getSqlForNSLDB() {

@@ -24,7 +24,7 @@ class IcznNameConstructionService implements NameConstructor {
         bits.findAll { it }.join(' ')
     }
 
-    Map constructName(Name name) {
+    ConstructedName constructName(Name name) {
         if (!name) {
             throw new NullPointerException("Name can't be null.")
         }
@@ -50,14 +50,14 @@ class IcznNameConstructionService implements NameConstructor {
         return [fullMarkedUpName: (name.nameElement?.encodeAsHTML() ?: '?'), simpleMarkedUpName: (name.nameElement.encodeAsHTML() ?: '?')]
     }
 
-    private static Map constructInformalName(Name name) {
+    private static ConstructedName constructInformalName(Name name) {
         List<String> bits = ["<element>${name.nameElement.encodeAsHTML()}</element>", constructAuthor(name)]
 
         String markedUpName = "<informal><name data-id='$name.id'>${join(bits)}</name></informal>"
-        return [fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName]
+        return new ConstructedName(fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName)
     }
 
-    private Map constructAutonymScientificName(Name name) {
+    private ConstructedName constructAutonymScientificName(Name name) {
         use(NameConstructionUtils) {
             Name nameParent = name.nameParent()
             String precedingName = constructPrecedingNameString(nameParent, name)
@@ -70,11 +70,11 @@ class IcznNameConstructionService implements NameConstructor {
 
             String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
             //need to remove Authors below from simple name because preceding name includes author in autonyms
-            return [fullMarkedUpName: fullMarkedUpName, simpleMarkedUpName: fullMarkedUpName.removeAuthors()]
+            return new ConstructedName(fullMarkedUpName: fullMarkedUpName, simpleMarkedUpName: fullMarkedUpName.removeAuthors())
         }
     }
 
-    private Map constructScientificName(Name name) {
+    private ConstructedName constructScientificName(Name name) {
         use(NameConstructionUtils) {
             Name nameParent = (RankUtils.rankLowerThan(name.nameRank, 'Genus')) ? name.parent : null
             String precedingName = constructPrecedingNameString(nameParent, name)
@@ -99,7 +99,7 @@ class IcznNameConstructionService implements NameConstructor {
 
             String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(fullNameParts)}</name></scientific>"
             String simpleMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
-            return [fullMarkedUpName: fullMarkedUpName, simpleMarkedUpName: simpleMarkedUpName]
+            return new ConstructedName(fullMarkedUpName: fullMarkedUpName, simpleMarkedUpName: simpleMarkedUpName)
         }
     }
 

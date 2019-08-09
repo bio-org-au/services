@@ -3,7 +3,7 @@
   Date: 27/03/15
 --%>
 
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page import="ch.qos.logback.core.FileAppender" contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
   <meta name="layout" content="main">
@@ -224,6 +224,13 @@
           ${dbInfo}
         </p>
 
+        <h3>Log files</h3>
+        <ul>
+        <g:each in="${logFiles}" var="f">
+          <li>${f.name}: ${f.file}</li>
+        </g:each>
+        </ul>
+
         <h3>Other</h3>
 
         <table class="table table-striped">
@@ -234,7 +241,7 @@
           <st:appConfig>
             <tr>
               <td valign="top"><b>${key}</b></td>
-              <td> <div class="lines-6">${value}</div></td>
+              <td><div class="lines-6">${value}</div></td>
             </tr>
           </st:appConfig>
         </table>
@@ -244,7 +251,8 @@
 
 </div>
 
-<div id='logs' class="row">
+<h2>Log</h2>
+<div id='logs' class="container">
 
 </div>
 

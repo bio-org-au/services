@@ -17,6 +17,7 @@
 package au.org.biodiversity.nsl
 
 import au.org.biodiversity.nsl.api.ResultObject
+import ch.qos.logback.core.FileAppender
 import grails.gorm.transactions.Transactional
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authz.annotation.RequiresRoles
@@ -27,7 +28,6 @@ import static org.springframework.http.HttpStatus.OK
 class AdminController {
 
     def nameService
-    def apcTreeService
     def referenceService
     def instanceService
     def authorService
@@ -44,15 +44,15 @@ class AdminController {
         stats.deletedNames = Name.executeQuery("select n from Name n where n.nameStatus.name = '[deleted]'")
         Boolean servicing = adminService.serviceMode()
         String dbInfo = postgresInfoService.connectionInfo.toString()
-        String appConfig = configService.printAppConfig()
-        [pollingNames: nameService.pollingStatus(), stats: stats, servicing: servicing, dbInfo: dbInfo, appConfig: appConfig]
+        List<FileAppender> logFiles = configService.getLogFiles()
+        [pollingNames: nameService.pollingStatus(), stats: stats, servicing: servicing, dbInfo: dbInfo, logFiles: logFiles]
     }
 
     @RequiresRoles('admin')
     checkNames() {
         log.info "check all names"
-        File tempFile = nameService.checkAllNames()
-        render(file: tempFile, fileName: 'name-changes.csv', contentType: 'text/plain')
+        nameService.checkAllNames()
+        redirect(action: 'index')
     }
 
     @RequiresRoles('admin')
@@ -109,8 +109,8 @@ class AdminController {
             SecurityUtils.subject.checkRole('admin')
             List<String> processLog = logSummary(300)
             render(template: 'log', model: [processLog: processLog])
-        } catch (ignored) {
-            render(template: 'log', model: [processLog: ["You are not logged in."]])
+        } catch (e) {
+            render(template: 'log', model: [processLog: ["You are not logged in? $e.message"]])
         }
     }
 
@@ -136,24 +136,9 @@ class AdminController {
     }
 
     @RequiresRoles('admin')
-    notifyMissingApniNames() {
-        log.debug "adding notifications for names not in APNI"
-        nameService.addNamesNotInNameTree(configService.nameTreeName)
-        redirect(action: 'index')
-    }
-
-    @RequiresRoles('admin')
-    transferApcProfileData() {
-        log.debug "applying instance APC comments and distribution text to the APC tree"
-        flash.message = apcTreeService.transferApcProfileData()
-        redirect(action: 'index')
-    }
-
-    @RequiresRoles('admin')
     deduplicateMarkedReferences() {
         String user = SecurityUtils.subject.principal.toString()
         ResultObject results = new ResultObject(referenceService.deduplicateMarked(user))
-        //noinspection GroovyAssignabilityCheck
         respond(results, [status: OK, view: '/common/serviceResult', model: [data: results,]])
     }
 
@@ -161,7 +146,6 @@ class AdminController {
     deduplicateMarkedNames() {
         String user = SecurityUtils.subject.principal.toString()
         ResultObject results = new ResultObject(nameService.deduplicateMarked(user))
-        //noinspection GroovyAssignabilityCheck
         respond(results, [status: OK, view: '/common/serviceResult', model: [data: results,]])
     }
 
@@ -187,12 +171,11 @@ class AdminController {
         redirect(action: 'index')
     }
 
-    private static List<String> logSummary(Integer lineLength) {
-        String logFileName = (System.getProperty('catalina.base') ?: 'target') + "/logs/nsl-services.log"
-        List<String> logLines = new File(logFileName).readLines().reverse().take(50)
+    private List<String> logSummary(Integer lineLength) {
+        List<String> logLines = configService.getLogFile('dailyFileAppender')?.readLines()?.reverse()?.take(50) ?: []
         List<String> processedLog = []
         logLines.each { String line ->
-            line = line.replaceAll(/grails.app.services.au.org.biodiversity.nsl./, '')
+            line = line.replaceAll(/\[[0-9;]*m/, '')
             if (line.size() > lineLength) {
                 line = line[0..lineLength] + '...'
             }
@@ -200,6 +183,7 @@ class AdminController {
         }
         return processedLog
     }
+
 
 
 }

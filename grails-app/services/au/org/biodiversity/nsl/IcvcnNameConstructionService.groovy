@@ -24,7 +24,7 @@ class IcvcnNameConstructionService implements NameConstructor {
         bits.findAll { it }.join(' ')
     }
 
-    Map constructName(Name name) {
+    ConstructedName constructName(Name name) {
         if (!name) {
             throw new NullPointerException("Name can't be null.")
         }
@@ -50,15 +50,15 @@ class IcvcnNameConstructionService implements NameConstructor {
         return [fullMarkedUpName: (name.nameElement?.encodeAsHTML() ?: '?'), simpleMarkedUpName: (name.nameElement.encodeAsHTML() ?: '?')]
     }
 
-    private static Map constructInformalName(Name name) {
+    private static ConstructedName constructInformalName(Name name) {
         List<String> bits = ["<element>${name.nameElement.encodeAsHTML()}</element>", constructAuthor(name)]
 
         String markedUpName = "<informal><name data-id='$name.id'>${join(bits)}</name></informal>"
-        return [fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName]
+        return new ConstructedName(fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName)
     }
 
     //TODO remove after removing autonym type from the virus database.
-    private Map constructAutonymScientificName(Name name) {
+    private ConstructedName constructAutonymScientificName(Name name) {
         use(NameConstructionUtils) {
             String element = "<element>${name.nameElement.encodeAsHTML()}</element>"
             String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
@@ -66,11 +66,11 @@ class IcvcnNameConstructionService implements NameConstructor {
             List<String> simpleNameParts = [element, manuscript]
 
             String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
-            return [fullMarkedUpName: fullMarkedUpName, simpleMarkedUpName: fullMarkedUpName]
+            return new ConstructedName(fullMarkedUpName: fullMarkedUpName, simpleMarkedUpName: fullMarkedUpName)
         }
     }
 
-    private Map constructScientificName(Name name) {
+    private ConstructedName constructScientificName(Name name) {
         use(NameConstructionUtils) {
 
             String element = "<element>${name.nameElement.encodeAsHTML()}</element>"
@@ -81,7 +81,7 @@ class IcvcnNameConstructionService implements NameConstructor {
 
             String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(fullNameParts)}</name></scientific>"
             String simpleMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
-            return [fullMarkedUpName: fullMarkedUpName, simpleMarkedUpName: simpleMarkedUpName]
+            return new ConstructedName(fullMarkedUpName: fullMarkedUpName, simpleMarkedUpName: simpleMarkedUpName)
         }
     }
 

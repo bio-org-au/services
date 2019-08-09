@@ -16,17 +16,21 @@
 
 package au.org.biodiversity.nsl
 
+import grails.async.Promise
 import grails.gorm.transactions.Transactional
+import groovy.transform.CompileStatic
 import org.apache.shiro.authz.annotation.RequiresRoles
+import org.hibernate.Session
 import org.quartz.Scheduler
 import org.springframework.transaction.TransactionStatus
 
 import java.sql.Timestamp
 
+import static grails.async.Promises.task
+
 @Transactional
 class NameService {
 
-    def configService
     def restCallService
     def nameConstructionService
     def linkService
@@ -85,7 +89,6 @@ class NameService {
      * @param name
      */
     @RequiresRoles('admin')
-
     Map deleteName(Name name, String reason) {
         Map canWeDelete = canDelete(name, reason)
         if (canWeDelete.ok) {
@@ -99,11 +102,12 @@ class NameService {
                     Map response = linkService.deleteNameLinks(name, reason)
                     if (!response.success) {
                         List<String> errors = ["Error deleting link from the mapper"]
-                        errors.addAll(response.errors)
+                        errors.addAll(response.errors as String)
                         t.setRollbackOnly()
                         return [ok: false, errors: errors]
                     }
                     t.flush()
+                    return canWeDelete
                 }
             } catch (e) {
                 List<String> errors = [e.message]
@@ -143,15 +147,15 @@ class NameService {
         }
         Integer children = Name.countByParent(name)
         if (children > 0) {
-            errors << "This name is a parent of $children names"
+            errors << "This name is a parent of $children names".toString()
         }
         Integer stepChildren = Name.countBySecondParent(name)
         if (stepChildren > 0) {
-            errors << "This name is a second parent of $stepChildren names"
+            errors << "This name is a second parent of $stepChildren names".toString()
         }
         Integer duplicates = Name.countByDuplicateOf(name)
         if (duplicates > 0) {
-            errors << "This name $duplicates duplicates names. Delete them first?"
+            errors << "This name $duplicates duplicates names. Delete them first?".toString()
         }
 
         if (errors.size() > 0) {
@@ -163,7 +167,7 @@ class NameService {
     Map deduplicateMarked(String user) {
         Map report = [
                 namesDeduplicated: new HashSet<Name>(),
-                errors: []
+                errors           : []
         ]
 
         //remove nested duplicates first
@@ -204,6 +208,7 @@ class NameService {
         Map result = [:]
         Boolean success = true
         if (dupe != target) {
+            //noinspection GroovyMissingReturnStatement
             Name.withTransaction { tx ->
                 try {
                     rewireDuplicateTo(target, dupe, user)
@@ -324,11 +329,11 @@ class NameService {
     }
 
     private void updateFullName(Name name, String updatedBy) {
-        Map fullNameMap = nameConstructionService.constructName(name)
-        name.fullNameHtml = fullNameMap.fullMarkedUpName
-        name.simpleNameHtml = fullNameMap.simpleMarkedUpName
-        name.simpleName = nameConstructionService.stripMarkUp(fullNameMap.simpleMarkedUpName)
-        name.fullName = nameConstructionService.stripMarkUp(fullNameMap.fullMarkedUpName)
+        ConstructedName constructedName = nameConstructionService.constructName(name)
+        name.fullNameHtml = constructedName.fullMarkedUpName
+        name.simpleNameHtml = constructedName.simpleMarkedUpName
+        name.simpleName = constructedName.plainSimpleName
+        name.fullName = constructedName.plainFullName
         name.updatedBy = updatedBy
         name.updatedAt = new Timestamp(System.currentTimeMillis())
         name.save()
@@ -377,18 +382,33 @@ class NameService {
 
     void notifyNameEvent(Name name, String type) {
         if (!restClients.empty) {
-            runAsync {
+            doAsync('Notify name event') {
                 String link = linkService.getPreferredLinkForObject(name)
-                restClients.each { String uri ->
+                restClients.each { uri ->
                     restCallService.blindJsonGet("$uri/$type?id=${link}")
                 }
             }
         }
     }
 
+    @SuppressWarnings("GrMethodMayBeStatic")
+    private void doAsync(String description, Closure work) {
+        Promise p = task {
+            Name.withNewTransaction { tx ->
+                work()
+            }
+        }
+        p.onError { Throwable err ->
+            log.error "Error $description $err.message"
+            err.printStackTrace()
+        }
+        p.onComplete { result ->
+            log.info "$description complete."
+        }
+    }
 
-    def reconstructAllNames() {
-        runAsync {
+    void reconstructAllNames() {
+        doAsync('Reconstruct all names') {
             String updaterWas = pollingStatus()
             pauseUpdates()
             Closure query = { Map params ->
@@ -397,24 +417,29 @@ class NameService {
 
             chunkThis(1000, query) { List<Name> names, bottom, top ->
                 long start = System.currentTimeMillis()
-                Name.withSession { session ->
-                    names.each { Name name ->
-                        Map constructedNames = nameConstructionService.constructName(name)
+                int itemNo = bottom
+                try {
+                    Name.withSession { session ->
+                        names.each { Name name ->
+                            ConstructedName constructedName = nameConstructionService.constructName(name)
 
-                        if (!(name.fullNameHtml && name.simpleNameHtml && name.fullName && name.simpleName && name.sortName) ||
-                                name.fullNameHtml != constructedNames.fullMarkedUpName) {
-                            name.fullNameHtml = constructedNames.fullMarkedUpName
-                            name.fullName = nameConstructionService.stripMarkUp(constructedNames.fullMarkedUpName)
-                            name.simpleNameHtml = constructedNames.simpleMarkedUpName
-                            name.simpleName = nameConstructionService.stripMarkUp(constructedNames.simpleMarkedUpName)
-                            name.sortName = nameConstructionService.makeSortName(name, name.simpleName)
-                            name.save()
-//                            log.debug "saved $name.fullName"
-                        } else {
-                            name.discard()
+                            if (!(name.fullNameHtml && name.simpleNameHtml && name.fullName && name.simpleName && name.sortName) ||
+                                    name.fullNameHtml != constructedName.fullMarkedUpName) {
+                                name.fullNameHtml = constructedName.fullMarkedUpName
+                                name.fullName = constructedName.plainFullName
+                                name.simpleNameHtml = constructedName.simpleMarkedUpName
+                                name.simpleName = constructedName.plainSimpleName
+                                name.sortName = nameConstructionService.makeSortName(name, name.simpleName)
+                                name.save()
+                            }
+                            itemNo++
                         }
+                        session.flush()
+                        session.clear()
                     }
-                    session.flush()
+                } catch (e) {
+                    println "At item $itemNo got error $e.message"
+                    throw e
                 }
                 log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
             }
@@ -424,21 +449,21 @@ class NameService {
         }
     }
 
-    File checkAllNames() {
-        File tempFile = File.createTempFile('name-check', 'txt')
-        runAsync {
+    void checkAllNames() {
+        doAsync('Check all names') {
+            File tempFile = File.createTempFile('name-check', 'txt')
+            log.info "Writing results to $tempFile.absolutePath"
             Closure query = { Map params ->
                 Name.listOrderById(params)
             }
 
-
             chunkThis(1000, query) { List<Name> names, bottom, top ->
                 long start = System.currentTimeMillis()
-                Name.withSession { session ->
+                Name.withSession { Session session ->
                     names.each { Name name ->
                         try {
-                            Map constructedNames = nameConstructionService.constructName(name)
-                            String strippedName = nameConstructionService.stripMarkUp(constructedNames.fullMarkedUpName)
+                            ConstructedName constructedNames = nameConstructionService.constructName(name)
+                            String strippedName = constructedNames.plainFullName
                             if (name.fullName != strippedName) {
                                 String msg = "$name.id, \"${name.nameType.name}\", \"${name.nameRank.displayName}\", \"$name.fullName\", \"${strippedName}\""
                                 log.info(msg)
@@ -450,19 +475,16 @@ class NameService {
                             tempFile.append("$msg\n")
                             e.printStackTrace()
                         }
-                        name.discard()
                     }
                     session.clear()
                 }
-
                 log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
             }
         }
-        return tempFile
     }
 
-    def reconstructSortNames() {
-        runAsync {
+    void reconstructSortNames() {
+        doAsync('Reconstruct sort names') {
             String updaterWas = pollingStatus()
             pauseUpdates()
             Closure query = { Map params ->
@@ -477,11 +499,10 @@ class NameService {
                         if (!(name.sortName) || name.sortName != sortName) {
                             name.sortName = sortName
                             name.save()
-                        } else {
-                            name.discard()
                         }
                     }
                     session.flush()
+                    session.clear()
                 }
                 log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
             }
@@ -491,8 +512,8 @@ class NameService {
         }
     }
 
-    def constructMissingNames() {
-        runAsync {
+    void constructMissingNames() {
+        doAsync('Construct missing names') {
             String updaterWas = pollingStatus()
             pauseUpdates()
             Closure query = { Map params ->
@@ -507,33 +528,23 @@ or n.fullNameHtml is null""", params)
                 long start = System.currentTimeMillis()
                 Name.withSession { session ->
                     names.each { Name name ->
-                        Map constructedNames = nameConstructionService.constructName(name)
+                        ConstructedName constructedNames = nameConstructionService.constructName(name)
 
                         name.fullNameHtml = constructedNames.fullMarkedUpName
-                        name.fullName = nameConstructionService.stripMarkUp(constructedNames.fullMarkedUpName)
+                        name.fullName = constructedNames.plainFullName
                         name.simpleNameHtml = constructedNames.simpleMarkedUpName
-                        name.simpleName = nameConstructionService.stripMarkUp(constructedNames.simpleMarkedUpName)
+                        name.simpleName = constructedNames.plainSimpleName
                         name.save()
                         log.debug "saved $name.fullName"
                     }
                     session.flush()
+                    session.clear()
                 }
                 log.info "${names.size()} done. 1000 took ${System.currentTimeMillis() - start} ms"
             }
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
-        }
-    }
-
-    def addNamesNotInNameTree(String treeLabel) {
-        List<Name> namesNotInApni = Name.executeQuery("""select n from Name n
-where n.parent is not null
-and n.nameType.name <> 'common'
-and not exists (select t from Node t where cast(n.id as string) = t.nameUriIdPart and t.root.label = '${treeLabel}')""")
-        namesNotInApni.each { Name name ->
-            Notification notification = new Notification(objectId: name.id, message: 'name created')
-            notification.save()
         }
     }
 
@@ -545,6 +556,7 @@ or n.fullName is null
 or n.fullNameHtml is null""")?.first() as Integer
     }
 
+    @CompileStatic
     static chunkThis(Integer chunkSize, Closure query, Closure work) {
 
         Integer i = 0
@@ -552,14 +564,14 @@ or n.fullNameHtml is null""")?.first() as Integer
         while (size == chunkSize) {
             Integer top = i + chunkSize
             //needs to be ordered or we might repeat items
-            List items = query([offset: i, max: chunkSize])
+            List items = query([offset: i, max: chunkSize]) as List
             work(items, i, top)
             i = top
             size = items.size()
         }
     }
 
-    def updateMissingUris() {
+    void updateMissingUris() {
         Name.findAllByUriIsNull().each { Name name ->
             name.uri = linkService.getPreferredLinkForObjectSansHost(name)
             name.save()

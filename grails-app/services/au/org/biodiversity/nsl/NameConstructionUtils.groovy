@@ -56,10 +56,10 @@ class NameConstructionUtils {
     }
 
     static String removeManuscript(String string) {
-        string.replaceAll(/ (<manuscript>MS<\/manuscript>)/, '')
+        string?.replaceAll(/ (<manuscript>MS<\/manuscript>)/, '')
     }
 
     static String removeAuthors(String string) {
-        string.replaceAll(/ (<authors>.*?<\/authors>)/, '')
+        string?.replaceAll(/ (<authors>.*?<\/authors>)/, '')
     }
 }

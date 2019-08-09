@@ -121,9 +121,12 @@ class NameController implements WithTarget {
 
     def nameStrings(Name name) {
         withTarget(name) { ResultObject result, target ->
-            result.result = nameConstructionService.constructName(name)
-            result.result.fullName = nameConstructionService.stripMarkUp(result.result.fullMarkedUpName as String)
-            result.result.simpleName = nameConstructionService.stripMarkUp(result.result.simpleMarkedUpName as String)
+            ConstructedName constructedName = nameConstructionService.constructName(name)
+            result.result = [:]
+            result.result.fullMarkedUpName = constructedName.fullMarkedUpName
+            result.result.simpleMarkedUpName = constructedName.simpleMarkedUpName
+            result.result.fullName = constructedName.plainFullName
+            result.result.simpleName = constructedName.plainSimpleName
             result.result.sortName = nameConstructionService.makeSortName(name, result.result.simpleName as String)
             if (request.method == 'PUT') {
                 SecurityUtils.subject.checkRole('admin')

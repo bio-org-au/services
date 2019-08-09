@@ -15,7 +15,7 @@ interface NameConstructor {
      * @param name
      * @return Map [fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName]
      */
-    Map constructName(Name name)
+    ConstructedName constructName(Name name)
 
     String constructAuthor(Name name)
 }
