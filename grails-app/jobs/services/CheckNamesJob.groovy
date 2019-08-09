@@ -17,8 +17,10 @@
 package services
 
 import au.org.biodiversity.nsl.*
+import groovy.util.logging.Slf4j
 import org.springframework.transaction.support.DefaultTransactionStatus
 
+@Slf4j
 class CheckNamesJob {
 
     def nameService

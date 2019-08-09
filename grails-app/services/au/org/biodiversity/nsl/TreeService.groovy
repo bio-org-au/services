@@ -1318,7 +1318,6 @@ INSERT INTO tree_version_element (tree_version_id,
      */
     def checkNameOnTreeChanged(Name name) {
         TreeElement.findAllByNameId(name.id).each { te ->
-            te.instance.reference.citationHtml
             te.displayHtml = "<data>${name.fullNameHtml} <citation>${te.instance.reference.citationHtml}</citation></data>"
             te.simpleName = name.simpleName
             te.save()
