@@ -485,3 +485,8 @@ div.debug {
     max-height: 8rem;
     overflow: auto;
 }
+.log-output {
+    font-family: monospace;
+    font-size: 0.7em;
+    height: 300px; overflow: auto; white-space: pre
+}

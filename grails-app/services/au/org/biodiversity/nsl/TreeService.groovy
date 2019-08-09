@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
  *  - edit
  */
 @Transactional
-class TreeService implements ValidationUtils {
+class TreeService implements ValidationUtils, AsyncHelper {
 
     DataSource dataSource
     ConfigService configService
@@ -674,7 +674,7 @@ DROP TABLE IF EXISTS orphans;
     }
 
     void bgCreateDefaultDraftVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
-        runAsync {
+        doAsync('Create default draft version in background') {
             Thread.sleep(1000)
             TreeVersion.withNewSession { s ->
                 TreeVersion.withNewTransaction {

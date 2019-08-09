@@ -22,8 +22,6 @@ import grails.gorm.transactions.Transactional
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authz.annotation.RequiresRoles
 
-import static org.springframework.http.HttpStatus.OK
-
 @Transactional
 class AdminController {
 
@@ -107,7 +105,7 @@ class AdminController {
     def logs() {
         try {
             SecurityUtils.subject.checkRole('admin')
-            List<String> processLog = logSummary(300)
+            String processLog = logSummary(300)
             render(template: 'log', model: [processLog: processLog])
         } catch (e) {
             render(template: 'log', model: [processLog: ["You are not logged in? $e.message"]])
@@ -139,14 +137,24 @@ class AdminController {
     deduplicateMarkedReferences() {
         String user = SecurityUtils.subject.principal.toString()
         ResultObject results = new ResultObject(referenceService.deduplicateMarked(user))
-        respond(results, [status: OK, view: '/common/serviceResult', model: [data: results,]])
+        serviceResponse(results)
     }
 
     @RequiresRoles('admin')
     deduplicateMarkedNames() {
         String user = SecurityUtils.subject.principal.toString()
         ResultObject results = new ResultObject(nameService.deduplicateMarked(user))
-        respond(results, [status: OK, view: '/common/serviceResult', model: [data: results,]])
+        serviceResponse(results)
+    }
+
+    private void serviceResponse(ResultObject results) {
+        withFormat {
+            html {
+                render(view: '/common/serviceResult', model: [data: results])
+            }
+            json { respond(results) }
+            xml { respond(results) }
+        }
     }
 
     @RequiresRoles('admin')
@@ -171,19 +179,16 @@ class AdminController {
         redirect(action: 'index')
     }
 
-    private List<String> logSummary(Integer lineLength) {
+    private String logSummary(Integer lineLength) {
         List<String> logLines = configService.getLogFile('dailyFileAppender')?.readLines()?.reverse()?.take(50) ?: []
-        List<String> processedLog = []
+        StringBuffer processedLog = new StringBuffer()
         logLines.each { String line ->
             line = line.replaceAll(/\[[0-9;]*m/, '')
             if (line.size() > lineLength) {
                 line = line[0..lineLength] + '...'
             }
-            processedLog.add(line)
+            processedLog.append(line+'\n')
         }
-        return processedLog
+        return processedLog.toString()
     }
-
-
-
 }

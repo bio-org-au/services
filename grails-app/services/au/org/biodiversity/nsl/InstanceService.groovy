@@ -21,7 +21,7 @@ import org.apache.shiro.authz.annotation.RequiresRoles
 import org.springframework.transaction.TransactionStatus
 
 @Transactional
-class InstanceService {
+class InstanceService implements AsyncHelper {
 
     def treeService
     def linkService
@@ -209,7 +209,7 @@ class InstanceService {
 
     def replaceXICSinInstanceNotes() {
 
-        runAsync {
+        doAsync('Replace XICS in instance notes') {
 
             def count = InstanceNote.executeQuery("select count(note) from InstanceNote note where regex(value, '.*(\\~[a-zA-Z]|\\<[A-Z]|\\^).*') = true").first()
             log.debug "about to change $count Instance Notes"
@@ -224,12 +224,10 @@ class InstanceService {
                         note.value = newValue
                         note.save()
                         changed++
-                    } else {
-                        log.debug "NOT changing $note.value -> $newValue"
-                        note.discard()
                     }
                 }
                 session.flush()
+                session.clear()
             }
             log.debug "changed $changed notes"
         }

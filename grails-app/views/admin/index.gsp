@@ -16,24 +16,43 @@
 
   <h1>Admin dashboard</h1>
 
-  <g:if test="${servicing}">
-    <h2>Servicing Mode On.</h2>
-  </g:if>
+  <div class="row">
+    <div class="col-3">
+      <label>Name updater ${pollingNames}
+        <div class="btn-toolbar">
+          <div class="btn-group">
+            <a class="btn btn-success" href="${g.createLink(controller: 'admin', action: 'resumeUpdates')}">
+              <i class="fa fa-play"></i>
+            </a>
+            <a class="btn btn-warning" href="${g.createLink(controller: 'admin', action: 'pauseUpdates')}">
+              <i class="fa fa-pause"></i>
+            </a>
+          </div>
+        </div>
+      </label>
+    </div>
 
-  <ul>
-    <li>
-      <a class=""
-         href="${g.createLink(controller: "admin", action: "setAdminModeOn")}">
-        Turn on servicing
-      </a>
-    </li>
-    <li>
-      <a class=""
-         href="${g.createLink(controller: "admin", action: "setAdminModeOff")}">
-        Turn off servicing
-      </a>
-    </li>
-  </ul>
+    <div class="col-3">
+      <g:if test="${servicing}">
+        <h2>Servicing Mode On.</h2>
+      </g:if>
+
+      <ul>
+        <li>
+          <a class=""
+             href="${g.createLink(controller: "admin", action: "setAdminModeOn")}">
+            Turn on servicing
+          </a>
+        </li>
+        <li>
+          <a class=""
+             href="${g.createLink(controller: "admin", action: "setAdminModeOff")}">
+            Turn off servicing
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
 
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="nav-item">
@@ -80,20 +99,6 @@
       </h2>
 
       <div>
-        <div>
-          <label>Name updater ${pollingNames}
-            <div class="btn-toolbar">
-              <div class="btn-group">
-                <a class="btn btn-success" href="${g.createLink(controller: 'admin', action: 'resumeUpdates')}">
-                  <i class="fa fa-play"></i>
-                </a>
-                <a class="btn btn-warning" href="${g.createLink(controller: 'admin', action: 'pauseUpdates')}">
-                  <i class="fa fa-pause"></i>
-                </a>
-              </div>
-            </div>
-          </label>
-        </div>
 
         <ul>
           <li>
@@ -225,11 +230,19 @@
         </p>
 
         <h3>Log files</h3>
-        <ul>
-        <g:each in="${logFiles}" var="f">
-          <li>${f.name}: ${f.file}</li>
-        </g:each>
-        </ul>
+        <table class="table table-striped">
+          <thead>
+          <th>Appender name</th>
+          <th>Path</th>
+          </thead>
+          <tbody>
+          <g:each in="${logFiles}" var="f">
+            <tr>
+              <td><b>${f.name}</b></td><td>${f.file}</td>
+            </tr>
+          </g:each>
+          </tbody>
+        </table>
 
         <h3>Other</h3>
 
@@ -252,7 +265,8 @@
 </div>
 
 <h2>Log</h2>
-<div id='logs' class="container">
+
+<div id='logs' class="container log-output">
 
 </div>
 

@@ -16,7 +16,7 @@
 
 package au.org.biodiversity.nsl
 
-import grails.async.Promise
+
 import grails.gorm.transactions.Transactional
 import groovy.transform.CompileStatic
 import org.apache.shiro.authz.annotation.RequiresRoles
@@ -26,10 +26,8 @@ import org.springframework.transaction.TransactionStatus
 
 import java.sql.Timestamp
 
-import static grails.async.Promises.task
-
 @Transactional
-class NameService {
+class NameService implements AsyncHelper {
 
     def restCallService
     def nameConstructionService
@@ -388,22 +386,6 @@ class NameService {
                     restCallService.blindJsonGet("$uri/$type?id=${link}")
                 }
             }
-        }
-    }
-
-    @SuppressWarnings("GrMethodMayBeStatic")
-    private void doAsync(String description, Closure work) {
-        Promise p = task {
-            Name.withNewTransaction { tx ->
-                work()
-            }
-        }
-        p.onError { Throwable err ->
-            log.error "Error $description $err.message"
-            err.printStackTrace()
-        }
-        p.onComplete { result ->
-            log.info "$description complete."
         }
     }
 

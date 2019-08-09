@@ -20,12 +20,12 @@ import org.apache.shiro.authz.annotation.RequiresRoles
 
 import java.sql.Timestamp
 
-class AuthorService {
+class AuthorService implements AsyncHelper {
 
     LinkService linkService
 
     void autoDeduplicate(String user) {
-        runAsync {
+        doAsync('Auto deduplicate authors') {
             List<Author> authorsMarkedAsDuplicates = Author.findAllByDuplicateOfIsNotNull()
             log.debug "duplicate authors: $authorsMarkedAsDuplicates"
             authorsMarkedAsDuplicates.each { Author author ->

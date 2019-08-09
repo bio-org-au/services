@@ -21,7 +21,7 @@ import org.springframework.transaction.TransactionStatus
 
 import java.sql.Timestamp
 
-class ReferenceService {
+class ReferenceService implements AsyncHelper {
 
     def instanceService
     def linkService
@@ -238,7 +238,7 @@ class ReferenceService {
 
     @Transactional
     reconstructAllCitations() {
-        runAsync {
+        doAsync('Reconstruct all citations') {
             String updaterWas = nameService.pollingStatus()
             nameService.pauseUpdates()
             Closure query = { Map params ->
@@ -258,12 +258,10 @@ class ReferenceService {
                             reference.citationHtml = citationHtml
                             reference.citation = NameConstructionService.stripMarkUp(citationHtml)
                             reference.save()
-                            log.debug "saved $reference.citationHtml"
-                        } else {
-                            reference.discard()
                         }
                     }
                     session.flush()
+                    session.clear()
                 }
                 log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
             }
@@ -484,7 +482,7 @@ class ReferenceService {
 
     def replaceXICSinReferenceTitles() {
 
-        runAsync {
+        doAsync('replace XICS in reference titles.') {
 
             def count = Reference.executeQuery("select count(ref) from Reference ref where regex(title, '.*(\\~[a-zA-Z]|\\<[A-Z]|\\^).*') = true").first()
             log.debug "about to change $count Reference titles"
@@ -499,12 +497,10 @@ class ReferenceService {
                         reference.title = newValue
                         reference.save()
                         changed++
-                    } else {
-                        log.debug "NOT changing $reference.title -> $newValue"
-                        reference.discard()
                     }
                 }
                 session.flush()
+                session.clear()
             }
             log.debug "changed $changed notes"
         }
