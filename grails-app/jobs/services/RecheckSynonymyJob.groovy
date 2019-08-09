@@ -8,7 +8,7 @@ class RecheckSynonymyJob {
 
     static triggers = {
         //update at 6:30AM every day
-        cron name: 'updateSynonymCache', startDelay: 10000, cronExpression: '0 52 13 * * ?'
+        cron name: 'updateSynonymCache', startDelay: 10000, cronExpression: '0 53 17 * * ?'
     }
 
     def execute() {
