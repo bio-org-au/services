@@ -30,7 +30,7 @@ http://plugins.grails.org/plugin/grails/quartz
 
 Use the async plugin instead, so  port any async code to this.
 
-    compile 'org.grails.plugins:async:4.0.0.RC2'
+    compile 'org.grails.plugins:async:4.0.0'
 
 http://plugins.grails.org/plugin/grails/async
 
