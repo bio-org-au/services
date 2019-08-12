@@ -12,8 +12,7 @@
     <g:if test="${params.product}">
       ${params.product}
     </g:if>
-    <g:else>Search</g:else>
-    <g:if test="${query?.name}">- ${query.name}?</g:if>
+    Name Check results
   </title>
 </head>
 

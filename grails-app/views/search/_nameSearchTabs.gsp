@@ -1,6 +1,8 @@
 <g:set var="panelClass"
        value="${st.panelClass(product: params.product)}"/>
-<g:render template="/search/common-search-heading"/>
+<g:if test="${!cookie(name: 'close' + params.product + 'Description')}">
+  <g:render template="/search/common-search-heading"/>
+</g:if>
 
 <div role="tabpanel">
   <ul class="nav nav-tabs ${panelClass}" role="tablist">

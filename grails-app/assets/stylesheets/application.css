@@ -332,6 +332,7 @@ a:hover {
     position: relative;
     overflow: hidden;
     background-color: white;
+    height: 75px;
 }
 
 .imageAndText img {
