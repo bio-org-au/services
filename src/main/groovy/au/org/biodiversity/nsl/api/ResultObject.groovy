@@ -17,13 +17,13 @@ class ResultObject {
 
     ResultObject(Map data) {
         this.data = data
-        data.status = OK
+        data.status = data.status ?: OK
     }
 
     ResultObject(Map data, JsonRendererService jsonRendererService) {
         this.data = data
         this.jsonRendererService1 = jsonRendererService
-        data.status = OK
+        data.status = data.status ?: OK
     }
 
     def error(String error) {

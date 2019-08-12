@@ -256,17 +256,15 @@ order by n.simpleName asc''',
                     query : name,
                     names : names.collect { jsonRendererService.getBriefNameWithHtml(it) },
             ])
-            //noinspection GroovyAssignabilityCheck
-            return respond(result, [view: '/common/serviceResult', model: [names: names,]])
+            return serviceRespond(result)
         } else {
             ResultObject result = new ResultObject([
+                    status: NOT_FOUND,
                     action: params.action,
                     error : "${name ?: '(Blank)'} not found."
             ])
-            //noinspection GroovyAssignabilityCheck
-            respond(result, [view: '/common/serviceResult', model: [data: result], status: NOT_FOUND])
+            serviceRespond(result)
         }
-
     }
 
 
@@ -420,8 +418,7 @@ order by n.simpleName asc''',
         Map taxonRecords = flatViewService.taxonSearch(searchParams.q as String)
 
         ResultObject result = new ResultObject([records: taxonRecords])
-        //noinspection GroovyAssignabilityCheck
-        respond(result, [view: '/common/serviceResult', model: [data: result], status: OK])
+        serviceRespond(result)
     }
 
     private static String instancePage(Instance instance) {

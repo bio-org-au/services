@@ -105,8 +105,12 @@ trait WithTarget {
             html {
                 render(view: '/common/serviceResult', model: [data: resultObject], status: resultObject.remove('status'))
             }
-            json { respond(resultObject, status: resultObject.remove('status')) }
-            xml { respond(resultObject, status: resultObject.remove('status')) }
+            json {
+                respond(resultObject, status: resultObject.remove('status'))
+            }
+            xml {
+                respond(resultObject, status: resultObject.remove('status'))
+            }
         }
     }
 
