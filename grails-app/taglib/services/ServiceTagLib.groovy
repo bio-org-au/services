@@ -204,9 +204,9 @@ class ServiceTagLib {
             }
 
             if (data instanceof Collection) {
-                out << "<a href='#' data-toggle='collapse' data-target='#${data.hashCode()}'>(${data.size()})</a>"
+                out << "<a href='#D${data.hashCode()}' data-toggle='collapse' >(${data.size()})</a>"
                 out << "&nbsp;<span class='text text-muted'>$description</span>"
-                out << "<ol id='${data.hashCode()}' class='collapse'>"
+                out << "<ol id='D${data.hashCode()}' class='collapse multi-collapse'>"
                 Integer top = Math.min(data.size(), 99)
                 (0..top).each { idx ->
                     Object obj = data[idx]
