@@ -75,8 +75,10 @@ div.logo {
 }
 
 #main-content {
-    margin-top: 1rem;
+    margin-top: 1vh;
     background-color: white;
+    height: calc(98vh - 189px);
+    overflow: auto;
 }
 
 .nsl {
