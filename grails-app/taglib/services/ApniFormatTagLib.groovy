@@ -276,30 +276,14 @@ class ApniFormatTagLib {
         String citation = attrs.citation
         String product = attrs.product
         Map params = [publication: citation, search: true, advanced: true, display: 'apni']
-        if (product) {
-            params << [product: product]
-        } else {
-            //if not logged in force to name tree name
-            if (!SecurityUtils.subject?.principal) {
-                params << [product: configService.nameTreeName]
-            }
-        }
-        out << g.createLink(absolute: true, controller: 'search', action: 'search', params: params)
+        out << g.createLink(absolute: true, controller: 'search', action: 'names', params: params)
     }
 
     def refAPCSearchLink = { attrs ->
         String citation = attrs.citation
         String product = attrs.product
-        Map params = [publication: citation, search: true, advanced: true, display: 'apc', 'tree.id': 1133571] //todo remove hard coded reference number
-        if (product) {
-            params << [product: product]
-        } else {
-            //if not logged in force to APC
-            if (!SecurityUtils.subject?.principal) {
-                params << [product: 'apc']
-            }
-        }
-        out << g.createLink(controller: 'search', action: 'search', params: params)
+        Map params = [publication: citation, search: true, advanced: true, display: 'apc']
+        out << g.createLink(controller: 'search', action: 'taxonomy', params: params)
     }
 
     def apniLink = { attrs ->

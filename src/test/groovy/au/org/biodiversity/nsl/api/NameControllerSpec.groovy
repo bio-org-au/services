@@ -19,6 +19,7 @@ package au.org.biodiversity.nsl.api
 import au.org.biodiversity.nsl.*
 import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
+import org.grails.plugins.codecs.HTMLCodec
 import spock.lang.Specification
 
 class NameControllerSpec extends Specification implements ControllerUnitTest<NameController>, DataTest {
@@ -41,6 +42,7 @@ class NameControllerSpec extends Specification implements ControllerUnitTest<Nam
         linkService.getPreferredLinkForObject(_) >> { Object thing -> "Link for $thing" }
         controller.nameConstructionService = new NameConstructionService()
         controller.nameConstructionService.icnNameConstructionService = new IcnNameConstructionService()
+        controller.nameConstructionService.icnNameConstructionService.htmlEncoderInst = new HTMLCodec().encoder
 
         Namespace namespace = new Namespace(name: 'test', rfId: 'blah', descriptionHtml: '<p>blah</p>')
         TestUte.setUpNameInfrastructure()

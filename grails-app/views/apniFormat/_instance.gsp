@@ -22,7 +22,7 @@
         </g:if>
 
         <a href="${af.refNameTreeSearchLink(citation: reference?.citation, product: params.product)}"
-           class="hidden-print"><i
+           class="hidden-print" title="Search for names in this reference."><i
             class="fa fa-search"></i></a>
       </g:if>
 

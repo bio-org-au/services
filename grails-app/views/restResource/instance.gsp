@@ -52,7 +52,7 @@
 
     <st:preferredLink target="${instance.reference}"><i class="fa fa-book"></i></st:preferredLink>
 
-    <span class="vertbar">
+    <span class="vertbar" title="Search for names in this reference.">
       <a href="${af.refNameTreeSearchLink(citation: instance.reference?.citation, product: params.product)}"
          title="Search for names in this reference.">
         <i class="fa fa-search"></i></a>
