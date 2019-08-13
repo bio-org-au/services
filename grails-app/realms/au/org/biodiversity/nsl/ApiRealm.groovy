@@ -17,24 +17,38 @@
 package au.org.biodiversity.nsl
 
 import au.org.biodiversity.nsl.config.ApplicationUser
-import org.apache.shiro.authc.AuthenticationException
-import org.apache.shiro.authc.AuthenticationInfo
-import org.apache.shiro.authc.AuthenticationToken
-import org.apache.shiro.authc.SimpleAuthenticationInfo
-import org.apache.shiro.authc.UnknownAccountException
+import groovy.transform.CompileStatic
+import org.apache.shiro.authc.*
 import org.apache.shiro.authz.Permission
+import org.apache.shiro.authz.permission.WildcardPermissionResolver
 import org.apache.shiro.grails.GrailsShiroRealm
 import org.apache.shiro.grails.SimplifiedRealm
 
-class ApiRealm implements SimplifiedRealm {
+@CompileStatic
+class ApiRealm implements SimplifiedRealm, GrailsShiroRealm {
 
-    static authTokenClass = ApiKeyToken
-    def configService
+    ConfigService configService
+
+    private Map<String, ApplicationUser> appUsersByKey = null
+    private Map<String, ApplicationUser> appUsersByPrincipal = [:]
+
+    ApiRealm() {
+        setTokenClass(ApiKeyToken)
+        setPermissionResolver(new WildcardPermissionResolver())
+    }
+
+    void loadUsers() {
+        if (!appUsersByKey) {
+            appUsersByKey = configService.getApiAuth() ?: new HashMap<String, ApplicationUser>()
+            appUsersByKey.each { k, v -> appUsersByPrincipal.put(v.application, v) }
+        }
+    }
 
     AuthenticationInfo authenticate(AuthenticationToken authToken) throws AuthenticationException {
+        loadUsers()
         if (authToken instanceof ApiKeyToken) {
             log.info "trying API Realm login for ${authToken}"
-            ApplicationUser details = configService.apiAuth?.get(authToken.key)
+            ApplicationUser details = appUsersByKey[authToken.key]
             if (details && (!details.host || details.host == authToken.host)) {
                 return new SimpleAuthenticationInfo(details.application, authToken.key, "ApiRealm")
             }
@@ -42,22 +56,40 @@ class ApiRealm implements SimplifiedRealm {
         }
     }
 
-    private Map getDetailByPrincipal(String principal) {
-        Map.Entry entry = configService.apiAuth?.find { k, v -> v.application == principal }
-        return entry?.value as Map
-    }
-
     boolean hasRole(Object principal, String roleName) {
-        Map details = getDetailByPrincipal(principal.toString())
-        details?.roles && details.roles.contains(roleName)
+        ApplicationUser user = appUsersByPrincipal[principal.toString()]
+        if (user) {
+            return user.roles.contains(roleName)
+        } else {
+            return false
+        }
     }
 
     boolean hasAllRoles(Object principal, Collection<String> roles) {
-        Map details = getDetailByPrincipal(principal.toString())
-        details?.roles && details.roles.containsAll(roles)
+        ApplicationUser user = appUsersByPrincipal[principal.toString()]
+        if (user) {
+            return user.roles.containsAll(roles)
+        } else {
+            return false
+        }
     }
 
     boolean isPermitted(Object principal, Permission requiredPermission) {
+        ApplicationUser user = appUsersByPrincipal[principal.toString()]
+        if (user) {
+            return anyImplied(requiredPermission, user.permissions)
+        } else {
+            return false
+        }
     }
+
+    private boolean anyImplied(Permission requiredPermission, Collection<String> permStrings) {
+        permStrings.find { String permString ->
+            getPermissionResolver()
+                    .resolvePermission(permString)
+                    .implies(requiredPermission)
+        } != null
+    }
+
 
 }
