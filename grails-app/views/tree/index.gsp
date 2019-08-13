@@ -186,10 +186,10 @@
     <p>No trees currently listed in this service.</p>
   </g:if>
   <g:else>
-    <dl class="dl-horizontal">
+    <div class="row">
       <g:each in="${trees}" var="tree">
-        <dt>
-          <st:preferredLink target="${tree}">${tree.name}</st:preferredLink>
+        <div class="col-2">
+          <st:preferredLink target="${tree}"><b>${tree.name}</b></st:preferredLink>
           <shiro:hasRole name="${tree.groupName}">
             <button type="button" class="btn btn-primary" data-toggle="modal"
                     data-target="#editTree"
@@ -213,8 +213,8 @@
           <g:if test="${tree.acceptedTree}">
             <apc title="Accepted Tree"><i class="fa fa-check"></i>${tree.name}</apc>
           </g:if>
-        </dt>
-        <dd>
+        </div>
+        <div class="col-10">
           <div>${raw(tree.descriptionHtml)}</div>
 
           <div>
@@ -286,9 +286,9 @@
             </shiro:hasRole>
           </div>
           <hr>
-        </dd>
+        </div>
       </g:each>
-    </dl>
+    </div>
   </g:else>
   <shiro:hasRole name="treebuilder">
     <button type="button" class="btn btn-primary" data-toggle="modal"
