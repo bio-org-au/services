@@ -39,7 +39,7 @@ class LdapRealm implements GrailsShiroRealm, SimplifiedRealm {
                 throw new CredentialsException("Null password are not allowed by this realm.")
             }
 
-            LdapUser ldapPrincipal = new LdapUser(getLdapServer(), username)
+            LdapUser ldapPrincipal = getLdapUser(username)
             SimpleAuthenticationInfo account = new SimpleAuthenticationInfo(ldapPrincipal,
                     password, "LdapRealm")
             if (!ldapServer.doCredentialsMatch(authToken, account)) {
@@ -49,6 +49,10 @@ class LdapRealm implements GrailsShiroRealm, SimplifiedRealm {
             return account
         }
         throw new AccountException("${authToken.class.name} tokens are not accepted by this realm ${getName()}.")
+    }
+
+    LdapUser getLdapUser(String username) {
+        new LdapUser(getLdapServer(), username)
     }
 
     @Override

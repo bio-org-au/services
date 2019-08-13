@@ -2,10 +2,14 @@ package au.org.biodiversity.nsl
 
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authc.AuthenticationException
+import org.apache.shiro.grails.LdapUser
 import org.apache.shiro.subject.SimplePrincipalCollection
+import org.springframework.beans.factory.annotation.Autowired
 
 class ApiInterceptor {
 
+    @Autowired
+    LdapRealm ldapRealm
     int order = HIGHEST_PRECEDENCE+98
 
     ApiInterceptor() {
@@ -20,11 +24,11 @@ class ApiInterceptor {
                 Long start = System.currentTimeMillis()
                 SecurityUtils.subject.login(authToken)
 
-                // TODO: make a new permission "mayRunAsAnyUser"
-                String runAs = params.remove('as')
-                if (runAs) {
-                    log.debug("${SecurityUtils.subject.principal} is running as ${runAs}")
-                    SecurityUtils.subject.runAs(new SimplePrincipalCollection(runAs, ""))
+                String runAsUser = params.remove('as')
+                if (runAsUser) {
+                    log.debug("${SecurityUtils.subject.principal} is running as ${runAsUser}")
+                    LdapUser ldapUser = ldapRealm.getLdapUser(runAsUser)
+                    SecurityUtils.subject.runAs(new SimplePrincipalCollection(ldapUser, "LdapRealm"))
                 }
 
                 log.debug "login took ${System.currentTimeMillis() - start}ms"
