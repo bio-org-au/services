@@ -661,8 +661,6 @@ DROP TABLE IF EXISTS orphans;
             instance.draft = false
             if (!instance.reference.published) {
                 instance.reference.published = true
-                instance.reference.publicationDate = today
-                instance.reference.isoPublicationDate = now[Calendar.YEAR]
                 instance.reference.save()
             }
             instance.updatedAt = timeStamp
