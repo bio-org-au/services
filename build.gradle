@@ -23,14 +23,14 @@ apply plugin: "org.grails.grails-web"
 apply plugin: "asset-pipeline"
 apply plugin: "org.grails.grails-gsp"
 
+war.baseName("nsl#${rootProject.name}")
+war.version("##${rootProject.version}")
+
 repositories {
     mavenLocal()
     maven { url "https://repo.grails.org/grails/core" }
-    maven { url "http://appsdev1-ibis.it.csiro.au:8085/repository/anbg-snapshot/" }
-    maven { url "http://appsdev1-ibis.it.csiro.au:8085/repository/anbg-release/" }
-    maven { url "http://appsdev1-ibis.it.csiro.au:8085/repository/maven-central/" }
-    maven { url "http://appsdev1-ibis.it.csiro.au:8085/repository/grails-plugins/" }
     maven { url "https://dl.bintray.com/nerderg/plugins" }
+//    maven { url "https://dl.bintray.com/bio-org-au/plugins" }
 }
 
 dependencies {
@@ -57,15 +57,12 @@ dependencies {
 
     // application plugins
     compile "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:1.19.SNAPSHOT"
-    
     compile 'com.nerderg.plugins:SimpleSuggestions3:1.1'
-
     compile "org.grails.plugins:grails-shiro:3.1"
-    
     compile 'org.grails.plugins:quartz:2.0.13'
     runtime 'org.grails.plugins:async:4.0.0'
-//    compile 'org.grails.plugins:cache-ehcache:3.0.0.M1'
     compile 'org.grails:grails-datastore-rest-client'
+
     //other dependencies
     compile 'net.htmlparser.jericho:jericho-html:3.2'
     compile "io.jsonwebtoken:jjwt:0.7.0"
