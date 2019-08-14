@@ -117,7 +117,7 @@ class DashboardController {
 
             List rows = userName ? auditService.list(userName, from, to) : []
             Map stats = auditService.report(from, to)
-            log.debug stats
+            log.debug stats.toString()
             [auditRows: rows, query: params, stats: stats]
         } else {
             [auditRows: null, query: [:]]

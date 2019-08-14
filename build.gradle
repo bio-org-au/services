@@ -60,7 +60,7 @@ dependencies {
     
     compile 'com.nerderg.plugins:SimpleSuggestions3:1.1'
 
-    compile "org.grails.plugins:grails-shiro:3.0"
+    compile "org.grails.plugins:grails-shiro:3.1"
     
     compile 'org.grails.plugins:quartz:2.0.13'
     runtime 'org.grails.plugins:async:4.0.0'

@@ -42,13 +42,13 @@ WHERE action_tstamp_tx > :from
                     //created
                     String query = "select count(t) as count, t.created_by as uname from $thing t where created_at > :from and created_at < :to group by created_by"
                     sql.eachRow(query, [from: from, to: to]) { GroovyResultSet row ->
-                        log.debug row
+                        log.debug row.toString()
                         userReport.get(row.uname, defaultUserThingReport(things)).get(thing).created = row.count
                     }
                     //updated
                     String q2 = "select count(t) as count, t.updated_by as uname from $thing t where updated_at > :from and updated_at < :to group by updated_by"
                     sql.eachRow(q2, [from: from, to: to]) { GroovyResultSet row ->
-                        log.debug row
+                        log.debug row.toString()
                         userReport.get(row.uname, defaultUserThingReport(things)).get(thing).updated = row.count
                     }
                     //deleted
@@ -59,7 +59,7 @@ WHERE action_tstamp_tx > :from
                 AND table_name = '$thing'
                 group by row_data -> 'updated_by'"""
                     sql.eachRow(q3, [from: from, to: to]) { GroovyResultSet row ->
-                        log.debug row
+                        log.debug row.toString()
                         userReport.get(row.uname, defaultUserThingReport(things)).get(thing).deleted = row.count
                     }
                 }

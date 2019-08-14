@@ -6,7 +6,7 @@
 <html>
 <head>
   <meta name="layout" content="main">
-  <title>NSL Dashboard</title>
+  <title>NSL Audit</title>
 </head>
 
 <body>

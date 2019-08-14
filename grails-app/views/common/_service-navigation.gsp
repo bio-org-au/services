@@ -113,6 +113,9 @@
   </div><!--/.nav-collapse -->
 </nav>
 <g:if test="${flash.message}">
-  <div class="alert alert-warning" role="alert">
-    <span class="fa fa-warning" aria-hidden="true"></span>&nbsp;${flash.message}</div>
+  <div class="alert alert-warning alert-dismissible" role="alert">
+    <span class="fa fa-warning" aria-hidden="true"></span>&nbsp;${flash.message}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span>
+    </button>
+  </div>
 </g:if>
