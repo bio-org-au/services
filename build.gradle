@@ -30,8 +30,13 @@ repositories {
     mavenLocal()
     maven { url "https://repo.grails.org/grails/core" }
     maven { url "https://dl.bintray.com/nerderg/plugins" }
-//    maven { url "https://dl.bintray.com/bio-org-au/plugins" }
+    maven {
+        url "https://oss.jfrog.org/artifactory/oss-snapshot-local"
+    }
+    maven { url "https://dl.bintray.com/bio-org-au/plugins" }
 }
+
+ext['tomcat.version'] = '7.0.59'
 
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-logging"
