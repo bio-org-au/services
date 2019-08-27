@@ -11,6 +11,7 @@
     <h2>Check All Synonyms Report for ${treeVersion.tree.name} ${treeVersion.draftName}</h2>
 
     <h3>Changed Synonymy <span class="text-muted small">(${data.payload.count})</span></h3>
+
     <p>Showing ${data.payload.results.size()} results.</p>
 
     <g:if test="${data.payload.results}">
@@ -47,7 +48,9 @@
                 </td>
                 <td class="diffAfter">
                   <div class="text-muted">
-                    Updated by ?
+                    Updated by ?  <a
+                      href="${createLink(absolute: true, controller: 'tree', action: 'synonymyOrderingInfo', id: report.treeVersionElement.treeElement.instanceId)}"
+                      target="_order" title="get ordering information."><i class="fa fa-sort"></i></a>
                   </div>
 
                   <div
@@ -62,12 +65,13 @@
                       ${raw(diffB)}
                     </div>
                   </div>
-                    <div class="form-inline" style="float:right">
-                      <label>Select
-                        <input type="checkbox" name="instances" class="form-control" value="${report.instanceId}"
-                               checked="checked"/>
-                      </label>
-                    </div>
+
+                  <div class="form-inline" style="float:right">
+                    <label>Select
+                      <input type="checkbox" name="instances" class="form-control" value="${report.instanceId}"
+                             checked="checked"/>
+                    </label>
+                  </div>
                 </td>
               </tr>
             </tree:diffSynonyms>

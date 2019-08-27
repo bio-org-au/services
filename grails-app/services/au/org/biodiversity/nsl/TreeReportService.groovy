@@ -347,5 +347,40 @@ where tve.tree_version_id = :versionId
         return [count: count, results: results]
     }
 
+    Map getSynonymOrderingInfo(Instance instance) {
+        Sql sql = getSql()
+        List<Map> nom = []
+
+        sql.eachRow('select * from  apni_ordered_nom_synonymy(:instanceId);',
+                [instanceId: instance.id]) { row ->
+            nom.add([
+                    fullName          : row.full_name,
+                    instanceType      : row.instance_type,
+                    refPublicationDate: row.iso_publication_date,
+                    sortName          : row.sort_name,
+                    page              : row.page
+            ])
+        }
+
+        List<Map> tax = []
+        sql.eachRow('select * from  apni_ordered_other_synonymy(:instanceId);',
+                [instanceId: instance.id]) { row ->
+            tax.add([
+                    fullName          : row.full_name,
+                    instanceType      : row.instance_type,
+                    groupPubDate      : row.group_iso_pub_date,
+                    groupName         : row.group_name,
+                    groupHead         : row.group_head,
+                    origPubDate       : row.og_year,
+                    origName          : row.og_name,
+                    origHead          : row.og_head,
+                    refPublicationDate: row.iso_publication_date,
+                    sortName          : row.sort_name,
+                    page              : row.page
+            ])
+        }
+        return [nomenclatural: nom, taxanomic: tax]
+    }
+
 }
 

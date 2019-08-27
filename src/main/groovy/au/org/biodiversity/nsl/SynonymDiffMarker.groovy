@@ -18,14 +18,8 @@ class SynonymDiffMarker {
         return output
     }
 
-    static ABPair markUpNameChanges(ABPair input) {
-        markUpChanges(input, true, { extractNameFromHtml(it) }) { String line ->
-            line.replaceFirst('<name ', '<name class="target" ')
-        }
-    }
-
-    static ABPair markUpTagChanges(ABPair input, String tag) {
-        markUpChanges(input, false, { extractTagFromHtml(it, tag) }) { String line ->
+    static ABPair markUpTagChanges(ABPair input, String tag, Boolean markMove = false) {
+        markUpChanges(input, markMove, { extractTagFromHtml(it, tag) }) { String line ->
             line.replaceFirst("<$tag>", "<$tag class='target'>")
         }
     }
