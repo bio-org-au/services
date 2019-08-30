@@ -108,7 +108,7 @@ class TreeController extends BaseApiController {
         TreeVersion treeVersion = TreeVersion.get(treeVersionId)
         ResultObject results = requireTarget(treeVersion, "No Tree version with id: $treeVersionId found")
         handleResults(results, { checkSynRespond(results, treeVersion, embed) }) {
-            results.payload = treeReportService.checkCurrentSynonymy(treeVersion, 20)
+            results.payload = treeReportService.checkCurrentSynonymy(treeVersion, 100)
         }
     }
 
