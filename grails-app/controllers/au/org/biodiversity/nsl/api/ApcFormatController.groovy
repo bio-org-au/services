@@ -45,6 +45,7 @@ class ApcFormatController {
             } else {
                 params.inc = [scientific: 'on']
             }
+            params.action = 'taxonomy'
 
             getNameModel(name) << [query: [name: "$name.fullName", product: configService.classificationTreeName, inc: params.inc], stats: [:], names: [name], count: 1, max: 100]
         } else {

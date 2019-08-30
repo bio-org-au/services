@@ -9,7 +9,7 @@
     <li role="presentation"
         class="nav-item ">
       <a href="#name" id="name-tab" aria-controls="name" role="tab" data-toggle="tab"
-         class="nav-link ${!(query.advanced || query.nameCheck || query.sparql) ? 'active' : ''}">
+         class="nav-link ${!(query.advanced || query.sparql) ? 'active' : ''}">
         Name search
       </a>
     </li>
@@ -23,7 +23,7 @@
 
   <div class="tab-content" id="searchTabContent">
     <div role="tabpanel"
-         class="tab-pane fade ${!(query.advanced || query.nameCheck || query.sparql) ? 'show active' : ''}"
+         class="tab-pane fade ${!query.advanced ? 'show active' : ''}"
          id="name">
       <g:render template="/search/simple-search-form"/>
     </div>

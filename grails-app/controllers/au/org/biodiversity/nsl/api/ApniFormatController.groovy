@@ -61,6 +61,7 @@ class ApniFormatController {
                 photoSearch = photoService.searchUrl(name.simpleName)
             }
 
+            params.action = 'names'
             apniFormatService.getNameModel(name, TreeVersion.get(versionId), drafts) << [
                     drafts   : drafts,
                     versionId: versionId,

@@ -14,7 +14,9 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
 
     @Override
     void setEnvironment(Environment environment) {
-        def configBase = new File("${System.getProperty('user.home')}/.nsl/services-config-g3.groovy")
+
+        String configFileName = System.getenv('nsl-services-config') ?: "/etc/nsl/services-config-g3.groovy"
+        File configBase = new File(configFileName)
 
         if(configBase.exists()) {
             println "Loading external configuration from Groovy: ${configBase.absolutePath}"
