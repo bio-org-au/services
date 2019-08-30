@@ -19,8 +19,8 @@ class SynonymDiffMarker {
     }
 
     static ABPair markUpTagChanges(ABPair input, String tag, Boolean markMove = false) {
-        markUpChanges(input, markMove, { extractTagFromHtml(it, tag) }) { String line ->
-            line.replaceFirst("<$tag>", "<$tag class='target'>")
+        markUpChanges(input, markMove, { extractTagFromHtml(it, tag) }) { String line, String cssClass ->
+            line.replaceFirst("<$tag([^>]*)>", "<$tag \$1 class='${cssClass}'>")
         }
     }
 
@@ -35,7 +35,7 @@ class SynonymDiffMarker {
                 String newComp = comp.b[i as Integer]
                 if (oldLine && oldComp) {
                     if (!comp.b.contains(oldComp)) {
-                        output.a << markUp(oldLine)
+                        output.a << markUp(oldLine, 'target minus')
                     } else if (oldComp != newComp) {
                         output.a << '<div class="targetMoved">⇅ ' + oldLine + '</div>'
                     } else {
@@ -45,7 +45,7 @@ class SynonymDiffMarker {
 
                 if (newLine && newComp) {
                     if (!comp.a.contains(newComp)) {
-                        output.b << markUp(newLine)
+                        output.b << markUp(newLine, 'target plus')
                     } else if (newComp != oldComp) {
                         output.b << '<div class="targetMoved">⇅ ' + newLine + '</div>'
                     } else {
@@ -68,7 +68,7 @@ class SynonymDiffMarker {
                 if (oldLine && oldComp) {
                     //the div check stops the comparison if the name has moved.
                     if (!oldLine.startsWith('<div') && oldComp != newComp) {
-                        output.a << markUp(oldLine)
+                        output.a << markUp(oldLine, 'target minus')
                     } else {
                         output.a << oldLine
                     }
@@ -77,7 +77,7 @@ class SynonymDiffMarker {
                 if (newLine && newComp) {
                     //the div check stops the comparison if the name has moved.
                     if (!newLine.startsWith('<div') && newComp != oldComp) {
-                        output.b << markUp(newLine)
+                        output.b << markUp(newLine, 'target plus')
                     } else {
                         output.b << newLine
                     }
@@ -99,7 +99,7 @@ class SynonymDiffMarker {
     }
 
     static String extractTagFromHtml(String synonymHtml, String tag) {
-        synonymHtml.replaceAll(".*<$tag>(.*)</$tag>.*", '$1')
+        synonymHtml.replaceAll(".*<$tag[^>]*>(.*)</$tag>.*", '$1')
     }
 
 }
