@@ -178,7 +178,7 @@ class TreeServicesTagLib {
 
             // split synonyms onto new lines
             ABPair input = new ABPair(splitSynonyms(synA), splitSynonyms(synB))
-            ABPair output = input.markUpTagChanges('name')
+            ABPair output = input.markUpTagChanges('name', true)
                                  .markUpTagChanges('type')
                                  .markUpTagChanges('year')
                                  .markUpTagChanges('citation')

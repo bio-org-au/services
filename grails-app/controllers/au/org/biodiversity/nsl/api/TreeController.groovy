@@ -1,6 +1,7 @@
 package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.EventRecord
+import au.org.biodiversity.nsl.Instance
 import au.org.biodiversity.nsl.Tree
 import au.org.biodiversity.nsl.TreeVersion
 
@@ -107,8 +108,20 @@ class TreeController extends BaseApiController {
         TreeVersion treeVersion = TreeVersion.get(treeVersionId)
         ResultObject results = requireTarget(treeVersion, "No Tree version with id: $treeVersionId found")
         handleResults(results, { checkSynRespond(results, treeVersion, embed) }) {
-            results.payload = treeReportService.checkCurrentSynonymy(treeVersion, 20)
+            results.payload = treeReportService.checkCurrentSynonymy(treeVersion, 100)
         }
+    }
+
+    def synonymyOrderingInfo(Instance instance) {
+        ResultObject results = requireTarget(instance, "No instance supplied.")
+
+        handleResults(results, {synOrderRespond(results)}) {
+            results.payload = treeReportService.getSynonymOrderingInfo(instance)
+        }
+    }
+
+    private synOrderRespond(ResultObject resultObject){
+        render(view: 'synOrderInfo', model: resultObject.payload)
     }
 
     private checkSynRespond(ResultObject resultObject, TreeVersion treeVersion, Boolean embed) {
