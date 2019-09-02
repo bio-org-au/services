@@ -1,0 +1,62 @@
+= Changelog
+v1.0, September 2019
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: Services Configuration
+:keywords: documentation, NSL, change log
+:links:
+:numbered:
+
+== v 1.0226
+* NSL-3356 changes to get diff output working again.
+  Bump dev version to 1.0226 after release pmcneil 2/9/19, 11:04 am
+
+== v 1.0225
+
+* NSL-3356 improve diff output to make it easier to see changes Increase the number of synonym changes shown on screen
+to 100 (which may be reverted). pmcneil 30/8/19, 3:13 pm
+* Fix search on apni-format and apc-format pages Add a docker file to build docker image Make the config file
+configurable via an environment variable pmcneil 30/8/19, 10:47 am
+* NSL-3356 add an ordering report for synonymy on an instance that you can get from the check synonymy report. Add back
+the moved indicator on the synonymy diff output. pmcneil 27/8/19, 5:06 pm
+* Change nsl-domain plugin version to 3.1.19-SNAPSHOT to determine the grails version of the plugin to use. pmcneil 15/8/19, 5:02 pm
+* set the version to the G2 version of the services. pmcneil 14/8/19, 1:17 pm
+* update the nsl-domain-plugin to 1.19.SNAPSHOT due to change in the domain plugin. pmcneil 14/8/19, 1:01 pm
+
+== v 1.0224 - initial grails 3 version
+
+* Clean up audit UI and move to grails-shiro 3.1 release pmcneil 14/8/19, 10:16 am
+* Add readme pmcneil 14/8/19, 9:56 am
+* Fix classifications page layout. pmcneil 14/8/19, 9:42 am
+* Make the runAs user check the roles of the user being runAs Make gradle give us enough memory. pmcneil 13/8/19, 5:02 pm
+* Get basic API realm going again. pmcneil 13/8/19, 11:12 am
+* Improve the content display area and keep the header constant. pmcneil 12/8/19, 4:48 pm
+* Fix NSL-3348 and move to domain plugin 1.19-SNAPSHOT pmcneil 12/8/19, 2:39 pm
+* Make dashboard collapse on summary data work again pmcneil 12/8/19, 2:07 pm
+* Clean up name check page. make search pages and heading not jump when reloading pmcneil 12/8/19, 1:49 pm
+* Clean up make consistent api calls pmcneil 12/8/19, 1:17 pm
+* Fix some broken links. Fix missing injected dependency in NameControllerSpec pmcneil 12/8/19, 11:14 am
+* Port changes from grails 2 master. pmcneil 9/8/19, 5:28 pm
+* Clean up pmcneil 9/8/19, 4:56 pm
+* Further improve the admin log output. replace all services usage of runAsync pmcneil 9/8/19, 2:23 pm
+* minor doc fix pmcneil 9/8/19, 1:05 pm
+* Fix admin page log pain by finding the correct logger. Add log paths to the configuration tab. Refactor the name service
+to use promises in place of runAsync and fix session related issues in batch update. Convert most of the icnNameConstruction
+to CompileStatic. Make the output of a name construction service return a ConstructedName object. Remove the ApcTreeService
+which related to the old tree! pmcneil 9/8/19, 1:04 pm
+* Make the admin page tabs work again, clean up the config page output. Make the service mode redirect properly. pmcneil 7/8/19, 11:34 am
+* Get tests working Get most of the UI back working (except admin) Get responses going again pmcneil 7/8/19, 9:40 am
+* Fix up remaining page styles for index page etc. Get the tree version diff/merge/validate pages going. remove the
+format interceptor as grails now handles it sensibly change the default response for diff/merge/validate make active
+navigation page simpler and move name check to the main navigation from the search. pmcneil 26/7/19, 1:50 pm
+* Refactor for changed and missing plugins, e.g. Shiro changes filters to Interceptors. Refactor general grails 3
+changes such as packages make external JS libs load via CDNs and update to latest versions. Fix Bootstrap 3 -> 4 layout
+issues Remove currently broken or unused features like sparql search and generic search. Split the search into name and
+taxanomic and handle product URLs by redirecting to name/taxa searches to simplify logic. pmcneil 25/7/19, 9:58 am
+* initial commit for grails 3 version pmcneil 22/7/19, 2:51 pm

@@ -1,0 +1,109 @@
+= Docker Notes
+v1.0, August 2019
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: Docker notes
+:keywords: documentation, NSL, docker
+:links:
+:numbered:
+
+== Install
+
+Use the docker repository for Ubuntu 18.04  https://docs.docker.com/install/linux/docker-ce/ubuntu/
+
+[source,bash]
+.install-docker-engine.sh
+----
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get update
+sudo apt-get install     apt-transport-https     ca-certificates     curl     gnupg-agent     software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) \
+   stable"
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+# test
+sudo docker run hello-world
+----
+
+=== Make the user running docker part of the docker group
+
+if the group doesn't exist `sudo groupadd docker` then add the user to the group `sudo usermod -aG docker $user`.
+
+TIP: run `newgrp docker` to activate the group changes immediately.
+
+=== Enable docker on boot
+
+`sudo systemctl enable docker`
+
+== Building the nsl-services dockerfile
+
+The following will build the nsl-services and then build and run the docker file from the root of the
+project:
+
+[source, bash]
+.build.sh
+----
+./gradlew clean assemble
+docker build -t nsl-services . \
+&& docker run -p 8080:8080 -v $HOME/.nsl:/etc/nsl:ro nsl-services
+----
+
+NOTE: you need to have a configuration file (currently called "services-config-g3.groovy") in `$HOME/.nsl/`. You can
+change the name and path of the configuration file by setting the environment variable `nsl-services-config` e.g.
+`export nsl-services-config=/home/pmcneil/.nsl/services-config-g3.groovy`
+
+== Running/Stopping/Listing the image once made
+
+Your nsl-services-config file needs to use actual addresses and probably not localhost for most things. The database
+needs to be listening on the interfaces and you need to allow users to connect from different addresses.
+
+=== Run
+
+`docker run -p 8080:8080 -v $HOME/.nsl:/etc/nsl:ro nsl-services`
+
+from docker hub `docker run -p 8080:8080 -v $HOME/.nsl:/etc/nsl:ro pmcneil/nsl-services:1.0224-SNAP`
+
+=== List
+
+`docker container ls`
+
+[source]
+.output.txt
+----
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+eaf7c9e955d4        nsl-services        "/bin/sh -c 'java ${…"   17 minutes ago      Up 17 minutes       0.0.0.0:8080->8080/tcp   fervent_mclaren
+----
+
+=== Stop
+
+Use the docker container ID to stop it.
+
+`docker container stop eaf7c9e955d4`
+
+=== Deploy
+
+login to docker hub:
+
+`docker login` You will need an account on docker hub.
+
+tag the image: `docker tag nsl-services pmcneil/nsl-services:1.0224-SNAP`  then use `docker image ls` to look at it.
+
+[source]
+.output.txt
+----
+REPOSITORY             TAG                   IMAGE ID            CREATED             SIZE
+nsl-services           latest                7d5d43f62c8c        About an hour ago   163MB
+pmcneil/nsl-services   1.0224-SNAP           7d5d43f62c8c        About an hour ago   163MB
+...
+----
+
+push to docker hub: `docker push pmcneil/nsl-services:1.0224-SNAP`

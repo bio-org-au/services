@@ -1,0 +1,131 @@
+= Services configuration file
+v1.0, September 2019
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: Services Configuration
+:keywords: documentation, NSL, docker, configuration
+:links:
+:numbered:
+
+== Example
+
+This is an example services configuration file. You need to replace the server hosts and ports and passwords and users.
+
+If you're using a docker image then you need to use proper host names or IP addresses for the server hosts.
+
+[source, groovy]
+.services-config-g3.groovy
+----
+grails.serverURL = 'http://app.server.au:8080/services'
+
+shard {
+    system.message.file = "/etc/nsl/broadcast.txt"
+    temp.file.directory = "/tmp"
+    colourScheme = "test"
+    webUser = "webapni"
+}
+
+services {
+    mapper {
+        apikey = 'blah-test-apni-services-key'
+    }
+
+    link {
+        mapperURL = 'https://test.server.au/mapper'
+        internalMapperURL = 'http://localhost:8083/mapper'
+        editor = 'https://test.server.au/editor'
+    }
+
+    photoService {
+        url = "http://ibis.anbg.gov.au/cgi-bin/apiiDigital?name=%&FORMAT=CSV"
+        search = { String name ->
+            "http://staging.anbg.gov.au/cgi-bin/apiiName2?name=${name.encodeAsURL()}"
+        }
+    }
+
+    scriptAddOns  = """Google analytics goes here and maybe the jira feedback script"""
+}
+
+
+security {
+    shiro {
+        realm {
+            ldap {
+                server.urls = 'ldap://ldap.server.au:10389'
+                userName.attribute = 'uid'
+
+                search {
+                    base = 'ou=users,dc=nsl,dc=bio,dc=org,dc=au'
+                    user = 'uid=admin,ou=system'
+                    pass = 's33kr1t'
+
+                    group {
+                        name = 'ou=groups,dc=nsl,dc=bio,dc=org,dc=au'
+                        member {
+                            element = 'uniqueMember'
+                            prefix = 'uid='
+                        }
+                    }
+                    permission {
+                        commonName = 'cn=permission'
+                        member {
+                            element = 'uniqueMember'
+                            prefix = 'uid='
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+dataSource {
+    username = "nsl"
+    password = "s33kr1t"
+    url = "jdbc:postgresql://pgsql.server.au:5432/dbname"
+
+    pooled = true
+    jmxExport = true
+    driverClassName = "org.postgresql.Driver"
+    dialect = "au.org.biodiversity.nsl.ExtendedPostgreSQLDialect"
+    formatSql = false
+    logSql = false
+    properties {
+        // See http://grails.org/doc/latest/guide/conf.html#dataSource for documentation
+        jmxEnabled = true
+        initialSize = 5
+        maxActive = 50
+        minIdle = 5
+        maxIdle = 25
+        maxWait = 10000
+        maxAge = 10 * 60000
+        timeBetweenEvictionRunsMillis = 5000
+        minEvictableIdleTimeMillis = 60000
+        validationQuery = "SELECT 1"
+        validationQueryTimeout = 3
+        validationInterval = 15000
+        testOnBorrow = true
+        testWhileIdle = true
+        testOnReturn = false
+        jdbcInterceptors = "ConnectionState"
+        defaultTransactionIsolation = java.sql.Connection.TRANSACTION_READ_COMMITTED
+    }
+}
+
+api.auth = [
+        'blah-test-apni-editor-key': [
+                application: 'apni-editor',
+                roles      : ['admin']
+        ]
+]
+
+nslServices.jwt.secret = 'poobarbee'
+----
+
+
