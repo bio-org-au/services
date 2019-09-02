@@ -230,7 +230,7 @@ class TreeElementController extends BaseApiController {
     def updateSynonymyByInstance() {
         List<Long> instanceIds = paramIdList(params.instances)
 
-        log.debug instanceIds
+        log.debug instanceIds.toString()
         ResultObject results = require('instances': instanceIds)
 
         handleResults(results) {
@@ -252,7 +252,7 @@ class TreeElementController extends BaseApiController {
 
     def updateSynonymyByEvent() {
         List<Long> eventIds = paramIdList(params.events)
-        log.debug eventIds
+        log.debug eventIds.toString()
         ResultObject results = requireTarget(eventIds, "No events supplied, updating nothing.")
 
         handleResults(results) {

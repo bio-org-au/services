@@ -251,7 +251,7 @@ order by accepted_name_path;
             result.commonSynonym = synonym
             if (!synonym) {
                 log.error "No name found for ${result.keySet().first()}"
-                log.debug result
+                log.debug result.toString()
             }
         }
         return commonSynonyms.sort { it.commonSynonym?.namePath }

@@ -99,11 +99,11 @@ trait WithTarget {
         return result
     }
 
-    void serviceRespond(ResultObject resultObject) {
+    void serviceRespond(ResultObject resultObject, String view = '/common/serviceResult') {
         log.debug "result status is ${resultObject.status} $resultObject"
         withFormat {
             html {
-                render(view: '/common/serviceResult', model: [data: resultObject], status: resultObject.remove('status'))
+                render(view: view, model: [data: resultObject], status: resultObject.remove('status'))
             }
             json {
                 respond(resultObject, status: resultObject.remove('status'))
