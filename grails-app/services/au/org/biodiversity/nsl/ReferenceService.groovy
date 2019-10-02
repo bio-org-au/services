@@ -185,7 +185,7 @@ class ReferenceService implements AsyncHelper {
     private static String pubDate(Reference reference) {
         use(ReferenceStringCategory) {
             if (reference.isoPublicationDate) {
-                return "(${reference.isoPublicationDate})"
+                return "(${reference.isoPublicationDate.isoDateFormat()})"
             }
             if (reference.publicationDate) {
                 return "(${reference.publicationDate.clean()})"
@@ -583,6 +583,30 @@ class ReferenceStringCategory {
     static String wrap(String string, String prefix, String postfix) {
         withString(string) {
             prefix + string + postfix
+        }
+    }
+
+    static final months = ['','January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+    static String isoDateFormat(String isoDate) {
+        withString(isoDate) {
+            String[] parts = isoDate.split('-')
+            switch (parts.size()) {
+                case 2:
+                    String year = parts[0]
+                    String month = months[parts[1].toInteger()]
+                    return "$month $year"
+                    break;
+                case 3:
+                    String year = parts[0]
+                    String month = months[parts[1].toInteger()]
+                    String day = parts[2].toInteger()
+                    return "$day $month $year"
+                    break;
+                default:
+                    return isoDate
+                    break;
+            }
         }
     }
 }
