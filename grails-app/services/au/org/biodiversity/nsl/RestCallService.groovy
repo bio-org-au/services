@@ -32,9 +32,42 @@ class RestCallService {
 
     static transactional = false
 
-    def grailsApplication
-
     private RestBuilder rest = new RestBuilder(proxy: Proxy.NO_PROXY)
+
+    /**
+     * log into the mapper and store the JWT and refresh token
+     * @return
+     */
+    AccessToken jwtLogin(String loginUrl, Map credentials, String refreshUrl) {
+        RestResponse response = rest.post(loginUrl) {
+            header 'Accept', "application/json"
+            json(credentials)
+        }
+        if (response.status == 200) {
+            Map resp = response.json as Map
+            log.info "logged into mapper. $resp"
+            return new AccessToken(resp.access_token as String, resp.refresh_token as String, refreshUrl)
+        } else {
+            log.error("Can't log into mapper, status: ${response.status}, ${response.json}")
+            return null
+        }
+    }
+
+    Boolean refreshLogin(AccessToken accessToken) {
+        log.info "refreshing login to $accessToken.refreshUrl"
+        Map data = [grantType: 'refresh_token', refreshToken: accessToken.refreshToken]
+        RestResponse response = rest.post(accessToken.refreshUrl) {
+            header 'Accept', "application/json"
+            json(data)
+        }
+        if (response.status == 200) {
+            accessToken.accessToken = response.json.accessToken as String
+            log.info "refreshed JWT."
+            return true
+        }
+        log.error "Refreshing JWT failed."
+        return false
+    }
 
     /**
      * Get data from a URL. If you're getting JSON data use the json method
@@ -64,7 +97,7 @@ class RestCallService {
     }
 
     /**
-     * This does a JSOn get call to the url. It expects a JSON response back.
+     * This does a JSON call to the url. It expects a JSON response back.
      *
      * It will look in the JSONObject data returned to see if there are any errors reported, and if there are errors it
      * will call the error closure. It will not check JSONArrays for errors.
@@ -88,12 +121,14 @@ class RestCallService {
      * @param error ( Map data , List errors )
      * @return void
      */
-
-    def json(String method, String url, Closure ok, Closure error, Closure notFound, Closure notOk) {
+    def json(String method, String url, Closure ok, Closure error, Closure notFound, Closure notOk, AccessToken accessToken = null) {
         try {
             log.debug "$method json ${url}"
             RestResponse response = rest."$method"(url) {
                 header 'Accept', "application/json"
+                if (accessToken) {
+                    header('Authorization', "Bearer ${accessToken.accessToken}")
+                }
             }
             processResponse(response, ok, error, notFound, notOk)
         }
@@ -103,18 +138,29 @@ class RestCallService {
         }
     }
 
-    def jsonPost(Map data, String url, Closure ok, Closure error, Closure notFound, Closure notOk) {
+    def jsonPost(Map data, String url, Closure ok, Closure error, Closure notFound, Closure notOk, AccessToken accessToken = null) {
         try {
             log.debug "Post ${data.toMapString(200)} as json to ${url}"
-            RestResponse response = rest.post(url) {
-                header 'Accept', "application/json"
-                json(data)
+            RestResponse response = postWithToken(url, accessToken, data)
+            if(response.status == 401 && accessToken) {
+                refreshLogin(accessToken)
+                response = postWithToken(url, accessToken, data)
             }
             processResponse(response, ok, error, notFound, notOk)
         }
         catch (ResourceAccessException e) {
             log.error e.message
             throw new RestCallException("Unable to connect to the service at $url", e)
+        }
+    }
+
+    private postWithToken(String url, AccessToken accessToken, Map data) {
+        return rest.post(url) {
+            header 'Accept', "application/json"
+            if (accessToken) {
+                header('Authorization', "Bearer ${accessToken.accessToken}")
+            }
+            json(data)
         }
     }
 
@@ -158,7 +204,6 @@ class RestCallService {
             worker(null)
         }
     }
-
 
     static List convertJsonList(JSONArray json) {
         return json.collect { thing ->
@@ -229,4 +274,16 @@ class RestCallException extends Throwable {
         super(message, cause)
     }
 
+}
+
+class AccessToken {
+    String accessToken
+    String refreshToken
+    String refreshUrl
+
+    AccessToken(String accessToken, String refreshToken, String refreshUrl) {
+        this.accessToken = accessToken
+        this.refreshToken = refreshToken
+        this.refreshUrl = refreshUrl
+    }
 }

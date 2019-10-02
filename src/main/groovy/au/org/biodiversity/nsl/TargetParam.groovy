@@ -96,6 +96,10 @@ class TargetParam {
                 param("&versionNumber", versionNumber)
     }
 
+    String identityUriString() {
+        "$objectType/$nameSpace/$idNumber"
+    }
+
     String addIdentityParamString() {
         return identityParamString() +
                 param("&uri", uri)

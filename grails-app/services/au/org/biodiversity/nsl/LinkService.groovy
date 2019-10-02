@@ -17,7 +17,6 @@
 package au.org.biodiversity.nsl
 
 
-import org.springframework.cache.Cache
 import org.springframework.cache.CacheManager
 
 class LinkService {
@@ -28,6 +27,7 @@ class LinkService {
 
     private String lowerNameSpaceName
     private String preferredHost
+    private AccessToken JWT
 
     String nameSpace() {
         if (!lowerNameSpaceName) {
@@ -36,43 +36,38 @@ class LinkService {
         return lowerNameSpaceName
     }
 
-
-    
     List<Map> getLinksForObject(target) {
-        return doUsingCache(getLinksCache(), target?.id) {
-            try {
-                List<Map> results = []
-                if (target) {
-                    String url = getLinkServiceUrl(target, 'links', true)
-                    restCallService.json('get', url,
-                            { List links ->
-                                results = links
-                            },
-                            { Map data, List errors ->
-                                log.error "Couldn't get links for $target. Errors: $errors"
-                            },
-                            { data ->
-                                String link = addTargetLink(target)
-                                if (link) {
-                                    results = [[link: link, resourceCount: 1, preferred: true]]
-                                } else {
-                                    log.error "Links not found for $target, and couldn't be added."
-                                }
-                            },
-                            { data ->
-                                log.error "Something went wrong getting $url. Response: $data"
+        try {
+            List<Map> results = []
+            if (target) {
+                String url = getLinkServiceUrl(target, 'links', true)
+                restCallService.json('get', url,
+                        { List links ->
+                            results = links
+                        },
+                        { Map data, List errors ->
+                            log.error "Couldn't get links for $target. Errors: $errors"
+                        },
+                        { data ->
+                            String link = addTargetLink(target)
+                            if (link) {
+                                results = [[link: link, resourceCount: 1, preferred: true]]
+                            } else {
+                                log.error "Links not found for $target, and couldn't be added."
                             }
-                    )
-                }
-                return results
-            } catch (RestCallException e) {
-                log.error(e.message)
-                return []
+                        },
+                        { data ->
+                            log.error "Something went wrong getting $url. Response: $data"
+                        }
+                )
             }
-        } as List<Map>
+            return results
+        } catch (RestCallException e) {
+            log.error(e.message)
+            return []
+        }
     }
 
-    
     String addTargetLink(target) {
         //noinspection GroovyAssignabilityCheck
         String identity = new TargetParam(target, nameSpace()).addIdentityParamString()
@@ -83,22 +78,25 @@ class LinkService {
         String mapper = mapper(true)
         String newLink = null
         try {
-            String uri = "$mapper/admin/addIdentifier?$identity" + "&" + mapperAuth()
-
-            restCallService.json('put', uri,
-                    { data ->
-                        newLink = data.preferredURI
-                    },
-                    { Map data, List errors ->
-                        log.error "Couldn't add link for $target. Errors: $errors"
-                    },
-                    { data ->
-                        log.error "404 adding link: $uri. Response: $data"
-                    },
-                    { data ->
-                        log.error "Something went wrong adding link: $uri. Response: $data"
-                    }
-            )
+            if (mapperAuth()) {
+                String uri = "$mapper/api/add-identifier?$identity"
+                restCallService.json('put', uri,
+                        { data ->
+                            newLink = data.uri
+                        },
+                        { Map data, List errors ->
+                            log.error "Couldn't add link for $target. Errors: $errors"
+                        },
+                        { data ->
+                            log.error "404 adding link: $uri. Response: $data"
+                        },
+                        { data ->
+                            log.error "Something went wrong adding link: $uri. Response: $data"
+                        }, JWT
+                )
+            } else {
+                log.error "Not logged into mapper."
+            }
         } catch (RestCallException e) {
             log.error "Error $e.message adding link for $target"
         }
@@ -121,26 +119,30 @@ class LinkService {
         String mapper = mapper(true)
         Map result = [success: true]
         try {
-            String url = "$mapper/admin/bulkAddIdentifiers?${mapperAuth()}"
-            String action = "Bulk add TreeVersionElements"
-            restCallService.jsonPost([identifiers: identities], url,
-                    { Map data ->
-                        log.debug "$action. Response: $data"
-                        result << data
-                    },
-                    { Map data, List errors ->
-                        log.error "Couldn't $action. Errors: $errors"
-                        result = [success: false, errors: errors]
-                    },
-                    { data ->
-                        log.error "Couldn't $action. Not found response: $data"
-                        result = [success: false, errors: ["Couldn't $action. Not found response: $data"]]
-                    },
-                    { data ->
-                        log.error "Couldn't $action. Response: $data"
-                        result = [success: false, errors: ["Couldn't $action. Response: $data"]]
-                    }
-            )
+            if (mapperAuth()) {
+                String url = "$mapper/api/bulk-add-identifiers"
+                String action = "Bulk add TreeVersionElements"
+                restCallService.jsonPost([identifiers: identities], url,
+                        { Map data ->
+                            log.debug "$action. Response: $data"
+                            result << data
+                        },
+                        { Map data, List errors ->
+                            log.error "Couldn't $action. Errors: $errors"
+                            result = [success: false, errors: errors]
+                        },
+                        { data ->
+                            log.error "Couldn't $action. Not found response: $data"
+                            result = [success: false, errors: ["Couldn't $action. Not found response: $data"]]
+                        },
+                        { data ->
+                            log.error "Couldn't $action. Response: $data"
+                            result = [success: false, errors: ["Couldn't $action. Response: $data"]]
+                        }, JWT
+                )
+            } else {
+                log.error "Not logged into mapper."
+            }
         } catch (RestCallException e) {
             log.error e.message
             result = [success: false, errors: "Communication error with mapper."]
@@ -152,42 +154,37 @@ class LinkService {
         List<Map> identities = targets.collect { target -> new TargetParam(target, nameSpace()).briefParamMap() }
         String mapper = mapper(true)
         Map result = [success: true]
-        String url = "$mapper/admin/bulkRemoveIdentifiers?${mapperAuth()}"
+        String url = "$mapper/api/bulk-remove-identifiers"
         String action = "Bulk remove TreeVersionElements"
         Map sendData = [identifiers: identities]
         return postIt(sendData, url, action, result)
     }
 
-    @SuppressWarnings("GroovyUnusedDeclaration")
-    Map bulkRemoveUris(List<String> targets) {
-        String mapper = mapper(true)
-        Map result = [success: true]
-        String url = "$mapper/admin/bulkRemoveUris?${mapperAuth()}"
-        String action = "Bulk remove TreeVersionElement by URIs"
-        Map sendData = [uris: targets]
-        return postIt(sendData, url, action, result)
-    }
-
     private Map postIt(LinkedHashMap<String, List<String>> sendData, String url, String action, Map result) {
         try {
-            restCallService.jsonPost(sendData, url,
-                    { Map data ->
-                        log.debug "$action. Response: $data"
-                        result << data
-                    },
-                    { Map data, List errors ->
-                        log.error "Couldn't $action. Errors: $errors"
-                        result = [success: false, errors: errors]
-                    },
-                    { data ->
-                        log.error "Couldn't $action. Not found response: $data"
-                        result = [success: false, errors: ["Couldn't $action. Not found response: $data"]]
-                    },
-                    { data ->
-                        log.error "Couldn't $action. Response: $data"
-                        result = [success: false, errors: ["Couldn't $action. Response: $data"]]
-                    }
-            )
+            if (mapperAuth()) {
+                restCallService.jsonPost(sendData, url,
+                        { Map data ->
+                            log.debug "$action. Response: $data"
+                            result << data
+                        },
+                        { Map data, List errors ->
+                            log.error "Couldn't $action. Errors: $errors"
+                            result = [success: false, errors: errors]
+                        },
+                        { data ->
+                            log.error "Couldn't $action. Not found response: $data"
+                            result = [success: false, errors: ["Couldn't $action. Not found response: $data"]]
+                        },
+                        { data ->
+                            log.error "Couldn't $action. Response: $data"
+                            result = [success: false, errors: ["Couldn't $action. Response: $data"]]
+                        }, JWT
+                )
+            } else {
+                log.error "Not logged into mapper."
+                result = [success: false, errors: ["Couldn't $action. Response: Not logged into mapper."]]
+            }
         } catch (RestCallException e) {
             log.error e.message
             result = [success: false, errors: "Communication error with mapper."]
@@ -196,10 +193,13 @@ class LinkService {
     }
 
     String getPreferredLinkForObjectSansHost(Object target) {
-        getPreferredLinkForObject(target) - "${getPreferredHost()}/"
+        String link = getPreferredLinkForObject(target)
+        if (link) {
+            return link - "${getPreferredHost()}/"
+        }
+        return null
     }
 
-    
     String getPreferredLinkForObject(Object target) {
         if (target == null) {
             log.warn "Can't get link for null object"
@@ -211,45 +211,43 @@ class LinkService {
         if (target instanceof Instance && target.uri) {
             return "${getPreferredHost()}/${target.uri}"
         }
-        doUsingCache(getLinkCache(), target?.id) {
-            String link = null
-            try {
-                String url = getLinkServiceUrl(target, 'preferredLink', true)
+        String link = null
+        try {
+            String url = getLinkServiceUrl(target, 'preferred-link', true)
 
-                restCallService.json('get', url,
-                        { Map data ->
-                            link = data.link
-                        },
-                        { Map data, List errors ->
-                            log.error "Couldn't get links for $target. Errors: $errors"
-                        },
-                        {
-                            link = addTargetLink(target)
-                            if (!link) {
-                                log.error "Link not found for $target, and couldn't be added."
-                            }
-                        },
-                        { data ->
-                            log.error "Something went wrong getting $url. Response: $data"
+            restCallService.json('get', url,
+                    { Map data ->
+                        link = data.link
+                    },
+                    { Map data, List errors ->
+                        log.error "Couldn't get links for $target. Errors: $errors"
+                    },
+                    {
+                        link = addTargetLink(target)
+                        if (!link) {
+                            log.error "Link not found for $target, and couldn't be added."
                         }
-                )
-            } catch (RestCallException e) {
-                log.error "Error $e.message getting preferred link for $target"
-            }
-            return link
-        } as String
+                    },
+                    { data ->
+                        log.error "Something went wrong getting $url. Response: $data"
+                    }
+            )
+        } catch (RestCallException e) {
+            log.error "Error $e.message getting preferred link for $target"
+        }
+        return link
     }
 
     /**
      * Ask the mapper for the preferred host name and context path (sans protocol e.g. http://)
      * @return
      */
-    
+
     String getPreferredHost() {
         if (!preferredHost) {
             String host = null
             try {
-                String url = getInternalLinkServiceUrl('preferredHost')
+                String url = getInternalLinkServiceUrl('preferred-host')
 
                 restCallService.json('get', url,
                         { Map data ->
@@ -285,7 +283,7 @@ class LinkService {
      * @param uri a uri perhaps known to the mapper
      * @return a domain object matching the object type returned by the mapper identity
      */
-    
+
     Object getObjectForLink(String uri) {
         Map identity = getMapperIdentityForLink(uri)
         if (!identity) {
@@ -350,46 +348,43 @@ class LinkService {
      * @return The Mapper Identity as a Map including nameSpace, objectType, and idNumber.
      */
 
-    
-    Map getMapperIdentityForLink(String uri) {
-        doUsingCache(getIdentityCache(), uri) {
-            Map identity = null
-            try {
-                String url = "${mapper(true)}/broker/getCurrentIdentity?uri=${URLEncoder.encode(uri, "UTF-8")}"
 
-                restCallService.json('get', url,
-                        { List identities ->
-                            if (identities.size() == 1) {
-                                Map ident = identities[0] as Map
-                                identity = [objectType: ident.objectType, nameSpace: ident.nameSpace, idNumber: ident.idNumber, versionNumber: ident.versionNumber]
-                            } else {
-                                log.error "expected only 1 identity for $uri"
-                            }
-                        },
-                        { Map data, List errors ->
-                            log.error "Couldn't get Identity for $uri. Errors: $errors"
-                        },
-                        { data ->
-                            log.error "Identity not found for $uri. Response: $data"
-                        },
-                        { data ->
-                            log.error "Something went wrong getting $url. Response: $data"
+    Map getMapperIdentityForLink(String uri) {
+        Map identity = null
+        try {
+            String url = "${mapper(true)}/api/current-identity?uri=${URLEncoder.encode(uri, "UTF-8")}"
+
+            restCallService.json('get', url,
+                    { List identities ->
+                        if (identities.size() == 1) {
+                            Map ident = identities[0] as Map
+                            identity = [objectType: ident.objectType, nameSpace: ident.nameSpace, idNumber: ident.idNumber, versionNumber: ident.versionNumber]
+                        } else {
+                            log.error "expected only 1 identity for $uri"
                         }
-                )
-            } catch (RestCallException e) {
-                log.error "Error $e.message getting mapper id for $uri"
-                return null
-            }
-            return identity
-        } as Map
+                    },
+                    { Map data, List errors ->
+                        log.error "Couldn't get Identity for $uri. Errors: $errors"
+                    },
+                    { data ->
+                        log.error "Identity not found for $uri. Response: $data"
+                    },
+                    { data ->
+                        log.error "Something went wrong getting $url. Response: $data"
+                    }
+            )
+        } catch (RestCallException e) {
+            log.error "Error $e.message getting mapper id for $uri"
+            return null
+        }
+        return identity
     }
 
     String getLinkServiceUrl(target, String endPoint = 'links', Boolean internal = false) {
-        //noinspection GroovyAssignabilityCheck
-        String identity = new TargetParam(target, nameSpace()).identityParamString()
+        String identity = new TargetParam(target, nameSpace()).identityUriString()
         if (identity) {
             String mapper = mapper(internal)
-            String url = "${mapper}/broker/${endPoint}?${identity}"
+            String url = "${mapper}/api/${endPoint}/${identity}"
             return url
         }
         return null
@@ -397,7 +392,7 @@ class LinkService {
 
     private String getInternalLinkServiceUrl(String endPoint) {
         String mapper = mapper(true)
-        String url = "${mapper}/broker/${endPoint}"
+        String url = "${mapper}/api/${endPoint}"
         return url
     }
 
@@ -405,24 +400,29 @@ class LinkService {
         return (internal ? configService.internalMapperURL : configService.publicMapperURL)
     }
 
-    private String mapperAuth() {
-        return "apiKey=${configService.mapperApiKey}"
+    private Boolean mapperAuth() {
+        if (JWT) {
+            return true
+        }
+        String mapper = mapper(true)
+        JWT = restCallService.jwtLogin("$mapper/api/login", configService.mapperCredentials, "$mapper/oauth/access_token")
+        return JWT != null
     }
 
     Map deleteNameLinks(Name name, String reason) {
-        String identity = new TargetParam(name, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}" + "&" + mapperAuth()
+        String identity = new TargetParam(name, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}"
         evictAllCache(name)
         deleteTargetLinks(identity)
     }
 
     Map deleteInstanceLinks(Instance instance, String reason) {
-        String identity = new TargetParam(instance, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}" + "&" + mapperAuth()
+        String identity = new TargetParam(instance, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}"
         evictAllCache(instance)
         deleteTargetLinks(identity)
     }
 
     Map deleteReferenceLinks(Reference reference, String reason) {
-        String identity = new TargetParam(reference, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}" + "&" + mapperAuth()
+        String identity = new TargetParam(reference, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}"
         evictAllCache(reference)
         deleteTargetLinks(identity)
     }
@@ -431,24 +431,29 @@ class LinkService {
         String mapper = mapper(true)
         Map result = [success: true]
         try {
-            String url = "$mapper/admin/deleteIdentifier?$identity"
-            restCallService.json('delete', url,
-                    { data ->
-                        log.debug "Deleted links for $identity. Response: $data"
-                    },
-                    { Map data, List errors ->
-                        log.error "Couldn't delete $identity links. Errors: $errors"
-                        result = [success: false, errors: errors]
-                    },
-                    { data ->
-                        log.error "Couldn't delete $identity links. Not found response: $data"
-                        result = [success: false, errors: ["Couldn't delete $identity links. Not found response: $data"]]
-                    },
-                    { data ->
-                        log.error "Couldn't delete $identity links. Response: $data"
-                        result = [success: false, errors: ["Couldn't delete $identity links. Response: $data"]]
-                    }
-            )
+            if (mapperAuth()) {
+                String url = "$mapper/api/delete-identifier?$identity"
+                restCallService.json('delete', url,
+                        { data ->
+                            log.debug "Deleted links for $identity. Response: $data"
+                        },
+                        { Map data, List errors ->
+                            log.error "Couldn't delete $identity links. Errors: $errors"
+                            result = [success: false, errors: errors]
+                        },
+                        { data ->
+                            log.error "Couldn't delete $identity links. Not found response: $data"
+                            result = [success: false, errors: ["Couldn't delete $identity links. Not found response: $data"]]
+                        },
+                        { data ->
+                            log.error "Couldn't delete $identity links. Response: $data"
+                            result = [success: false, errors: ["Couldn't delete $identity links. Response: $data"]]
+                        }, JWT
+                )
+            } else {
+                log.error "Not logged into mapper"
+                result = [success: false, errors: "Not logged into mapper."]
+            }
         } catch (RestCallException e) {
             log.error e.message
             result = [success: false, errors: "Communication error with mapper."]
@@ -496,26 +501,30 @@ class LinkService {
         String mapper = mapper(true)
         Map result = [success: true]
         try {
+            if (mapperAuth()) {
+                String url = "$mapper/api/move-identity"
 
-            String url = "$mapper/admin/moveIdentity?${mapperAuth()}"
-
-            restCallService.jsonPost(paramsMap, url,
-                    { Map data ->
-                        log.debug "Moved $paramsMap. Response: $data"
-                    },
-                    { Map data, List errors ->
-                        log.error "Couldn't move $paramsMap. Errors: $errors"
-                        result = [success: false, errors: errors]
-                    },
-                    { data ->
-                        log.error "Couldn't move $paramsMap. Not found response: $data"
-                        result = [success: false, errors: ["Couldn't move $paramsMap. Not found response: $data"]]
-                    },
-                    { data ->
-                        log.error "Couldn't move $paramsMap. Response: $data"
-                        result = [success: false, errors: ["Couldn't move $paramsMap. Response: $data"]]
-                    }
-            )
+                restCallService.jsonPost(paramsMap, url,
+                        { Map data ->
+                            log.debug "Moved $paramsMap. Response: $data"
+                        },
+                        { Map data, List errors ->
+                            log.error "Couldn't move $paramsMap. Errors: $errors"
+                            result = [success: false, errors: errors]
+                        },
+                        { data ->
+                            log.error "Couldn't move $paramsMap. Not found response: $data"
+                            result = [success: false, errors: ["Couldn't move $paramsMap. Not found response: $data"]]
+                        },
+                        { data ->
+                            log.error "Couldn't move $paramsMap. Response: $data"
+                            result = [success: false, errors: ["Couldn't move $paramsMap. Response: $data"]]
+                        }, JWT
+                )
+            } else {
+                log.error "Not logged into mapper"
+                result = [success: false, errors: "Not logged into mapper."]
+            }
         } catch (RestCallException e) {
             log.error e.message
             result = [success: false, errors: "Communication error with mapper."]
@@ -545,87 +554,36 @@ class LinkService {
 
     private Map removeTargetLink(String identity, String targetUri) {
         String mapper = mapper(true)
-        String url = "$mapper/admin/removeIdentityFromURI?$identity" + "&uri=${targetUri.encodeAsURL()}" + '&' + mapperAuth()
+        String url = "$mapper/api/remove-identifier-from-uri?$identity" + "&uri=${targetUri.encodeAsURL()}"
         Map result = [success: true]
         String whatImDoing = "Remove link $targetUri from $identity"
         try {
-            restCallService.json('delete', url,
-                    { Map data ->
-                        log.debug "Removed link to $identity. Response: $data"
-                    },
-                    { Map data, List errors ->
-                        log.error "Couldn't $whatImDoing. Errors: $errors"
-                        result = [success: false, errors: errors]
-                    },
-                    { data ->
-                        log.error "Couldn't $whatImDoing. Not found response: $data"
-                        result = [success: false, errors: ["Couldn't $whatImDoing. Not found response: $data"]]
-                    },
-                    { data ->
-                        log.error "Couldn't $whatImDoing. Response: $data"
-                        result = [success: false, errors: ["Couldn't $whatImDoing. Response: $data"]]
-                    }
-            )
+            if (mapperAuth()) {
+                restCallService.json('delete', url,
+                        { Map data ->
+                            log.debug "Removed link to $identity. Response: $data"
+                        },
+                        { Map data, List errors ->
+                            log.error "Couldn't $whatImDoing. Errors: $errors"
+                            result = [success: false, errors: errors]
+                        },
+                        { data ->
+                            log.error "Couldn't $whatImDoing. Not found response: $data"
+                            result = [success: false, errors: ["Couldn't $whatImDoing. Not found response: $data"]]
+                        },
+                        { data ->
+                            log.error "Couldn't $whatImDoing. Response: $data"
+                            result = [success: false, errors: ["Couldn't $whatImDoing. Response: $data"]]
+                        }, JWT
+                )
+            } else {
+                log.error "Not logged into mapper"
+                result = [success: false, errors: "Not logged into mapper."]
+            }
         } catch (RestCallException e) {
             log.error e.message
             result = [success: false, errors: "Communication error with mapper."]
         }
         return result
-    }
-
-    /** Cache stuff ******************************/
-    private static doUsingCache(Cache cache, Object key, Closure c) {
-        if (key && cache.get(key)) {
-            return ((Cache.ValueWrapper) cache.get(key)).get()
-        }
-
-        Object value = c()
-
-        if (key && value) {
-            cache.put(key, value)
-        }
-
-        return value
-    }
-
-    private Cache getLinkCache() {
-        return grailsCacheManager.getCache('linkcache')
-    }
-
-    private Cache getLinksCache() {
-        return grailsCacheManager.getCache('linkscache')
-    }
-
-    private Cache getIdentityCache() {
-        return grailsCacheManager.getCache('identitycache')
-    }
-
-    private void evictLinkCache(target) {
-        if (target) {
-            getLinkCache().evict(target.id)
-        }
-    }
-
-    private void evictAllCache(Object target) {
-        // the sequence here is important, as the identity cache uses getLinks
-        evictIdentityCache(target)
-        evictLinksCache(target)
-        evictLinkCache(target)
-    }
-
-    private void evictLinksCache(target) {
-        if (target) {
-            getLinksCache().evict(target.id)
-        }
-    }
-
-    private void evictIdentityCache(target) {
-        if (target) {
-            getLinksForObject(target).each { mapperIdentityCacheEvict(it.link as String) }
-        }
-    }
-
-    private void mapperIdentityCacheEvict(String uri) {
-        getIdentityCache().evict(uri)
     }
 }

@@ -205,8 +205,8 @@ class ConfigService {
         configOrThrow('services.link.mapperURL')
     }
 
-    String getMapperApiKey() {
-        configOrThrow('services.mapper.apikey')
+    Map getMapperCredentials() {
+        configOrThrow('services.mapper') as Map
     }
 
     String getSystemMessageFilename() {
