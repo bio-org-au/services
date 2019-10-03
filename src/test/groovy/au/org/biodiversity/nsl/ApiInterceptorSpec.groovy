@@ -12,6 +12,10 @@ class ApiInterceptorSpec extends Specification implements InterceptorUnitTest<Ap
 
     }
 
+    Closure doWithSpring() {{ ->
+        ldapRealm(LdapRealm)
+    }}
+
     void "Test api interceptor matching"() {
         when:"A request matches the interceptor"
             withRequest(controller:"api")

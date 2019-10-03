@@ -3,7 +3,7 @@ package au.org.biodiversity.nsl
 import grails.testing.web.interceptor.InterceptorUnitTest
 import spock.lang.Specification
 
-class AuthInterceptorSpec extends Specification implements InterceptorUnitTest<ApiInterceptor> {
+class AuthInterceptorSpec extends Specification implements InterceptorUnitTest<AuthInterceptor> {
 
     def setup() {
     }
@@ -12,7 +12,7 @@ class AuthInterceptorSpec extends Specification implements InterceptorUnitTest<A
 
     }
 
-    void "Test api interceptor matching"() {
+    void "Test auth interceptor matching"() {
         when:"A request matches the interceptor"
             withRequest(controller:"auth")
 
