@@ -389,7 +389,6 @@ class NameService {
         }
     }
 
-
     def reconstructAllNames() {
         runAsync {
             String updaterWas = pollingStatus()
@@ -423,8 +422,9 @@ class NameService {
                     }
                     session.flush()
                 }
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top - bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Reconstruct names complete."
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
@@ -461,9 +461,9 @@ class NameService {
                     }
                     session.clear()
                 }
-
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top - bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Check names complete."
         }
         return tempFile
     }
@@ -495,8 +495,9 @@ class NameService {
                     }
                     session.flush()
                 }
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top - bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Reconstruct sort names complete."
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
@@ -535,8 +536,9 @@ or n.fullNameHtml is null""", params)
                     }
                     session.flush()
                 }
-                log.info "${names.size()} done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "${top} done. ${top - bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "construct missing names complete."
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
