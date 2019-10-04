@@ -42,16 +42,16 @@ class IcnpNameConstructionService implements NameConstructor {
         }
 
         if (name.nameType.nameCategory?.name == 'common') {
-            String htmlNameElement = name.nameElement.encodeAsHTML()
+            String htmlNameElement = encodeHtml(name.nameElement)
             String markedUpName = "<common><name data-id='$name.id'><element>${htmlNameElement}</element></name></common>"
             return [fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName]
         }
 
-        return [fullMarkedUpName: (name.nameElement?.encodeAsHTML() ?: '?'), simpleMarkedUpName: (name.nameElement.encodeAsHTML() ?: '?')]
+        return [fullMarkedUpName: (encodeHtml(name.nameElement) ?: '?'), simpleMarkedUpName: (encodeHtml(name.nameElement) ?: '?')]
     }
 
     private static ConstructedName constructInformalName(Name name) {
-        List<String> bits = ["<element>${name.nameElement.encodeAsHTML()}</element>", constructAuthor(name)]
+        List<String> bits = ["<element>${encodeHtml(name.nameElement)}</element>", constructAuthor(name)]
 
         String markedUpName = "<informal><name data-id='$name.id'>${join(bits)}</name></informal>"
         return new ConstructedName(fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName)
@@ -70,7 +70,7 @@ class IcnpNameConstructionService implements NameConstructor {
             String candClose = name.nameType.name == 'candidatus' ? '</candidatus>' : ''
             String rank = nameParent ? makeRankString(name) : ''
             String connector = makeConnectorString(name, rank)
-            String element = "<element>${name.nameElement.encodeAsHTML()}</element>"
+            String element = "<element>${encodeHtml(name.nameElement)}</element>"
             String author = constructAuthor(name)
             String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
@@ -126,17 +126,17 @@ class IcnpNameConstructionService implements NameConstructor {
         if (name.author) {
             if (name.baseAuthor) {
                 if (name.exBaseAuthor) {
-                    bits << "(<ex-base data-id='$name.exBaseAuthor.id' title='${name.exBaseAuthor.name.encodeAsHTML()}'>$name.exBaseAuthor.abbrev</ex-base> ex <base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
+                    bits << "(<ex-base data-id='$name.exBaseAuthor.id' title='${encodeHtml(name.exBaseAuthor.name)}'>$name.exBaseAuthor.abbrev</ex-base> ex <base data-id='$name.baseAuthor.id' title='${encodeHtml(name.baseAuthor.name)}'>$name.baseAuthor.abbrev</base>)"
                 } else {
-                    bits << "(<base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
+                    bits << "(<base data-id='$name.baseAuthor.id' title='${encodeHtml(name.baseAuthor.name)}'>$name.baseAuthor.abbrev</base>)"
                 }
             }
             if (name.exAuthor) {
-                bits << "(ex <ex data-id='$name.exAuthor.id' title='${name.exAuthor.name.encodeAsHTML()}'>$name.exAuthor.abbrev</ex>)"
+                bits << "(ex <ex data-id='$name.exAuthor.id' title='${encodeHtml(name.exAuthor.name)}'>$name.exAuthor.abbrev</ex>)"
             }
-            bits << "<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>"
+            bits << "<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>"
             if (name.sanctioningAuthor) {
-                bits << ": <sanctioning data-id='$name.sanctioningAuthor.id' title='${name.sanctioningAuthor.name.encodeAsHTML()}'>$name.sanctioningAuthor.abbrev</sanctioning>"
+                bits << ": <sanctioning data-id='$name.sanctioningAuthor.id' title='${encodeHtml(name.sanctioningAuthor.name)}'>$name.sanctioningAuthor.abbrev</sanctioning>"
             }
         }
         return bits.size() ? "<authors>${join(bits)}</authors>" : ''

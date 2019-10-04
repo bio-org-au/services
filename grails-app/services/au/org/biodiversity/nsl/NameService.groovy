@@ -403,9 +403,9 @@ class NameService implements AsyncHelper {
             chunkThis(1000, query) { List<Name> names, bottom, top ->
                 long start = System.currentTimeMillis()
                 int itemNo = bottom
-                try {
-                    Name.withSession { session ->
-                        names.each { Name name ->
+                Name.withSession { session ->
+                    names.each { Name name ->
+                        try {
                             ConstructedName constructedName = nameConstructionService.constructName(name)
 
                             if (!(name.fullNameHtml && name.simpleNameHtml && name.fullName && name.simpleName && name.sortName) ||
@@ -418,16 +418,17 @@ class NameService implements AsyncHelper {
                                 name.save()
                             }
                             itemNo++
+                        } catch (e) {
+                            log.error "Error reconstructing name $name, $e.message"
+                            e.printStackTrace()
                         }
-                        session.flush()
-                        session.clear()
                     }
-                } catch (e) {
-                    println "At item $itemNo got error $e.message"
-                    throw e
+                    session.flush()
+                    session.clear()
                 }
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top-bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Reconstruct all names complete."
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
@@ -463,8 +464,9 @@ class NameService implements AsyncHelper {
                     }
                     session.clear()
                 }
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top-bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Check all names complete."
         }
     }
 
@@ -480,17 +482,23 @@ class NameService implements AsyncHelper {
                 long start = System.currentTimeMillis()
                 Name.withSession { session ->
                     names.each { Name name ->
-                        String sortName = nameConstructionService.makeSortName(name, name.simpleName)
-                        if (!(name.sortName) || name.sortName != sortName) {
-                            name.sortName = sortName
-                            name.save()
+                        try {
+                            String sortName = nameConstructionService.makeSortName(name, name.simpleName)
+                            if (!(name.sortName) || name.sortName != sortName) {
+                                name.sortName = sortName
+                                name.save()
+                            }
+                        } catch (e) {
+                            log.error "Error reconstructing sort name $name, $e.message"
+                            e.printStackTrace()
                         }
                     }
                     session.flush()
                     session.clear()
                 }
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top-bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Reconstruct sort names complete."
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
@@ -513,20 +521,26 @@ or n.fullNameHtml is null""", params)
                 long start = System.currentTimeMillis()
                 Name.withSession { session ->
                     names.each { Name name ->
-                        ConstructedName constructedNames = nameConstructionService.constructName(name)
+                        try {
+                            ConstructedName constructedNames = nameConstructionService.constructName(name)
 
-                        name.fullNameHtml = constructedNames.fullMarkedUpName
-                        name.fullName = constructedNames.plainFullName
-                        name.simpleNameHtml = constructedNames.simpleMarkedUpName
-                        name.simpleName = constructedNames.plainSimpleName
-                        name.save()
-                        log.debug "saved $name.fullName"
+                            name.fullNameHtml = constructedNames.fullMarkedUpName
+                            name.fullName = constructedNames.plainFullName
+                            name.simpleNameHtml = constructedNames.simpleMarkedUpName
+                            name.simpleName = constructedNames.plainSimpleName
+                            name.save()
+                            log.debug "saved $name.fullName"
+                        } catch (e) {
+                            log.error "Error reconstructing name $name, $e.message"
+                            e.printStackTrace()
+                        }
                     }
                     session.flush()
                     session.clear()
                 }
-                log.info "${names.size()} done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "${names.size()} done. ${top-bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Construct missing names complete."
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
@@ -547,12 +561,12 @@ or n.fullNameHtml is null""")?.first() as Integer
         Integer i = 0
         Integer size = chunkSize
         while (size == chunkSize) {
-            Integer top = i + chunkSize
             //needs to be ordered or we might repeat items
-            List items = query([offset: i, max: chunkSize]) as List
+            List items = query([offset: i, max: chunkSize])
+            size = items.size()
+            Integer top = i + size
             work(items, i, top)
             i = top
-            size = items.size()
         }
     }
 

@@ -18,23 +18,14 @@ package au.org.biodiversity.nsl
 
 import groovy.transform.CompileStatic
 import org.grails.encoder.CodecLookup
-import org.grails.encoder.Encoder
 
 class IcnNameConstructionService implements NameConstructor {
 
     CodecLookup codecLookup
-    Encoder htmlEncoderInst
     static transactional = false
 
     static String join(List<String> bits) {
         bits.findAll { it }.join(' ')
-    }
-
-    Encoder getHtmlEncoder() {
-        if (!htmlEncoderInst) {
-            htmlEncoderInst = codecLookup.lookupEncoder('HTML')
-        }
-        return htmlEncoderInst
     }
 
     @CompileStatic
@@ -242,17 +233,17 @@ class IcnNameConstructionService implements NameConstructor {
         if (name.author) {
             if (name.baseAuthor) {
                 if (name.exBaseAuthor) {
-                    bits << "(<ex-base data-id='$name.exBaseAuthor.id' title='${htmlEncoder.encode(name.exBaseAuthor.name)}'>$name.exBaseAuthor.abbrev</ex-base> ex <base data-id='$name.baseAuthor.id' title='${htmlEncoder.encode(name.baseAuthor.name)}'>$name.baseAuthor.abbrev</base>)".toString()
+                    bits << "(<ex-base data-id='$name.exBaseAuthor.id' title='${encodeHtml(name.exBaseAuthor.name)}'>$name.exBaseAuthor.abbrev</ex-base> ex <base data-id='$name.baseAuthor.id' title='${htmlEncoder.encode(name.baseAuthor.name)}'>$name.baseAuthor.abbrev</base>)".toString()
                 } else {
-                    bits << "(<base data-id='$name.baseAuthor.id' title='${htmlEncoder.encode(name.baseAuthor.name)}'>$name.baseAuthor.abbrev</base>)".toString()
+                    bits << "(<base data-id='$name.baseAuthor.id' title='${encodeHtml(name.baseAuthor.name)}'>$name.baseAuthor.abbrev</base>)".toString()
                 }
             }
             if (name.exAuthor) {
-                bits << "<ex data-id='$name.exAuthor.id' title='${htmlEncoder.encode(name.exAuthor.name)}'>$name.exAuthor.abbrev</ex> ex".toString()
+                bits << "<ex data-id='$name.exAuthor.id' title='${encodeHtml(name.exAuthor.name)}'>$name.exAuthor.abbrev</ex> ex".toString()
             }
-            bits << "<author data-id='$name.author.id' title='${htmlEncoder.encode(name.author.name)}'>$name.author.abbrev</author>".toString()
+            bits << "<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>".toString()
             if (name.sanctioningAuthor) {
-                bits << ": <sanctioning data-id='$name.sanctioningAuthor.id' title='${htmlEncoder.encode(name.sanctioningAuthor.name)}'>$name.sanctioningAuthor.abbrev</sanctioning>".toString()
+                bits << ": <sanctioning data-id='$name.sanctioningAuthor.id' title='${encodeHtml(name.sanctioningAuthor.name)}'>$name.sanctioningAuthor.abbrev</sanctioning>".toString()
             }
         }
         return bits.size() ? "<authors>${join(bits)}</authors>" : ''

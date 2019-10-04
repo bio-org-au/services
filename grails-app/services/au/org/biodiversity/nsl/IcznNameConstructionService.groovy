@@ -42,16 +42,16 @@ class IcznNameConstructionService implements NameConstructor {
         }
 
         if (name.nameType.nameCategory?.name == 'common') {
-            String htmlNameElement = name.nameElement.encodeAsHTML()
+            String htmlNameElement = encodeHtml(name.nameElement)
             String markedUpName = "<common><name data-id='$name.id'><element>${htmlNameElement}</element></name></common>"
             return [fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName]
         }
 
-        return [fullMarkedUpName: (name.nameElement?.encodeAsHTML() ?: '?'), simpleMarkedUpName: (name.nameElement.encodeAsHTML() ?: '?')]
+        return [fullMarkedUpName: (encodeHtml(name.nameElement) ?: '?'), simpleMarkedUpName: (encodeHtml(name.nameElement) ?: '?')]
     }
 
     private static ConstructedName constructInformalName(Name name) {
-        List<String> bits = ["<element>${name.nameElement.encodeAsHTML()}</element>", constructAuthor(name)]
+        List<String> bits = ["<element>${encodeHtml(name.nameElement)}</element>", constructAuthor(name)]
 
         String markedUpName = "<informal><name data-id='$name.id'>${join(bits)}</name></informal>"
         return new ConstructedName(fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName)
@@ -63,7 +63,7 @@ class IcznNameConstructionService implements NameConstructor {
             String precedingName = constructPrecedingNameString(nameParent, name)
             String rank = nameParent ? makeRankString(name) : ''
             String connector = makeConnectorString(name, rank)
-            String element = "<element>${name.nameElement.encodeAsHTML()}</element>"
+            String element = "<element>${encodeHtml(name.nameElement)}</element>"
             String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
             List<String> simpleNameParts = [precedingName, rank, connector, element, manuscript]
@@ -87,9 +87,9 @@ class IcznNameConstructionService implements NameConstructor {
             String connector = makeConnectorString(name, rank)
             String element
             if (name.nameRank.name == 'Subgenus') {
-                element = "(<element>${name.nameElement.encodeAsHTML()}</element>)"
+                element = "(<element>${encodeHtml(name.nameElement)}</element>)"
             } else {
-                element = "<element>${name.nameElement.encodeAsHTML()}</element>"
+                element = "<element>${encodeHtml(name.nameElement)}</element>"
             }
             String author = constructAuthor(name)
             String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
@@ -146,15 +146,15 @@ class IcznNameConstructionService implements NameConstructor {
         if (name.author) {
             if (name.changedCombination) {
                 if (name.publishedYear) {
-                    bits << "(<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>, $name.publishedYear)"
+                    bits << "(<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>, $name.publishedYear)"
                 } else {
-                    bits << "(<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>)"
+                    bits << "(<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>)"
                 }
             } else {
                 if (name.publishedYear) {
-                    bits << "<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>, $name.publishedYear"
+                    bits << "<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>, $name.publishedYear"
                 } else {
-                    bits << "<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>"
+                    bits << "<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>"
                 }
             }
         }

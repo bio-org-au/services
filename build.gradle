@@ -14,7 +14,7 @@ buildscript {
     }
 }
 
-version "1.0226"
+version "1.0228"
 group "services3"
 
 apply plugin: "eclipse"

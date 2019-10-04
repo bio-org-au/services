@@ -53,9 +53,9 @@ class ReferenceService implements AsyncHelper {
 
             if (reference.author != unknownAuthor) {
                 if (reference.refAuthorRole == editor) {
-                    authorName = "${reference.author.name.trim()} (ed.)"
+                    authorName = "${reference.author.name?.trim()} (ed.)"
                 } else {
-                    authorName = "${reference.author.name.trim()}"
+                    authorName = "${reference.author.name?.trim()}"
                 }
             }
 
@@ -63,10 +63,10 @@ class ReferenceService implements AsyncHelper {
 
             if (reference.parent && reference.parent.author != unknownAuthor) {
                 if (reference.author != reference.parent.author) {
-                    parentAuthorName = "in ${reference.parent.author.name.trim()}"
+                    parentAuthorName = "in ${reference.parent.author.name?.trim()}"
                 }
                 if (reference.parent?.refAuthorRole == editor) {
-                    parentAuthorName = "in ${reference.parent.author.name.trim()} (ed.)"
+                    parentAuthorName = "in ${reference.parent.author.name?.trim()} (ed.)"
                 }
             }
 
@@ -264,19 +264,25 @@ class ReferenceService implements AsyncHelper {
                 long start = System.currentTimeMillis()
                 Name.withSession { session ->
                     references.each { Reference reference ->
-                        String citationHtml = generateReferenceCitation(reference, unknownAuthor, editor)
+                        try {
+                            String citationHtml = generateReferenceCitation(reference, unknownAuthor, editor)
 
-                        if (reference.citationHtml != citationHtml) {
-                            reference.citationHtml = citationHtml
-                            reference.citation = NameConstructionService.stripMarkUp(citationHtml)
-                            reference.save()
+                            if (reference.citationHtml != citationHtml) {
+                                reference.citationHtml = citationHtml
+                                reference.citation = NameConstructionService.stripMarkUp(citationHtml)
+                                reference.save()
+                            }
+                        } catch (e) {
+                            log.error "Error updating citations $e.message"
+                            e.printStackTrace()
                         }
                     }
                     session.flush()
                     session.clear()
                 }
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top - bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Completed update."
             if (updaterWas == 'running') {
                 nameService.resumeUpdates()
             }
@@ -586,7 +592,7 @@ class ReferenceStringCategory {
         }
     }
 
-    static final months = ['','January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    static final months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
     static String isoDateFormat(String isoDate) {
         withString(isoDate) {

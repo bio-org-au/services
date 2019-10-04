@@ -1,11 +1,15 @@
 package au.org.biodiversity.nsl
 
+import org.grails.encoder.Encoder
+
 /**
  * User: pmcneil
  * Date: 16/05/18
  *
  */
-interface NameConstructor {
+trait NameConstructor {
+
+    Encoder htmlEncoderInst
 
     /**
      * Construct a name according to the code implemented. This method returns the full marked up name and the simple
@@ -15,7 +19,21 @@ interface NameConstructor {
      * @param name
      * @return Map [fullMarkedUpName: markedUpName, simpleMarkedUpName: markedUpName]
      */
-    ConstructedName constructName(Name name)
+    abstract ConstructedName constructName(Name name)
 
-    String constructAuthor(Name name)
+    abstract String constructAuthor(Name name)
+
+    Encoder getHtmlEncoder() {
+        if (!htmlEncoderInst) {
+            htmlEncoderInst = codecLookup.lookupEncoder('HTML')
+        }
+        return htmlEncoderInst
+    }
+
+    String encodeHtml(String string) {
+        if(string) {
+            return htmlEncoder.encode(string)
+        }
+        return null
+    }
 }
