@@ -146,15 +146,15 @@ class IcznNameConstructionService implements NameConstructor {
         if (name.author) {
             if (name.changedCombination) {
                 if (name.publishedYear) {
-                    bits << "(<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>, $name.publishedYear)"
+                    bits << "(<author data-id='$name.author.id' title='${name.author.name?.encodeAsHTML()}'>$name.author.abbrev</author>, $name.publishedYear)"
                 } else {
-                    bits << "(<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>)"
+                    bits << "(<author data-id='$name.author.id' title='${name.author.name?.encodeAsHTML()}'>$name.author.abbrev</author>)"
                 }
             } else {
                 if (name.publishedYear) {
-                    bits << "<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>, $name.publishedYear"
+                    bits << "<author data-id='$name.author.id' title='${name.author.name?.encodeAsHTML()}'>$name.author.abbrev</author>, $name.publishedYear"
                 } else {
-                    bits << "<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>"
+                    bits << "<author data-id='$name.author.id' title='${name.author.name?.encodeAsHTML()}'>$name.author.abbrev</author>"
                 }
             }
         }

@@ -166,7 +166,7 @@ class NameService {
     Map deduplicateMarked(String user) {
         Map report = [
                 namesDeduplicated: new HashSet<Name>(),
-                errors: []
+                errors           : []
         ]
 
         //remove nested duplicates first
@@ -389,7 +389,6 @@ class NameService {
         }
     }
 
-
     def reconstructAllNames() {
         runAsync {
             String updaterWas = pollingStatus()
@@ -402,25 +401,30 @@ class NameService {
                 long start = System.currentTimeMillis()
                 Name.withSession { session ->
                     names.each { Name name ->
-                        Map constructedNames = nameConstructionService.constructName(name)
+                        try {
+                            Map constructedNames = nameConstructionService.constructName(name)
 
-                        if (!(name.fullNameHtml && name.simpleNameHtml && name.fullName && name.simpleName && name.sortName) ||
-                                name.fullNameHtml != constructedNames.fullMarkedUpName) {
-                            name.fullNameHtml = constructedNames.fullMarkedUpName
-                            name.fullName = nameConstructionService.stripMarkUp(constructedNames.fullMarkedUpName)
-                            name.simpleNameHtml = constructedNames.simpleMarkedUpName
-                            name.simpleName = nameConstructionService.stripMarkUp(constructedNames.simpleMarkedUpName)
-                            name.sortName = nameConstructionService.makeSortName(name, name.simpleName)
-                            name.save()
-//                            log.debug "saved $name.fullName"
-                        } else {
-                            name.discard()
+                            if (!(name.fullNameHtml && name.simpleNameHtml && name.fullName && name.simpleName && name.sortName) ||
+                                    name.fullNameHtml != constructedNames.fullMarkedUpName) {
+                                name.fullNameHtml = constructedNames.fullMarkedUpName
+                                name.fullName = nameConstructionService.stripMarkUp(constructedNames.fullMarkedUpName)
+                                name.simpleNameHtml = constructedNames.simpleMarkedUpName
+                                name.simpleName = nameConstructionService.stripMarkUp(constructedNames.simpleMarkedUpName)
+                                name.sortName = nameConstructionService.makeSortName(name, name.simpleName)
+                                name.save()
+                            } else {
+                                name.discard()
+                            }
+                        } catch (e) {
+                            log.error "Error reconstructing name $name, $e.message"
+                            e.printStackTrace()
                         }
                     }
                     session.flush()
                 }
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top - bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Reconstruct names complete."
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
@@ -457,9 +461,9 @@ class NameService {
                     }
                     session.clear()
                 }
-
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top - bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Check names complete."
         }
         return tempFile
     }
@@ -476,18 +480,24 @@ class NameService {
                 long start = System.currentTimeMillis()
                 Name.withSession { session ->
                     names.each { Name name ->
-                        String sortName = nameConstructionService.makeSortName(name, name.simpleName)
-                        if (!(name.sortName) || name.sortName != sortName) {
-                            name.sortName = sortName
-                            name.save()
-                        } else {
-                            name.discard()
+                        try {
+                            String sortName = nameConstructionService.makeSortName(name, name.simpleName)
+                            if (!(name.sortName) || name.sortName != sortName) {
+                                name.sortName = sortName
+                                name.save()
+                            } else {
+                                name.discard()
+                            }
+                        } catch (e) {
+                            log.error "Error reconstructing sort name $name, $e.message"
+                            e.printStackTrace()
                         }
                     }
                     session.flush()
                 }
-                log.info "$top done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "$top done. ${top - bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "Reconstruct sort names complete."
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
@@ -510,19 +520,25 @@ or n.fullNameHtml is null""", params)
                 long start = System.currentTimeMillis()
                 Name.withSession { session ->
                     names.each { Name name ->
-                        Map constructedNames = nameConstructionService.constructName(name)
+                        try {
+                            Map constructedNames = nameConstructionService.constructName(name)
 
-                        name.fullNameHtml = constructedNames.fullMarkedUpName
-                        name.fullName = nameConstructionService.stripMarkUp(constructedNames.fullMarkedUpName)
-                        name.simpleNameHtml = constructedNames.simpleMarkedUpName
-                        name.simpleName = nameConstructionService.stripMarkUp(constructedNames.simpleMarkedUpName)
-                        name.save()
-                        log.debug "saved $name.fullName"
+                            name.fullNameHtml = constructedNames.fullMarkedUpName
+                            name.fullName = nameConstructionService.stripMarkUp(constructedNames.fullMarkedUpName)
+                            name.simpleNameHtml = constructedNames.simpleMarkedUpName
+                            name.simpleName = nameConstructionService.stripMarkUp(constructedNames.simpleMarkedUpName)
+                            name.save()
+                            log.debug "saved $name.fullName"
+                        } catch (e) {
+                            log.error "Error reconstructing name $name, $e.message"
+                            e.printStackTrace()
+                        }
                     }
                     session.flush()
                 }
-                log.info "${names.size()} done. 1000 took ${System.currentTimeMillis() - start} ms"
+                log.info "${top} done. ${top - bottom} took ${System.currentTimeMillis() - start} ms"
             }
+            log.info "construct missing names complete."
             if (updaterWas == 'running') {
                 resumeUpdates()
             }
@@ -553,12 +569,12 @@ or n.fullNameHtml is null""")?.first() as Integer
         Integer i = 0
         Integer size = chunkSize
         while (size == chunkSize) {
-            Integer top = i + chunkSize
             //needs to be ordered or we might repeat items
             List items = query([offset: i, max: chunkSize])
+            size = items.size()
+            Integer top = i + size
             work(items, i, top)
             i = top
-            size = items.size()
         }
     }
 
