@@ -1,5 +1,4 @@
 = Import mapper links into the mapper from a new shard
-v1.0, August 2017
 :imagesdir: resources/images/
 :toc: left
 :toclevels: 4

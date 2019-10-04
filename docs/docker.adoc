@@ -1,5 +1,4 @@
 = Docker Notes
-v1.0, August 2019
 :imagesdir: resources/images/
 :toc: left
 :toclevels: 4

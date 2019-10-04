@@ -1,5 +1,4 @@
 = Name Construction (Plants)
-v1.0, June 2015
 :imagesdir: resources/images/
 :toc: left
 :toclevels: 4

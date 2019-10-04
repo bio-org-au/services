@@ -1,5 +1,4 @@
 = Distribution data structure
-v1.0, April 2019
 :imagesdir: resources/images/
 :toc: left
 :toclevels: 4

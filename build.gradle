@@ -10,6 +10,7 @@ buildscript {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath "org.grails.plugins:hibernate5:${gormVersion - ".RELEASE"}"
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.15.1"
+        classpath "org.asciidoctor:asciidoctor-gradle-plugin:1.5.9.2"
     }
 }
 
@@ -22,6 +23,7 @@ apply plugin: "war"
 apply plugin: "org.grails.grails-web"
 apply plugin: "asset-pipeline"
 apply plugin: "org.grails.grails-gsp"
+apply plugin: 'org.asciidoctor.convert'
 
 war.baseName("nsl#${rootProject.name}")
 war.version("##${rootProject.version}")
@@ -107,4 +109,23 @@ tasks.withType(Test) {
 assets {
     minifyJs = true
     minifyCss = true
+}
+
+asciidoctor {
+    sourceDir = file("docs")
+    sources {
+        include "index.adoc"
+    }
+
+    resources {
+        from("$sourceDir/resources/images")
+        into './resources/images'
+    }
+
+    attributes 'source-highlighter': 'coderay',
+            toc                 : '',
+            idprefix            : '',
+            idseparator         : '-'
+
+    outputDir = file("build/docs")
 }

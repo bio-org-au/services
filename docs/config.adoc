@@ -1,5 +1,4 @@
 = Services configuration file
-v1.0, September 2019
 :imagesdir: resources/images/
 :toc: left
 :toclevels: 4

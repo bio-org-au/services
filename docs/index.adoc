@@ -1,0 +1,32 @@
+= NSL Services
+v1.0, October 2019
+:doctype: book
+:imagesdir: resources/images/
+:toc: left
+:toclevels: 4
+:toc-class: toc2
+:icons: font
+:iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
+:stylesdir: resources/style/
+:stylesheet: asciidoctor.css
+:description: Services Configuration
+:keywords: documentation, NSL, docker, configuration
+:links:
+:numbered:
+
+The NSL services project is Taxanomic Name Infrastructure and is currently in use by The Australian Plant Name Index and
+Australian Plant Census.
+
+include::changelog.adoc[]
+
+include::config.adoc[]
+
+include::docker.adoc[]
+
+include::distribution.adoc[]
+
+include::merge-tree.adoc[]
+
+include::createMapperLinksFromShard.adoc[]
+
+include::name-construction.adoc[]
