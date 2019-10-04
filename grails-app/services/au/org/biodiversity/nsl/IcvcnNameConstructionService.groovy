@@ -90,17 +90,17 @@ class IcvcnNameConstructionService implements NameConstructor {
         if (name.author) {
             if (name.baseAuthor) {
                 if (name.exBaseAuthor) {
-                    bits << "(<ex-base data-id='$name.exBaseAuthor.id' title='${name.exBaseAuthor.name.encodeAsHTML()}'>$name.exBaseAuthor.abbrev</ex-base> ex <base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
+                    bits << "(<ex-base data-id='$name.exBaseAuthor.id' title='${name.exBaseAuthor.name?.encodeAsHTML()}'>$name.exBaseAuthor.abbrev</ex-base> ex <base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
                 } else {
-                    bits << "(<base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
+                    bits << "(<base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name?.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
                 }
             }
             if (name.exAuthor) {
-                bits << "<ex data-id='$name.exAuthor.id' title='${name.exAuthor.name.encodeAsHTML()}'>$name.exAuthor.abbrev</ex> ex"
+                bits << "<ex data-id='$name.exAuthor.id' title='${name.exAuthor.name?.encodeAsHTML()}'>$name.exAuthor.abbrev</ex> ex"
             }
-            bits << "<author data-id='$name.author.id' title='${name.author.name.encodeAsHTML()}'>$name.author.abbrev</author>"
+            bits << "<author data-id='$name.author.id' title='${name.author.name?.encodeAsHTML()}'>$name.author.abbrev</author>"
             if (name.sanctioningAuthor) {
-                bits << ": <sanctioning data-id='$name.sanctioningAuthor.id' title='${name.sanctioningAuthor.name.encodeAsHTML()}'>$name.sanctioningAuthor.abbrev</sanctioning>"
+                bits << ": <sanctioning data-id='$name.sanctioningAuthor.id' title='${name.sanctioningAuthor.name?.encodeAsHTML()}'>$name.sanctioningAuthor.abbrev</sanctioning>"
             }
         }
         return bits.size() ? "<authors>${join(bits)}</authors>" : ''
