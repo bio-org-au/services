@@ -19,7 +19,7 @@
 
         <input type="text" name="name" placeholder="Enter a name" value="${query.name}"
                class="suggest form-control "
-               data-subject="${params.display}-search" size="30"/>
+               data-subject="${params.display ?: 'apni'}-search" size="30"/>
       </label>
     </div>
 
