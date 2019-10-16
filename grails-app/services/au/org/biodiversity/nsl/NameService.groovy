@@ -562,7 +562,7 @@ or n.fullNameHtml is null""")?.first() as Integer
         Integer size = chunkSize
         while (size == chunkSize) {
             //needs to be ordered or we might repeat items
-            List items = query([offset: i, max: chunkSize])
+            List items = query([offset: i, max: chunkSize]) as List<Object>
             size = items.size()
             Integer top = i + size
             work(items, i, top)

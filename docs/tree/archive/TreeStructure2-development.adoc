@@ -1,5 +1,4 @@
-= New tree structure
-v1.0, June 2017
+= New tree structure development (current)
 :imagesdir: tree/archive/resources/images/
 :toc: left
 :toclevels: 4
@@ -1586,7 +1585,7 @@ FROM (
 
 === fix the depth of all elements in a tree version
 
-[source:sql]
+[source,sql]
 .update depth.sql
 ----
 DO $$
@@ -1610,7 +1609,7 @@ $$
 This works, but sets the depth assuming the top element has the correct depth. The below solution
 is better because it uses the tree_path to set the depth by counting the number of '/' chars
 
-[source:sql]
+[source,sql]
 .update depth.sql
 ----
 UPDATE tree_version_element

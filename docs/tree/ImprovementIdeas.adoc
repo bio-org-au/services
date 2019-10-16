@@ -1,5 +1,4 @@
-= New tree structure
-v1.0, June 2017
+= Tree structure improvement ideas
 :imagesdir: resources/images/
 :toc: left
 :toclevels: 4

@@ -1,5 +1,4 @@
 = Tree Placement and Editing Rules
-v1.0, March 2018
 :imagesdir: resources/images/
 :toc: left
 :toclevels: 4
@@ -36,14 +35,14 @@ same name within that tree.
 
 *Warning should be issued (at least) for:*
 
-5. Placement of an instance within a classification should not be permitted if there exists a node for an instance that
+1. Placement of an instance within a classification should not be permitted if there exists a node for an instance that
 places the new instance name in synonymy; unless, all synonymic instances of that name within the tree, bear the
 pro_parte qualification.
 
-6. Placement of an instance within a classification should not be permitted if its synonyms include the name of an
+2. Placement of an instance within a classification should not be permitted if its synonyms include the name of an
 instance that already exists within the tree; unless, the synonymic instance bears the pro_parte qualification.
 
-7. Placement of an instance within a classification should not be permitted if its synonyms include the name of a
+3. Placement of an instance within a classification should not be permitted if its synonyms include the name of a
 synonym of an instance that already exists within the tree; unless, all synonymic instance bear the pro_parte
 qualification.
 
@@ -54,7 +53,7 @@ discussion and testing with users.
 
 A summary of what we check can be found by looking at the code for placing a new taxon on the tree:
 
-[source:groovy]
+[source,groovy]
 .Validate New Element Placement groovy
 ----
     protected List<String> validateNewElementPlacement(TreeVersionElement parentElement, TaxonData taxonData) {

@@ -106,3 +106,12 @@ pmcneil/nsl-services   1.0224-SNAP           7d5d43f62c8c        About an hour a
 ----
 
 push to docker hub: `docker push pmcneil/nsl-services:1.0224-SNAP`
+
+== docker stack deploy
+
+WARNING: When using docker stack deploy of a compose file make sure the image has been pushed to a repository
+not just built locally.
+
+* docker stack deploy --compose-file proxy-docker-compose.yml proxy-stack
+* docker stack logs proxy-stack_reverse
+* docker stack ps proxy-stack

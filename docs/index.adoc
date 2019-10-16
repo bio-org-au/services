@@ -1,4 +1,4 @@
-= NSL Services
+= NSL Services development documentation
 v1.0, October 2019
 :doctype: book
 :imagesdir: resources/images/
@@ -17,11 +17,24 @@ v1.0, October 2019
 The NSL services project is Taxanomic Name Infrastructure and is currently in use by The Australian Plant Name Index and
 Australian Plant Census.
 
+== What is this?
+
+This is a scrapbook of documentation put together during the development of the NSL services. In here you will find the
+change logs, notes, documentation about new (at the time) data structures for specific purposes. This is here to provide
+a background on _why_ things were developed in the way they were and give you insight into how we expect it to work.
+
+Much of the documentation is written in a timeline fashion, where later discoveries and updates will be below the initial
+documentation.
+
+We will try to keep newer things at the top of this book.
+
 include::changelog.adoc[]
 
 include::config.adoc[]
 
 include::docker.adoc[]
+
+include::Grails3-upgrade.adoc[]
 
 include::distribution.adoc[]
 
@@ -30,3 +43,11 @@ include::merge-tree.adoc[]
 include::createMapperLinksFromShard.adoc[]
 
 include::name-construction.adoc[]
+
+include::tree/ImprovementIdeas.adoc[]
+
+include::tree/placement-rules.adoc[]
+
+include::tree/TreeOperations.adoc[]
+
+include::tree/archive/TreeStructure2-development.adoc[]

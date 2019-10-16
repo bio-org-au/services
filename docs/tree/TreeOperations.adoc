@@ -1,5 +1,4 @@
 = New tree operations/API
-v1.0, August 2017
 :imagesdir: resources/images/
 :toc: left
 :toclevels: 4

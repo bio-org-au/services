@@ -1,4 +1,4 @@
-server.contextPath: /services
+server.contextPath: /nsl/services
 ---
 grails:
   profile: web
