@@ -249,24 +249,24 @@ class JsonRendererService {
     Map marshallName(Name name) {
         Map data = getBaseInfo(name)
         data.name << [
-                fullName       : name.fullName,
-                fullNameHtml   : name.fullNameHtml,
-                nameElement    : name.nameElement,
-                simpleName     : name.simpleName,
-                rank           : [name: name.nameRank.displayName, sortOrder: name.nameRank.sortOrder],
-                type           : name.nameType.name,
-                status         : name.nameStatus.name,
-                tags           : name.tags.collect { it.name },
-                family         : getBriefName(name.family),
-                parent         : getBriefName(name.parent),
-                secondParent   : getBriefName(name.secondParent),
-                instances      : name.instances.collect { getBriefInstance(it) },
-                author         : getBriefAuthor(name.author),
-                baseAuthor     : getBriefAuthor(name.baseAuthor),
-                exAuthor       : getBriefAuthor(name.exAuthor),
-                exBaseAuthor   : getBriefAuthor(name.exBaseAuthor),
-                sactioningAuthor : getBriefAuthor(name.sanctioningAuthor),
-                primaryInstance: instanceService.findPrimaryInstance(name)?.collect { Instance instance -> getBriefInstance(instance) }
+                fullName         : name.fullName,
+                fullNameHtml     : name.fullNameHtml,
+                nameElement      : name.nameElement,
+                simpleName       : name.simpleName,
+                rank             : [name: name.nameRank.displayName, sortOrder: name.nameRank.sortOrder],
+                type             : name.nameType.name,
+                status           : name.nameStatus.name,
+                tags             : name.tags.collect { it.name },
+                family           : getBriefName(name.family),
+                parent           : getBriefName(name.parent),
+                secondParent     : getBriefName(name.secondParent),
+                instances        : name.instances.collect { getBriefInstance(it) },
+                author           : getBriefAuthor(name.author),
+                baseAuthor       : getBriefAuthor(name.baseAuthor),
+                exAuthor         : getBriefAuthor(name.exAuthor),
+                exBaseAuthor     : getBriefAuthor(name.exBaseAuthor),
+                sanctioningAuthor: getBriefAuthor(name.sanctioningAuthor),
+                primaryInstance  : instanceService.findPrimaryInstance(name)?.collect { Instance instance -> getBriefInstance(instance) }
         ]
 
         return data
