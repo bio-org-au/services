@@ -1164,7 +1164,7 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     TreeVersionElement minorEditDistribution(TreeVersionElement treeVersionElement, String distribution, String reason, String userName) {
-        excludedValidation(treeVersionElement.treeElement.excluded,distribution)
+        excludedValidation(treeVersionElement.treeElement.excluded, distribution)
         String distKey = distributionKey(treeVersionElement)
         //this will throw an exception if the distribution string is bad.
         distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution)
@@ -1213,7 +1213,7 @@ INSERT INTO tree_version_element (tree_version_id,
         Map elementComparators = comparators(treeVersionElement.treeElement)
         elementComparators.excluded = excluded
 
-        excludedValidation(excluded,elementComparators.profile, distributionKey(treeVersionElement))
+        excludedValidation(excluded, elementComparators.profile, distributionKey(treeVersionElement))
 
         TreeElement foundElement = findTreeElement(elementComparators)
         if (foundElement) {
@@ -1655,14 +1655,14 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         sql.firstRow("SELECT nextval('nsl_global_seq')")[0] as Long
     }
 
-    protected static excludedValidation(Boolean excluded, String distribution){
-        if(excluded && distribution) {
+    protected static excludedValidation(Boolean excluded, String distribution) {
+        if (excluded && distribution) {
             throw new BadArgumentsException("An excluded taxon can't have a distribution.")
         }
     }
 
-    protected static excludedValidation(Boolean excluded, Map profile, String distKey){
-        if(excluded && profile && profile[distKey] && profile[distKey].value) {
+    protected static excludedValidation(Boolean excluded, Map profile, String distKey) {
+        if (excluded && profile && profile[distKey] && profile[distKey].value) {
             throw new BadArgumentsException("An excluded taxon can't have a distribution.")
         }
     }
@@ -2052,8 +2052,10 @@ and tve.element_link not in ($excludedLinks)
 
         // collect all *useFrom* diffs and clear the from tve mergeConflict
         report.getUseFrom().each { diff ->
-            diff.from.mergeConflict = false
-            mergeLog.add "Kept ${diff.from.treeElement.simpleName}: ${diff.from.elementLink}"
+            if (diff.from) {
+                diff.from.mergeConflict = false
+                mergeLog.add "Kept ${diff.from.treeElement.simpleName}: ${diff.from.elementLink}"
+            }
         }
 
         // collect all useTo removed - sort bottom up by treePath and call removeTreeVersionElement on fromTve if exists
@@ -2078,7 +2080,7 @@ and tve.element_link not in ($excludedLinks)
         // collect all useTo modified where tree_element is the same for from and to tve and update the placement/tve data(?)
         report.getUseToType(TveDiff.MODIFIED)
               .each { diff ->
-                  TreeVersionElement newTve = updateFromPublised(diff.from, diff.to, userName)
+                  TreeVersionElement newTve = updateFromPublished(diff.from, diff.to, userName)
                   mergeLog.add "Updated ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
               }
 
@@ -2099,7 +2101,7 @@ and tve.element_link not in ($excludedLinks)
         return replacementTve
     }
 
-    private TreeVersionElement updateFromPublised(TreeVersionElement currentTve, TreeVersionElement publishedTve, String userName) {
+    private TreeVersionElement updateFromPublished(TreeVersionElement currentTve, TreeVersionElement publishedTve, String userName) {
         notPublished(currentTve)
 
         TreeVersionElement newParentTve = findElementForNameId(publishedTve.parent.treeElement.nameId, currentTve.treeVersion)
@@ -2143,7 +2145,7 @@ and tve.element_link not in ($excludedLinks)
         updateChildNameDepth(replacementTve)
 
         updateParentTaxaId(newParentTve)
-        if (newParentTve != currentTve.parent) {
+        if (currentTve.parent && newParentTve != currentTve.parent) {
             updateParentTaxaId(currentTve.parent)
         }
 
