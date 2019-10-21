@@ -359,12 +359,12 @@ class JsonRendererService {
                 notes           : author.notes,
                 ipniId          : author.ipniId,
                 duplicateOf     : author.duplicateOf,
-                references      : author.references.collect { getBriefReference(it) },
-                names           : author.namesForAuthor.collect { getBriefName(it) },
-                baseNames       : author.namesForBaseAuthor.collect { getBriefName(it) },
-                exNames         : author.namesForExAuthor.collect { getBriefName(it) },
-                exBaseNames     : author.namesForExBaseAuthor.collect { getBriefName(it) },
-                sanctioningNames: author.namesForSanctioningAuthor.collect { getBriefName(it) }
+                references      : author.references.collect { it.citation },
+                names           : author.namesForAuthor.collect { it.fullName },
+                baseNames       : author.namesForBaseAuthor.collect { it.fullName },
+                exNames         : author.namesForExAuthor.collect { it.fullName },
+                exBaseNames     : author.namesForExBaseAuthor.collect { it.fullName },
+                sanctioningNames: author.namesForSanctioningAuthor.collect { it.fullName }
         ]
     }
 

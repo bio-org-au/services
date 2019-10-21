@@ -16,15 +16,18 @@ class AuthorController implements WithTarget {
 
     static responseFormats = [
             index      : ['html'],
-            deduplicate: ['json', 'xml', 'html']
+            deduplicate: ['json', 'xml', 'html'],
+            search     : ['json', 'xml', 'html']
     ]
 
     static allowedMethods = [
-            deduplicate: ["DELETE"]
+            deduplicate: ["DELETE"],
+            search     : ["POST"]
     ]
 
     AuthorService authorService
     def jsonRendererService
+    def searchService
 
     def index() {}
 
@@ -63,4 +66,18 @@ class AuthorController implements WithTarget {
             }
         }
     }
+
+    @Timed
+    search() {
+        def json = request.JSON
+        withTarget(json, 'JSON parameters') { ResultObject result, js ->
+            AuthorSearchParams searchParams = new AuthorSearchParams(json as Map)
+            searchService.authorSearch(searchParams)
+            result.count = searchParams.countFound
+            result.query = searchParams.abbrev
+            result.rank = searchParams.name
+            result.authors = searchParams.results
+        }
+    }
+
 }

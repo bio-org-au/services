@@ -16,6 +16,7 @@
 
 package au.org.biodiversity.nsl
 
+import au.org.biodiversity.nsl.api.AuthorSearchParams
 import au.org.biodiversity.nsl.api.NameSearchParams
 import org.grails.plugins.metrics.groovy.Timed
 
@@ -509,6 +510,17 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
         params.countFound = (Name.executeQuery("select count(n) $qry", qryParams)[0]) as Integer
         return params
     }
+
+    AuthorSearchParams authorSearch(AuthorSearchParams params) {
+        String query = params.abbrev
+        String qry = 'from Author a where abbrev = :query'
+        Map qryParams = [query: query]
+        println qryParams
+        params.results = Author.executeQuery("select a $qry order by a.abbrev", qryParams, [max: params.max ?: 10]) as List<Author>
+        params.countFound = (Author.executeQuery("select count(a) $qry", qryParams)[0]) as Integer
+        return params
+    }
+
 }
 
 class SearchQueryCategory {
