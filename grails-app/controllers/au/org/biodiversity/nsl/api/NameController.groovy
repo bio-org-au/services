@@ -35,6 +35,7 @@ class NameController implements WithTarget {
     def treeService
     def linkService
     def configService
+    def searchService
 
     @SuppressWarnings("GroovyUnusedDeclaration")
     static responseFormats = [
@@ -51,7 +52,8 @@ class NameController implements WithTarget {
             exportNslSimple   : ['json', 'xml', 'html'],
             apni              : ['json', 'xml', 'html'],
             apc               : ['json', 'xml', 'html'],
-            taxonSearch       : ['json', 'xml', 'html']
+            taxonSearch       : ['json', 'xml', 'html'],
+            nameSearch        : ['json', 'xml', 'html']
     ]
 
     static allowedMethods = [
@@ -67,7 +69,8 @@ class NameController implements WithTarget {
             exportNslSimple   : ["GET"],
             apni              : ["GET"],
             apc               : ["GET"],
-            taxonSearch       : ["GET", "POST"]
+            taxonSearch       : ["GET", "POST"],
+            nameSearch        : ["POST"]
     ]
 
     @Timed()
@@ -305,7 +308,7 @@ order by n.simpleName asc''',
             Map nameModel = apniFormatService.getNameModel(name, null, false)
             result.name = jsonRendererService.getBriefNameWithHtml(name)
             if (nameModel.treeVersionElement != null) {
-                    result.name.inAPC = true
+                result.name.inAPC = true
                 result.name.APCExcluded = nameModel.treeVersionElement.treeElement.excluded
             } else {
                 result.name.inAPC = false
@@ -406,7 +409,6 @@ order by n.simpleName asc''',
         }
     }
 
-    //TODO the taxon view needs to be re-written to make this work again
     //see NSL-1805
     @Timed
     taxonSearch() {
@@ -421,6 +423,19 @@ order by n.simpleName asc''',
         ResultObject result = new ResultObject([records: taxonRecords])
         //noinspection GroovyAssignabilityCheck
         respond(result, [view: '/common/serviceResult', model: [data: result], status: OK])
+    }
+
+    @Timed
+    nameSearch() {
+        def json = request.JSON
+        withTarget(json, 'JSON parameters') { ResultObject result, js ->
+            NameSearchParams searchParams = new NameSearchParams(json as Map)
+            searchService.nameSearch(searchParams)
+            result.count = searchParams.countFound
+            result.query = searchParams.fullName
+            result.rank = searchParams.rankName
+            result.names = searchParams.results
+        }
     }
 
     private static String instancePage(Instance instance) {

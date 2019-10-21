@@ -41,7 +41,10 @@ class ResultObject {
 
     def briefObject(Object target, String key = null) {
         if(!key) {
-            key = target.class.simpleName.toLowerCase()
+            key = target?.class?.simpleName?.toLowerCase()
+        }
+        if(!key){
+            return
         }
         if (jsonRendererService1) {
             switch (target.class.simpleName) {

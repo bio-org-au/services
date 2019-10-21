@@ -16,6 +16,7 @@
 
 package au.org.biodiversity.nsl
 
+import au.org.biodiversity.nsl.api.NameSearchParams
 import org.grails.plugins.metrics.groovy.Timed
 
 class SearchService {
@@ -496,6 +497,18 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
         return checked
     }
 
+    NameSearchParams nameSearch(NameSearchParams params) {
+        String query = regexTokenizeNameQueryString(params.fullName.toLowerCase())
+        String qry = 'from Name n where iregex(n.fullName, :query) = true'
+        Map qryParams = [query: query]
+        if (params.rankName) {
+            qry = 'from Name n where iregex(n.fullName, :query) = true and n.nameRank.name = :rank'
+            qryParams.rank = params.rankName
+        }
+        params.results = Name.executeQuery("select n $qry order by n.sortName", qryParams, [max: params.max ?: 10]) as List<Name>
+        params.countFound = (Name.executeQuery("select count(n) $qry", qryParams)[0]) as Integer
+        return params
+    }
 }
 
 class SearchQueryCategory {

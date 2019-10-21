@@ -994,6 +994,7 @@ INSERT INTO tree_version_element (tree_version_id,
      */
     private void updateParentTaxaId(TreeVersionElement parent) {
         if (parent) {
+            parent.refresh()
             List<TreeVersionElement> branchElements = getParentTreeVersionElements(parent)
             Sql sql = getSql()
             String hostPart = parent.treeVersion.hostPart()
