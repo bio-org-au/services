@@ -49,11 +49,10 @@ class NameController implements WithTarget {
             family            : ['json', 'xml', 'html'],
             branch            : ['json', 'xml', 'html'],
             nameUpdateEventUri: ['json', 'xml', 'html'],
-            exportNslSimple   : ['json', 'xml', 'html'],
             apni              : ['json', 'xml', 'html'],
             apc               : ['json', 'xml', 'html'],
             taxonSearch       : ['json', 'xml', 'html'],
-            nameSearch        : ['json', 'xml', 'html']
+            search            : ['json', 'xml', 'html']
     ]
 
     static allowedMethods = [
@@ -66,11 +65,10 @@ class NameController implements WithTarget {
             family            : ["GET"],
             branch            : ["GET"],
             nameUpdateEventUri: ["PUT", "DELETE"],
-            exportNslSimple   : ["GET"],
             apni              : ["GET"],
             apc               : ["GET"],
             taxonSearch       : ["GET", "POST"],
-            nameSearch        : ["POST"]
+            search            : ["POST"]
     ]
 
     @Timed()
@@ -426,7 +424,7 @@ order by n.simpleName asc''',
     }
 
     @Timed
-    nameSearch() {
+    search() {
         def json = request.JSON
         withTarget(json, 'JSON parameters') { ResultObject result, js ->
             NameSearchParams searchParams = new NameSearchParams(json as Map)
