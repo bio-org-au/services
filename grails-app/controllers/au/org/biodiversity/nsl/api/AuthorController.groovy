@@ -22,7 +22,7 @@ class AuthorController implements WithTarget {
 
     static allowedMethods = [
             deduplicate: ["DELETE"],
-            search     : ["POST"]
+            search     : ["GET"]
     ]
 
     AuthorService authorService
@@ -68,14 +68,13 @@ class AuthorController implements WithTarget {
     }
 
     @Timed
-    search() {
-        def json = request.JSON
-        withTarget(json, 'JSON parameters') { ResultObject result, js ->
-            AuthorSearchParams searchParams = new AuthorSearchParams(json as Map)
+    search(String abbrev, String name, Integer max) {
+        withTarget(abbrev, 'abbrev query required') { ResultObject result, js ->
+            AuthorSearchParams searchParams = new AuthorSearchParams([abbrev: abbrev, name: name, max: max])
             searchService.authorSearch(searchParams)
             result.count = searchParams.countFound
             result.query = searchParams.abbrev
-            result.rank = searchParams.name
+            result.name = searchParams.name
             result.authors = searchParams.results
         }
     }

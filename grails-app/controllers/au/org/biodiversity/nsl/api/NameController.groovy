@@ -68,7 +68,7 @@ class NameController implements WithTarget {
             apni              : ["GET"],
             apc               : ["GET"],
             taxonSearch       : ["GET", "POST"],
-            search            : ["POST"]
+            search            : ["GET"]
     ]
 
     @Timed()
@@ -424,10 +424,9 @@ order by n.simpleName asc''',
     }
 
     @Timed
-    search() {
-        def json = request.JSON
-        withTarget(json, 'JSON parameters') { ResultObject result, js ->
-            NameSearchParams searchParams = new NameSearchParams(json as Map)
+    search(String fullName, String rank, Integer max) {
+        withTarget(fullName, 'Search query') { ResultObject result, js ->
+            NameSearchParams searchParams = new NameSearchParams(fullName: fullName, rank: rank, max: max)
             searchService.nameSearch(searchParams)
             result.count = searchParams.countFound
             result.query = searchParams.fullName

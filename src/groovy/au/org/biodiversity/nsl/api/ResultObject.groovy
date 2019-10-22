@@ -63,6 +63,8 @@ class ResultObject {
                 case 'InstanceNote':
                     data[key] = jsonRendererService1.marshallInstanceNote(target as InstanceNote)
                     break
+                case 'String':
+                    break
                 default:
                     data[key] = jsonRendererService1.brief(target)
             }

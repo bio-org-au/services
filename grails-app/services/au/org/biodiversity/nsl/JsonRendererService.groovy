@@ -253,6 +253,7 @@ class JsonRendererService {
                 fullNameHtml     : name.fullNameHtml,
                 nameElement      : name.nameElement,
                 simpleName       : name.simpleName,
+                sortName         : name.sortName,
                 rank             : [name: name.nameRank.displayName, sortOrder: name.nameRank.sortOrder],
                 type             : name.nameType.name,
                 status           : name.nameStatus.name,
@@ -269,7 +270,7 @@ class JsonRendererService {
                 primaryInstance  : instanceService.findPrimaryInstance(name)?.collect { Instance instance -> getBriefInstance(instance) }
         ]
 
-        return data
+        return data.name as Map
     }
 
     Map marshallInstance(Instance instance) {
@@ -307,7 +308,7 @@ class JsonRendererService {
                 instanceNotes      : instance.instanceNotes
 
         ]
-        return data
+        return data.instance as Map
     }
 
     Map marshallReference(Reference reference) {
@@ -347,6 +348,7 @@ class JsonRendererService {
                 instances        : reference.instances.collect { getBriefInstance(it) },
                 parentOf         : reference.referencesForParent.collect { getBriefReference(it) }
         ]
+        return data.reference as Map
     }
 
     Map marshallAuthor(Author author) {
@@ -366,6 +368,7 @@ class JsonRendererService {
                 exBaseNames     : author.namesForExBaseAuthor.collect { it.fullName },
                 sanctioningNames: author.namesForSanctioningAuthor.collect { it.fullName }
         ]
+        return data.author as Map
     }
 
     Map marshallInstanceNote(InstanceNote instanceNote) {
@@ -375,6 +378,7 @@ class JsonRendererService {
                 value          : instanceNote.value,
                 instance       : getBriefInstance(instanceNote.instance)
         ]
+        return data.instanceNote as Map
     }
 
     Map briefTree(Tree tree) {
@@ -397,6 +401,7 @@ class JsonRendererService {
                 acceptedTree       : tree.acceptedTree,
                 versions           : tree.treeVersions.collect { TreeVersion v -> briefTreeVersion(v) }
         ]
+        return data.tree as Map
     }
 
     Map briefTreeVersion(TreeVersion treeVersion) {
@@ -420,6 +425,7 @@ class JsonRendererService {
                         tree              : briefTree(treeVersion.tree),
                         firstOrderChildren: treeService.displayElementsToDepth(treeVersion, 1)
                 ]
+        return data.treeversion as Map
     }
 
     Map marshallTreeVersionElement(TreeVersionElement treeVersionElement) {

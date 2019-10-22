@@ -513,7 +513,7 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
 
     AuthorSearchParams authorSearch(AuthorSearchParams params) {
         String query = params.abbrev
-        String qry = 'from Author a where abbrev = :query'
+        String qry = 'from Author a where abbrev like :query'
         Map qryParams = [query: query]
         println qryParams
         params.results = Author.executeQuery("select a $qry order by a.abbrev", qryParams, [max: params.max ?: 10]) as List<Author>
