@@ -476,12 +476,18 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
             return NameType.executeQuery('''select n from NameType n where n.deprecated = false and lower(n.name) like :query order by n.name asc''',
                     [query: "${query.toLowerCase()}%"], [max: 15])
                            .collect { type ->
-                type.name
-            }
+                               type.name
+                           }
         }
 
+        suggestService.addSuggestionHandler('name') { String query ->
+            NameSearchParams nameSearchParams = new NameSearchParams([fullName: query, max: 15])
+            nameSearch(nameSearchParams)
+            return nameSearchParams.results.collect { Name name ->
+                name.fullName
+            }
+        }
     }
-
     /**
      * checks the map of checkboxes to see what has been checked and returns a map of those checkboxes only
      * @param params - the params object
