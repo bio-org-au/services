@@ -2,6 +2,7 @@ package au.org.biodiversity.nsl.api
 
 import au.org.biodiversity.nsl.Author
 import au.org.biodiversity.nsl.AuthorService
+import au.org.biodiversity.nsl.SearchService
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authz.annotation.RequiresRoles
 import org.springframework.http.HttpStatus
@@ -13,15 +14,18 @@ class AuthorController implements WithTarget {
 
     static responseFormats = [
             index      : ['html'],
-            deduplicate: ['json', 'xml', 'html']
+            deduplicate: ['json', 'xml', 'html'],
+            search     : ['json', 'xml', 'html']
     ]
 
     static allowedMethods = [
-            deduplicate: 'DELETE'
+            deduplicate: 'DELETE',
+            search     : 'GET'
     ]
 
     AuthorService authorService
     def jsonRendererService
+    SearchService searchService
 
     def index() {}
 
@@ -63,4 +67,16 @@ class AuthorController implements WithTarget {
             }
         }
     }
+
+    def search(String abbrev, String name, Integer max) {
+        withTarget(abbrev, 'abbrev query required') { ResultObject result, js ->
+            AuthorSearchParams searchParams = new AuthorSearchParams([abbrev: abbrev, name: name, max: max])
+            searchService.authorSearch(searchParams)
+            result.count = searchParams.countFound
+            result.query = searchParams.abbrev
+            result.name = searchParams.name
+            result.authors = searchParams.results
+        }
+    }
+
 }

@@ -16,6 +16,9 @@
 
 package au.org.biodiversity.nsl
 
+import au.org.biodiversity.nsl.api.AuthorSearchParams
+import au.org.biodiversity.nsl.api.NameSearchParams
+
 class SearchService {
 
     def suggestService
@@ -268,25 +271,25 @@ class SearchService {
                                    .compressSpaces()
                                    .split(' ')
                                    .collect { String token ->
-                if (token.startsWith('x\\s')) {
-                    previousTokenWasX = true
-                    return token
-                }
-                if (token.size() > 1 && token.startsWith('x')) {
-                    previousTokenWasX = false
-                    return "($token|x ${token.substring(1)})"
-                }
-                if (token == '.*') {
-                    previousTokenWasX = false
-                    return token
-                }
-                if (previousTokenWasX) {
-                    previousTokenWasX = false
-                    return token
-                }
-                previousTokenWasX = false
-                return "(x )?$token"
-            }
+                                       if (token.startsWith('x\\s')) {
+                                           previousTokenWasX = true
+                                           return token
+                                       }
+                                       if (token.size() > 1 && token.startsWith('x')) {
+                                           previousTokenWasX = false
+                                           return "($token|x ${token.substring(1)})"
+                                       }
+                                       if (token == '.*') {
+                                           previousTokenWasX = false
+                                           return token
+                                       }
+                                       if (previousTokenWasX) {
+                                           previousTokenWasX = false
+                                           return token
+                                       }
+                                       previousTokenWasX = false
+                                       return "(x )?$token"
+                                   }
 
             String tokenizedString = (leadingWildCard ? '.*' : '^') + tokens.join(' +')
             return tokenizedString
@@ -471,10 +474,17 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
             return NameType.executeQuery('''select n from NameType n where n.deprecated = false and lower(n.name) like :query order by n.name asc''',
                     [query: "${query.toLowerCase()}%"], [max: 15])
                            .collect { type ->
-                type.name
-            }
+                               type.name
+                           }
         }
 
+        suggestService.addSuggestionHandler('name') { String query ->
+            NameSearchParams nameSearchParams = new NameSearchParams([fullName: query, max: 15])
+            nameSearch(nameSearchParams)
+            return nameSearchParams.results.collect { Name name ->
+                name.fullName
+            }
+        }
     }
 
     /**
@@ -491,6 +501,30 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
             }
         }
         return checked
+    }
+
+    NameSearchParams nameSearch(NameSearchParams params) {
+        String query = regexTokenizeNameQueryString(params.fullName.toLowerCase())
+        String qry = 'from Name n where iregex(n.fullName, :query) = true'
+        Map qryParams = [query: query]
+        if (params.rankName) {
+            qry = 'from Name n where iregex(n.fullName, :query) = true and n.nameRank.name = :rank'
+            qryParams.rank = params.rankName
+        }
+        String q = "select n $qry order by n.sortName"
+        params.results = Name.executeQuery(q, qryParams, [max: params.max ?: 10]) as List<Name>
+        q = "select count(n) $qry"
+        params.countFound = (Name.executeQuery(q, qryParams)[0]) as Integer
+        return params
+    }
+
+    AuthorSearchParams authorSearch(AuthorSearchParams params) {
+        String query = params.abbrev
+        Map qryParams = [query: query]
+        println qryParams
+        params.results = Author.executeQuery("select a from Author a where abbrev like :query order by a.abbrev", qryParams, [max: params.max ?: 10]) as List<Author>
+        params.countFound = (Author.executeQuery("select count(a) from Author a where abbrev like :query", qryParams)[0]) as Integer
+        return params
     }
 
 }

@@ -41,7 +41,10 @@ class ResultObject {
 
     def briefObject(Object target, String key = null) {
         if(!key) {
-            key = target.class.simpleName.toLowerCase()
+            key = target?.class?.simpleName?.toLowerCase()
+        }
+        if(!key) {
+            return
         }
         if (jsonRendererService1) {
             switch (target.class.simpleName) {
@@ -59,6 +62,8 @@ class ResultObject {
                     break
                 case 'InstanceNote':
                     data[key] = jsonRendererService1.marshallInstanceNote(target as InstanceNote)
+                    break
+                case 'String':
                     break
                 default:
                     data[key] = jsonRendererService1.brief(target)

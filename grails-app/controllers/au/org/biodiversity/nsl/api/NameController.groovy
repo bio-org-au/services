@@ -34,6 +34,7 @@ class NameController implements WithTarget {
     def treeService
     def linkService
     def configService
+    def searchService
 
     @SuppressWarnings("GroovyUnusedDeclaration")
     static responseFormats = [
@@ -47,10 +48,10 @@ class NameController implements WithTarget {
             family            : ['json', 'xml', 'html'],
             branch            : ['json', 'xml', 'html'],
             nameUpdateEventUri: ['json', 'xml', 'html'],
-            exportNslSimple   : ['json', 'xml', 'html'],
             apni              : ['json', 'xml', 'html'],
             apc               : ['json', 'xml', 'html'],
-            taxonSearch       : ['json', 'xml', 'html']
+            taxonSearch       : ['json', 'xml', 'html'],
+            search            : ['json', 'xml', 'html']
     ]
 
     static allowedMethods = [
@@ -63,13 +64,13 @@ class NameController implements WithTarget {
             family            : ["GET"],
             branch            : ["GET"],
             nameUpdateEventUri: ["PUT", "DELETE"],
-            exportNslSimple   : ["GET"],
             apni              : ["GET"],
             apc               : ["GET"],
-            taxonSearch       : ["GET", "POST"]
+            taxonSearch       : ["GET", "POST"],
+            search            : ["GET"]
     ]
 
-    
+
     def index() {
         redirect(uri: '/docs/main.html')
     }
@@ -305,7 +306,7 @@ order by n.simpleName asc''',
             Map nameModel = apniFormatService.getNameModel(name, null, false)
             result.name = jsonRendererService.getBriefNameWithHtml(name)
             if (nameModel.treeVersionElement != null) {
-                    result.name.inAPC = true
+                result.name.inAPC = true
                 result.name.APCExcluded = nameModel.treeVersionElement.treeElement.excluded
             } else {
                 result.name.inAPC = false
@@ -406,7 +407,6 @@ order by n.simpleName asc''',
         }
     }
 
-    //TODO the taxon view needs to be re-written to make this work again
     //see NSL-1805
     def taxonSearch() {
         def json = request.JSON
@@ -419,6 +419,17 @@ order by n.simpleName asc''',
 
         ResultObject result = new ResultObject([records: taxonRecords])
         serviceRespond(result)
+    }
+
+    def search(String fullName, String rank, Integer max) {
+        withTarget(fullName, 'Search query') { ResultObject result, js ->
+            NameSearchParams searchParams = new NameSearchParams(fullName: fullName, rank: rank, max: max)
+            searchService.nameSearch(searchParams)
+            result.count = searchParams.countFound
+            result.query = searchParams.fullName
+            result.rank = searchParams.rankName
+            result.names = searchParams.results
+        }
     }
 
     private static String instancePage(Instance instance) {

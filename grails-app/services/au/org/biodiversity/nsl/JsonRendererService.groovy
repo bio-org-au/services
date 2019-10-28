@@ -248,25 +248,28 @@ class JsonRendererService {
     Map marshallName(Name name) {
         Map data = getBaseInfo(name)
         data.name << [
-                fullName       : name.fullName,
-                fullNameHtml   : name.fullNameHtml,
-                nameElement    : name.nameElement,
-                simpleName     : name.simpleName,
-                rank           : [name: name.nameRank.displayName, sortOrder: name.nameRank.sortOrder],
-                type           : name.nameType.name,
-                status         : name.nameStatus.name,
-                tags           : name.tags.collect { it.name },
-                parent         : getBriefName(name.parent),
-                secondParent   : getBriefName(name.secondParent),
-                instances      : name.instances.collect { getBriefInstance(it) },
-                author         : getBriefAuthor(name.author),
-                baseAuthor     : getBriefAuthor(name.baseAuthor),
-                exAuthor       : getBriefAuthor(name.exAuthor),
-                exBaseAuthor   : getBriefAuthor(name.exBaseAuthor),
-                primaryInstance: instanceService.findPrimaryInstance(name)?.collect { Instance instance -> getBriefInstance(instance) }
+                fullName         : name.fullName,
+                fullNameHtml     : name.fullNameHtml,
+                nameElement      : name.nameElement,
+                simpleName       : name.simpleName,
+                sortName         : name.sortName,
+                rank             : [name: name.nameRank.displayName, sortOrder: name.nameRank.sortOrder],
+                type             : name.nameType.name,
+                status           : name.nameStatus.name,
+                tags             : name.tags.collect { it.name },
+                family           : getBriefName(name.family),
+                parent           : getBriefName(name.parent),
+                secondParent     : getBriefName(name.secondParent),
+                instances        : name.instances.collect { getBriefInstance(it) },
+                author           : getBriefAuthor(name.author),
+                baseAuthor       : getBriefAuthor(name.baseAuthor),
+                exAuthor         : getBriefAuthor(name.exAuthor),
+                exBaseAuthor     : getBriefAuthor(name.exBaseAuthor),
+                sanctioningAuthor: getBriefAuthor(name.sanctioningAuthor),
+                primaryInstance  : instanceService.findPrimaryInstance(name)?.collect { Instance instance -> getBriefInstance(instance) }
         ]
 
-        return data
+        return data.name as Map
     }
 
     Map marshallInstance(Instance instance) {
@@ -304,7 +307,7 @@ class JsonRendererService {
                 instanceNotes      : instance.instanceNotes
 
         ]
-        return data
+        return data.instance as Map
     }
 
     Map marshallReference(Reference reference) {
@@ -344,6 +347,7 @@ class JsonRendererService {
                 instances        : reference.instances.collect { getBriefInstance(it) },
                 parentOf         : reference.referencesForParent.collect { getBriefReference(it) }
         ]
+        return data.reference as Map
     }
 
     Map marshallAuthor(Author author) {
@@ -356,13 +360,14 @@ class JsonRendererService {
                 notes           : author.notes,
                 ipniId          : author.ipniId,
                 duplicateOf     : author.duplicateOf,
-                references      : author.references.collect { getBriefReference(it) },
-                names           : author.namesForAuthor.collect { getBriefName(it) },
-                baseNames       : author.namesForBaseAuthor.collect { getBriefName(it) },
-                exNames         : author.namesForExAuthor.collect { getBriefName(it) },
-                exBaseNames     : author.namesForExBaseAuthor.collect { getBriefName(it) },
-                sanctioningNames: author.namesForSanctioningAuthor.collect { getBriefName(it) }
+                references      : author.references.collect { it.citation },
+                names           : author.namesForAuthor.collect { it.fullName },
+                baseNames       : author.namesForBaseAuthor.collect { it.fullName },
+                exNames         : author.namesForExAuthor.collect { it.fullName },
+                exBaseNames     : author.namesForExBaseAuthor.collect { it.fullName },
+                sanctioningNames: author.namesForSanctioningAuthor.collect { it.fullName }
         ]
+        return data.author as Map
     }
 
     Map marshallInstanceNote(InstanceNote instanceNote) {
@@ -372,6 +377,7 @@ class JsonRendererService {
                 value          : instanceNote.value,
                 instance       : getBriefInstance(instanceNote.instance)
         ]
+        return data.instanceNote as Map
     }
 
     Map briefTree(Tree tree) {
@@ -394,6 +400,7 @@ class JsonRendererService {
                 acceptedTree       : tree.acceptedTree,
                 versions           : tree.treeVersions.collect { TreeVersion v -> briefTreeVersion(v) }
         ]
+        return data.tree as Map
     }
 
     Map briefTreeVersion(TreeVersion treeVersion) {
@@ -417,6 +424,7 @@ class JsonRendererService {
                         tree              : briefTree(treeVersion.tree),
                         firstOrderChildren: treeService.displayElementsToDepth(treeVersion, 1)
                 ]
+        return data.treeversion as Map
     }
 
     Map marshallTreeVersionElement(TreeVersionElement treeVersionElement) {
