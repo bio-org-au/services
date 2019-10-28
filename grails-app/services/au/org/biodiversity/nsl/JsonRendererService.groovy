@@ -246,6 +246,9 @@ class JsonRendererService {
 /** ********************/
 
     Map marshallName(Name name) {
+        List<String> tags = (name.tags.collect { NameTagName tag ->
+            tag.tag.name
+        } ?: []) as List<String>
         Map data = getBaseInfo(name)
         data.name << [
                 fullName         : name.fullName,
@@ -256,7 +259,7 @@ class JsonRendererService {
                 rank             : [name: name.nameRank.displayName, sortOrder: name.nameRank.sortOrder],
                 type             : name.nameType.name,
                 status           : name.nameStatus.name,
-                tags             : name.tags.collect { it.name },
+                tags             : tags,
                 family           : getBriefName(name.family),
                 parent           : getBriefName(name.parent),
                 secondParent     : getBriefName(name.secondParent),
