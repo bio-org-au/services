@@ -1,0 +1,17 @@
+language: groovy #
+jdk:
+  - openjdk8 #
+sudo: false #
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/ #
+services:
+  - docker
+script:
+  - ./gradlew clean
+  - ./gradlew build
+  - echo "$docker_token" | docker login -u "$docker_user" --password-stdin
+  - ./gradlew dockerPublish
