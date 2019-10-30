@@ -12,7 +12,10 @@
 :links:
 :numbered:
 
-== Install
+This document includes notes about installing and building a docker image. See the docker-deployment project for information
+about deploying the NSL as a stack using docker swarm.
+
+== Install docker (on Ubuntu)
 
 Use the docker repository for Ubuntu 18.04  https://docs.docker.com/install/linux/docker-ce/ubuntu/
 
@@ -89,6 +92,9 @@ Use the docker container ID to stop it.
 `docker container stop eaf7c9e955d4`
 
 === Deploy
+
+TIP: The following information gives your the details to do the deploy *BUT* you should just run the gradle task...
+`./gradlew dockerPublish` which will build and deploy the newly tagged image to docker hub.
 
 login to docker hub:
 

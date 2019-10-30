@@ -16,11 +16,10 @@ association with CHAH, the ALA and the IBIS team.
 
 == Services
 
-The NSL services provide a relatively generic set of services for searching Names, Refererences and Authors as well as
+The NSL services provide a relatively generic set of services for searching Names, References and Authors as well as
 accessing classification trees of taxons.
 
 The NSL is (and probably always will be) a work in progress, we'll be adding a roadmap and more doco here as we go.
-
 
 This code is Licensed under the Apache 2 License and we welcome contributions from the taxonomic community.
 
@@ -41,3 +40,25 @@ The current allocated ranges are:
 * Fungi 60,000,001 - 70,000,000
 
 There is a confluence page for the NSL infrastructure as well at https://www.anbg.gov.au/ibis25/pages/viewpage.action?spaceKey=NSL&title=NSL+Project+2.0
+
+== Building and Running
+
+This is a standard https://grails.org/[Grails] 3.3.10 project. You can use all the standard grails tasks to build and run
+this project. You may need some supporting services i.e.
+
+. A mapper
+. postgresql database with the NSL schema loaded
+
+To run the services in development mode just run `grails run` which will run up the service in it's own tomcat instance
+locally. You can also use the gradle task `bootRun` e.g. `./gradlew bootRun`.
+
+The services work nicely within IntelliJ IDEA just import the project.
+
+To build a war file you can use `grails war` or you can use `./gradlew assemble`. This will build a war file and put it
+in the `build/libs` directory.
+
+To publish to docker use the gradle task `./gradlew dockerPublish`. Note you will have to be logged into docker hub to
+publish. Note we're currently publishing to pmcneil/
+
+
+
