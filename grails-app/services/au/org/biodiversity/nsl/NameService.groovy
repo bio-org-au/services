@@ -18,17 +18,20 @@ package au.org.biodiversity.nsl
 
 
 import grails.gorm.transactions.Transactional
+import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import org.apache.shiro.authz.annotation.RequiresRoles
 import org.hibernate.Session
 import org.quartz.Scheduler
 import org.springframework.transaction.TransactionStatus
 
+import javax.sql.DataSource
 import java.sql.Timestamp
 
 @Transactional
 class NameService implements AsyncHelper {
 
+    DataSource dataSource
     def restCallService
     def nameConstructionService
     def linkService
@@ -576,4 +579,15 @@ or n.fullNameHtml is null""")?.first() as Integer
             name.save()
         }
     }
+
+    Name getBasionym(Name name) {
+        Sql sql = getSql()
+        Long baseId = sql.firstRow('select basionym(:nameId)', [nameId: name.id])['basionym'] as Long
+        return (baseId == name.id ? null : Name.get(baseId))
+    }
+
+    private Sql getSql() {
+        return Sql.newInstance(dataSource)
+    }
+
 }

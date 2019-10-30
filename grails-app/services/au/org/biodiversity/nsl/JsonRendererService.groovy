@@ -262,6 +262,7 @@ class JsonRendererService {
                 tags             : tags,
                 family           : getBriefName(name.family),
                 parent           : getBriefName(name.parent),
+                basionym         : getBriefName(nameService.getBasionym(name)),
                 secondParent     : getBriefName(name.secondParent),
                 instances        : name.instances.collect { getBriefInstance(it) },
                 author           : getBriefAuthor(name.author),
