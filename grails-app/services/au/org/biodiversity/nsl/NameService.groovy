@@ -272,6 +272,13 @@ class NameService implements AsyncHelper {
             child.save()
         }
 
+        Name.findByFamily(duplicate).each { Name child ->
+            child.family = target
+            child.updatedAt = now
+            child.updatedBy = user
+            child.save()
+        }
+
         Name.findByDuplicateOf(duplicate).each { Name child ->
             child.duplicateOf = target
             child.updatedAt = now
