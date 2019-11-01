@@ -272,7 +272,8 @@ class JsonRendererService {
                 exAuthor         : getBriefAuthor(name.exAuthor),
                 exBaseAuthor     : getBriefAuthor(name.exBaseAuthor),
                 sanctioningAuthor: getBriefAuthor(name.sanctioningAuthor),
-                primaryInstance  : instanceService.findPrimaryInstance(name)?.collect { Instance instance -> getBriefInstance(instance) }
+                primaryInstance  : instanceService.findPrimaryInstance(name)?.collect { Instance instance -> getBriefInstance(instance) },
+                verbatimName     : name.verbatimRank
         ]
 
         return data.name as Map
