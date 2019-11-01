@@ -11,6 +11,8 @@
 :toclevels: 2
 :toc-class: toc2
 
+image:https://travis-ci.org/bio-org-au/services-g3.svg?branch=master["Build Status", link="https://travis-ci.org/bio-org-au/services-g3"]
+
 This is the NSL (National Species List) Services Application developed at the Australian National Botanic Gardens in
 association with CHAH, the ALA and the IBIS team.
 
