@@ -257,6 +257,7 @@ class JsonRendererService {
                 simpleName       : name.simpleName,
                 sortName         : name.sortName,
                 rank             : [name: name.nameRank.displayName, sortOrder: name.nameRank.sortOrder],
+                verbatimRank     : name.verbatimRank,
                 type             : name.nameType.name,
                 status           : name.nameStatus.name,
                 tags             : tags,
@@ -270,8 +271,7 @@ class JsonRendererService {
                 exAuthor         : getBriefAuthor(name.exAuthor),
                 exBaseAuthor     : getBriefAuthor(name.exBaseAuthor),
                 sanctioningAuthor: getBriefAuthor(name.sanctioningAuthor),
-                primaryInstance  : instanceService.findPrimaryInstance(name)?.collect { Instance instance -> getBriefInstance(instance) },
-                verbatimName     : name.verbatimRank
+                primaryInstance  : instanceService.findPrimaryInstance(name)?.collect { Instance instance -> getBriefInstance(instance) }
         ]
 
         return data.name as Map
