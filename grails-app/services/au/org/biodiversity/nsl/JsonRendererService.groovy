@@ -257,6 +257,7 @@ class JsonRendererService {
                 simpleName       : name.simpleName,
                 sortName         : name.sortName,
                 rank             : [name: name.nameRank.displayName, sortOrder: name.nameRank.sortOrder],
+                verbatimRank     : name.verbatimRank,
                 type             : name.nameType.name,
                 status           : name.nameStatus.name,
                 tags             : tags,
