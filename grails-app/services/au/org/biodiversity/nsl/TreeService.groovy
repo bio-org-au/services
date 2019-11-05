@@ -2138,8 +2138,13 @@ and tve.element_link not in ($excludedLinks)
     }
 
     private copyPublishedTve(TreeVersionElement publishedTve, TreeVersionElement newParentTve, TreeVersionElement currentTve, String userName) {
-        TreeVersionElement replacementTve = saveTreeVersionElement(publishedTve.treeElement, newParentTve,
-                currentTve.treeVersion, publishedTve.taxonId, publishedTve.taxonLink, userName)
+        TreeVersionElement replacementTve = saveTreeVersionElement(
+                publishedTve.treeElement,
+                newParentTve,
+                currentTve.treeVersion,
+                publishedTve.taxonId,
+                publishedTve.taxonLink,
+                userName)
         updateParentId(currentTve, replacementTve)
         updateChildTreePath(replacementTve, currentTve)
         updateChildNamePath(replacementTve, currentTve)
@@ -2147,6 +2152,7 @@ and tve.element_link not in ($excludedLinks)
 
         updateParentTaxaId(newParentTve)
         if (currentTve.parent && newParentTve != currentTve.parent) {
+            currentTve.refresh()
             updateParentTaxaId(currentTve.parent)
         }
 
