@@ -1,5 +1,5 @@
 = New tree operations/API
-:imagesdir: resources/images/
+:imagesdir: ./resources/images/
 :toc: left
 :toclevels: 4
 :toc-class: toc2

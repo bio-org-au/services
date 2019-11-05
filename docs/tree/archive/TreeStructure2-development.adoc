@@ -1,11 +1,11 @@
 = New tree structure development (current)
-:imagesdir: tree/archive/resources/images/
+:imagesdir: ./resources/images/
 :toc: left
 :toclevels: 4
 :toc-class: toc2
 :icons: font
 :iconfont-cdn: //cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css
-:stylesdir: resources/style/
+:stylesdir: ./resources/style/
 :stylesheet: asciidoctor.css
 :description: New tree structure documentation
 :keywords: documentation, NSL, APNI, API, APC, tree

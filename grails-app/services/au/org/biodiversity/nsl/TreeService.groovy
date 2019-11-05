@@ -1633,10 +1633,26 @@ and regex(namePath, :newPath) = true
                 updatedAt: new Timestamp(System.currentTimeMillis())
         )
 
-        treeVersionElement.elementLink = (linkService.addTargetLink(treeVersionElement) - version.hostPart())
-        treeVersionElement.taxonLink = taxonLink ?: (linkService.addTaxonIdentifier(treeVersionElement) - version.hostPart())
+        treeVersionElement.elementLink = (addTargetLinkOrBust(treeVersionElement) - version.hostPart())
+        treeVersionElement.taxonLink = taxonLink ?: (addTaxonIdentifierOrBust(treeVersionElement) - version.hostPart())
         treeVersionElement.save()
         return treeVersionElement
+    }
+
+    private String addTargetLinkOrBust(TreeVersionElement tve) {
+        String link = linkService.addTargetLink(tve)
+        if (!link) {
+            throw new ServiceException('Link not added. Is mapper up?')
+        }
+        return link
+    }
+
+    private String addTaxonIdentifierOrBust(TreeVersionElement tve) {
+        String taxonLink = linkService.addTaxonIdentifier(tve)
+        if (!taxonLink) {
+            throw new ServiceException('Taxon Link not added. Is mapper up?')
+        }
+        return taxonLink
     }
 
     private static String makeTreePath(TreeVersionElement parentTve, TreeElement element) {
@@ -2080,6 +2096,7 @@ and tve.element_link not in ($excludedLinks)
         // collect all useTo modified where tree_element differs between from and to tve and change the element
         // collect all useTo modified where tree_element is the same for from and to tve and update the placement/tve data(?)
         report.getUseToType(TveDiff.MODIFIED)
+              .sort { a, b -> b.to.namePath <=> a.to.namePath }
               .each { diff ->
                   TreeVersionElement newTve = updateFromPublised(diff.from, diff.to, userName)
                   mergeLog.add "Updated ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
@@ -2096,6 +2113,7 @@ and tve.element_link not in ($excludedLinks)
     }
 
     private TreeVersionElement placePublishedTve(TreeVersionElement publishedTve, TreeVersion draftVersion, String userName) {
+        TreeVersionElement.withSession { s -> s.flush() } //flush before query
         TreeVersionElement draftParentTve = findElementForNameId(publishedTve.parent.treeElement.nameId, draftVersion)
         TreeVersionElement replacementTve = saveTreeVersionElement(publishedTve.treeElement, draftParentTve,
                 draftVersion, publishedTve.taxonId, publishedTve.taxonLink, userName)
@@ -2104,7 +2122,7 @@ and tve.element_link not in ($excludedLinks)
 
     private TreeVersionElement updateFromPublised(TreeVersionElement currentTve, TreeVersionElement publishedTve, String userName) {
         notPublished(currentTve)
-
+        TreeVersionElement.withSession { s -> s.flush() } //flush before query
         TreeVersionElement newParentTve = findElementForNameId(publishedTve.parent.treeElement.nameId, currentTve.treeVersion)
 
         Boolean elementChanged = currentTve.treeElement != publishedTve.treeElement
@@ -2137,15 +2155,20 @@ and tve.element_link not in ($excludedLinks)
     }
 
     private TreeVersionElement copyPublishedTve(TreeVersionElement publishedTve, TreeVersionElement newParentTve, TreeVersionElement currentTve, String userName) {
-        TreeVersionElement replacementTve = saveTreeVersionElement(publishedTve.treeElement, newParentTve,
-                currentTve.treeVersion, publishedTve.taxonId, publishedTve.taxonLink, userName)
+        TreeVersionElement replacementTve = saveTreeVersionElement(
+                publishedTve.treeElement,
+                newParentTve,
+                currentTve.treeVersion,
+                publishedTve.taxonId,
+                publishedTve.taxonLink,
+                userName)
         updateParentId(currentTve, replacementTve)
         updateChildTreePath(replacementTve, currentTve)
         updateChildNamePath(replacementTve, currentTve)
         updateChildNameDepth(replacementTve)
 
         updateParentTaxonId(newParentTve)
-        if (newParentTve != currentTve.parent) {
+        if (currentTve.parent && newParentTve != currentTve.parent) {
             updateParentTaxonId(currentTve.parent)
         }
 

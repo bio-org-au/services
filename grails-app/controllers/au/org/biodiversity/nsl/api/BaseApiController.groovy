@@ -25,6 +25,7 @@ class BaseApiController implements WithTarget {
                 results.ok = false
                 results.fail(bad.message, BAD_REQUEST)
             } catch (ValidationException invalid) {
+                invalid.printStackTrace()
                 log.error("Validation failed ${params.action} : $invalid.message")
                 results.ok = false
                 results.fail(invalid.message, INTERNAL_SERVER_ERROR)
