@@ -46,21 +46,53 @@ There is a confluence page for the NSL infrastructure as well at https://www.anb
 == Building and Running
 
 This is a standard https://grails.org/[Grails] 3.3.10 project. You can use all the standard grails tasks to build and run
-this project. You may need some supporting services i.e.
+this project. You will need some supporting services i.e.
 
 . A mapper
 . postgresql database with the NSL schema loaded
+. LDAP with users
 
-To run the services in development mode just run `grails run` which will run up the service in it's own tomcat instance
+See below for how to get these running for development
+
+To run the services in development mode just run `grails run-app` which will run up the service in it's own tomcat instance
 locally. You can also use the gradle task `bootRun` e.g. `./gradlew bootRun`.
 
 The services work nicely within IntelliJ IDEA just import the project.
 
+=== Building and deploying docker image.
 To build a war file you can use `grails war` or you can use `./gradlew assemble`. This will build a war file and put it
 in the `build/libs` directory.
 
 To publish to docker use the gradle task `./gradlew dockerPublish`. Note you will have to be logged into docker hub to
 publish. Note we're currently publishing to pmcneil/
+
+=== Developing with supporting services
+
+We have supplied a docker-compose driven script to run up a mapper and ldap server. Follow thes steps to get it running:
+
+. Install docker, use the docs/docker.adoc document as a guide.
+. Make sure the environment variables in the `bin/devel-up.sh` script are correct, mainly that the postgresql port is correct.
+. The script will alter your database to make the mapper tables point at "biodiversity.local", So you'll need to add the following
+lines to `/etc/hosts` before you run it:
+
+  127.0.0.1 biodiversity.local
+  127.0.0.1 id.biodiversity.local
+
+. run the script `bin/devel-up.sh
+
+The script uses docker-compose up to run the mapper and ldap. The LDAP is at port 10389 and the mapper is on port 7070.
+
+By default the `grails run-app` or `./gradlew bootRun` will try and use the config file at
+`"${projectDir.absolutePath}/etc/nsl/services-config-g3.groovy"` (see build config bootRun). This expects the
+
+* database to be at localhost:5432,
+* the mapper to be at biodiversity.local:7070
+* ldap to be at biodiversity.local:10389
+* will create mapper links that point to http://id.biodiversity.local:7070/broker/...
+
+==== Stopping the docker containers
+
+to stop the mapper and ldap run `bin/devel-down.sh`.
 
 
 
