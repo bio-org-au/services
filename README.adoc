@@ -83,7 +83,7 @@ lines to `/etc/hosts` before you run it:
 The script uses docker-compose up to run the mapper and ldap. The LDAP is at port 10389 and the mapper is on port 7070.
 
 By default the `grails run-app` or `./gradlew bootRun` will try and use the config file at
-`"${projectDir.absolutePath}/etc/nsl/services-config-g3.groovy"` (see build config bootRun). This expects the
+`"${projectDir.absolutePath}/etc/nsl/services-config-g3.groovy"` (see build.gradle task bootRun). This expects the
 
 * database to be at localhost:5432,
 * the mapper to be at biodiversity.local:7070
