@@ -15,36 +15,18 @@
 */
 
 @media print {
-    a[href]:after {
-        content: none;
-    }
-
-    a {
-        color: blue;
-    }
-
     .footer {
         display: none;
     }
 
-    branch {
-        display: inline;
+    div#main-content {
+        height: 100%;
+        overflow: visible;
     }
+}
 
-    branch ul {
-        position: relative;
-        display: inline;
-        border: none;
-    }
-
-    branch li {
-        display: inline;
-    }
-
-    branch li:after {
-        content: ' -> ';
-        padding-right: 10px;
-    }
+branch ul {
+    display: none
 }
 
 body {
@@ -488,8 +470,11 @@ div.debug {
     max-height: 8rem;
     overflow: auto;
 }
+
 .log-output {
     font-family: monospace;
     font-size: 0.7em;
-    height: 300px; overflow: auto; white-space: pre
+    height: 300px;
+    overflow: auto;
+    white-space: pre
 }

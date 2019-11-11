@@ -13,7 +13,7 @@
             <af:onTree element="${treeVersionElement}"/></excluded-name>
         </g:else>
         <name-status class="${name.nameStatus.name}">${name.nameStatus.name}</name-status>
-        <af:branch name="${name}"><i class="fa fa-code-fork"></i></af:branch>
+        <af:branch name="${name}"><i class="fa fa-code-branch"></i></af:branch>
         | sensu
         <st:preferredLink
             target="${apcInstance?.reference}">${raw(apcInstance?.reference?.citationHtml)}</st:preferredLink>
@@ -77,7 +77,7 @@
                                                                class="fa fa-book"></i></st:preferredLink>
             </accepted-name>
             <span class="vertbar">
-              <af:branch name="${synonym.citedBy.name}" tree="APC"><i class="fa fa-code-fork"></i></af:branch>
+              <af:branch name="${synonym.citedBy.name}" tree="APC"><i class="fa fa-code-branch"></i></af:branch>
             </span>
             <span class="vertbar">
               <st:preferredLink target="${name}"><i title="citable link to name"
@@ -123,7 +123,7 @@
                                                              class="fa fa-book"></i></st:preferredLink>
           </accepted-name>
           <span class="vertbar">
-            <af:branch name="${synonym.citedBy.name}" tree="APC"><i class="fa fa-code-fork"></i></af:branch>
+            <af:branch name="${synonym.citedBy.name}" tree="APC"><i class="fa fa-code-branch"></i></af:branch>
           </span>
           <span class="vertbar">
             <st:preferredLink target="${name}"><i title="citable link to name"

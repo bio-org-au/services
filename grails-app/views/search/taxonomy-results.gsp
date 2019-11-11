@@ -55,7 +55,7 @@
               <family>
                 <g:if test="${familyName}">
                   ${raw(familyName.fullNameHtml)} <af:branch name="${name}" tree="APC"><i
-                    class="fa fa-code-fork"></i></af:branch>
+                    class="fa fa-code-branch"></i></af:branch>
                 </g:if>
               </family>
 

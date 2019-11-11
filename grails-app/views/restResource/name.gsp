@@ -27,7 +27,7 @@
   <div class="name" id="${name.id}">
     <family>
       <g:if test="${familyName}">
-        ${raw(familyName.fullNameHtml)} <af:branch name="${name}" tree="APC"><i class="fa fa-code-fork"></i></af:branch>
+        ${raw(familyName.fullNameHtml)} <af:branch name="${name}" tree="APC"><i class="fa fa-code-branch"></i></af:branch>
       </g:if>
     </family>
 
@@ -37,7 +37,7 @@
       </accepted-name><name-status class="${name.nameStatus.name}">, ${name.nameStatus.name}</name-status><name-type
         class="show-always">${name.nameType.name}</name-type>
       <g:if test="${!familyName}">
-        <af:branch name="${name}" tree="APC"><i class="fa fa-code-fork"></i></af:branch>
+        <af:branch name="${name}" tree="APC"><i class="fa fa-code-branch"></i></af:branch>
       </g:if>
       <g:each in="${name.tags}" var="tag">
         <name-tag>${tag.tag.name}<i class="fa fa-tag"></i></name-tag>

@@ -162,7 +162,6 @@ apc {
     display: inline-block;
 }
 
-branch ul,
 help div {
     position: absolute;
     display: none;
@@ -177,7 +176,6 @@ help div {
     z-index: 1000;
 }
 
-branch,
 help {
     display: inline-block;
     cursor: pointer;
