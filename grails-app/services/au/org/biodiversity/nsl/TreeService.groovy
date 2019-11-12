@@ -615,16 +615,20 @@ DELETE FROM tree_version WHERE id = :treeVersionId;
     private void deleteOrphanedTreeElements() {
         Closure work = {
             Sql sql = getSql()
-            Integer count = sql.firstRow('SELECT count(*) FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element)')[0] as Integer
-            if (count) {
-                log.debug "deleting $count orphaned elements."
+            sql.withTransaction { t ->
+                Integer count = sql.firstRow('SELECT count(*) FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element)')[0] as Integer
+                if (count) {
+                    log.debug "deleting $count orphaned elements."
 
-                sql.execute('''
-SELECT id INTO TEMP orphans FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element); 
+                    sql.executeUpdate('''
+SELECT id INTO TEMP orphans FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element);
 UPDATE tree_element SET previous_element_id = NULL FROM orphans o WHERE previous_element_id = o.id;
+DELETE from tree_element_distribution_entries using orphans o where tree_element_id = o.id;
 DELETE FROM tree_element e USING orphans o WHERE e.id = o.id;
-DROP TABLE IF EXISTS orphans;
-''')
+DROP TABLE IF EXISTS orphans;''')
+                }
+                log.debug "orphan delete complete"
+                t.commit()
             }
         }
         //We could make this a worker thread that does a GC every so often
@@ -1113,7 +1117,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         if (matchingElements?.size()) {
             foundElement = matchingElements.find { TreeElement te ->
-                log.debug te.toString()
+                log.debug "Checking profile of ${te}"
                 profile && te.profile &&
                         compareProfileMapValues(profile, te.profile)
             }
@@ -1126,9 +1130,14 @@ INSERT INTO tree_version_element (tree_version_id,
 
         //if this is not a draft only element clone it
         if (treeVersionElement.treeElement.treeVersionElements.size() > 1) {
+            log.debug "No matching element, creating a new one."
             TreeElement copiedElement = copyTreeElement(treeVersionElement.treeElement, userName)
             treeVersionElement = changeElement(treeVersionElement, copiedElement, userName)
+            treeVersionElement.save(flush: true)
+            log.debug "Created. ${treeVersionElement.treeElement}."
             //don't update taxonId above as the taxon hasn't changed
+        } else {
+            log.debug "Editing draft element ${treeVersionElement.treeElement}."
         }
 
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
@@ -1142,16 +1151,17 @@ INSERT INTO tree_version_element (tree_version_id,
         treeVersionElement.updatedBy = userName
         treeVersionElement.updatedAt = now
         treeVersionElement.save()
+        deleteOrphanedTreeElements()
         return treeVersionElement
     }
 
     static boolean compareProfileMapValues(Map m, Map n) {
         if (m.keySet() == n.keySet()) {
             //find first example of values *not* matching
-            boolean result = m.keySet().find { key ->
+            String result = m.keySet().find { key ->
                 m[key]['value'] != n[key]['value']
             }
-            return !result
+            return result == null
         }
         return false
     }
@@ -1536,7 +1546,7 @@ and regex(namePath, :newPath) = true
         // setting these references here because of a bug? setting in the map above where the parentElement
         // changes to this new element.
         treeElement.previousElement = source
-        treeElement.save()
+        treeElement.save(flush: true)
         return treeElement
     }
 

@@ -45,7 +45,7 @@ class RestCallService {
         }
         if (response.status == 200) {
             Map resp = response.json as Map
-            log.info "logged into mapper. $resp"
+            log.info "logged into mapper. ${resp.access_token[0..5]}"
             return new AccessToken(resp.access_token as String, resp.refresh_token as String, refreshUrl)
         } else {
             log.error("Can't log into mapper, status: ${response.status}, ${response.json}")
@@ -55,14 +55,15 @@ class RestCallService {
 
     Boolean refreshLogin(AccessToken accessToken) {
         log.info "refreshing login to $accessToken.refreshUrl"
-        Map data = [grantType: 'refresh_token', refreshToken: accessToken.refreshToken]
+        Map data = [grant_type: 'refresh_token', refresh_token: accessToken.refreshToken]
         RestResponse response = rest.post(accessToken.refreshUrl) {
             header 'Accept', "application/json"
             json(data)
         }
         if (response.status == 200) {
-            accessToken.accessToken = response.json.accessToken as String
-            log.info "refreshed JWT."
+            accessToken.accessToken = response.json.access_token as String
+            accessToken.refreshToken = response.json.refresh_token as String
+            log.info "refreshed JWT. ${accessToken.accessToken[0..5]}"
             return true
         }
         log.error "Refreshing JWT failed."
@@ -124,10 +125,12 @@ class RestCallService {
     def json(String method, String url, Closure ok, Closure error, Closure notFound, Closure notOk, AccessToken accessToken = null) {
         try {
             log.debug "$method json ${url}"
-            RestResponse response = rest."$method"(url) {
-                header 'Accept', "application/json"
-                if (accessToken) {
-                    header('Authorization', "Bearer ${accessToken.accessToken}")
+            RestResponse response = refreshIfAuthErr(accessToken) {
+                rest."$method"(url) {
+                    header 'Accept', "application/json"
+                    if (accessToken) {
+                        header('Authorization', "Bearer ${accessToken.accessToken}")
+                    }
                 }
             }
             processResponse(response, ok, error, notFound, notOk)
@@ -138,13 +141,20 @@ class RestCallService {
         }
     }
 
+    private RestResponse refreshIfAuthErr(AccessToken accessToken, Closure<RestResponse> work ) {
+        RestResponse response = work()
+        if(response.status == 401 && accessToken) {
+            refreshLogin(accessToken)
+            response = work()
+        }
+        return response
+    }
+
     def jsonPost(Map data, String url, Closure ok, Closure error, Closure notFound, Closure notOk, AccessToken accessToken = null) {
         try {
             log.debug "Post ${data.toMapString(200)} as json to ${url}"
-            RestResponse response = postWithToken(url, accessToken, data)
-            if(response.status == 401 && accessToken) {
-                refreshLogin(accessToken)
-                response = postWithToken(url, accessToken, data)
+            RestResponse response = refreshIfAuthErr(accessToken) {
+                postWithToken(url, accessToken, data)
             }
             processResponse(response, ok, error, notFound, notOk)
         }

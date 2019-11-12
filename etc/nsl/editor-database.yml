@@ -1,0 +1,9 @@
+default: &default
+  encoding: unicode
+
+production:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
+  username: <%= ENV['DATABASE_USER'] %>
+  password: <%= ENV['DATABASE_PASSWORD'] %>
+

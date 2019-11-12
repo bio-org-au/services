@@ -26,3 +26,20 @@ services:
       - "${VOLUME_ROOT}/etc/instances:/apacheds/instances"
     labels:
       au.org.biodiversity.description: "LDAP"
+
+  editor:
+    image: biodiversity/nsl-editor:1.88-SNAP
+    ports:
+      - 3000:8080
+    volumes:
+      - "${VOLUME_ROOT}/etc/nsl:/etc/nsl:ro"
+    environment:
+      EDITOR_CONFIG_FILE: /etc/nsl/editor-config.rb
+      EDITOR_CONFIGDB_FILE: /etc/nsl/editor-database.yml
+      SECRET_KEY_BASE: fred
+      DATABASE_USER: nsl
+      DATABASE_PASSWORD: nsl
+      EXT_MAPPER_HOST: "${BASE_DOMAIN}:7070/broker/"
+      DATABASE_URL: "${DB_HOST}/nsl"
+      EXT_HOST: "${HOST_ADDR}"
+      SHARD: vasc
