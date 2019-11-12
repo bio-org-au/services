@@ -139,6 +139,12 @@
               </g:each>
             </ul>
           </li>
+          <li>
+            <a class=""
+               href="${g.createLink(controller: "admin", action: "addMissingDistEntries")}">
+              Add missing distribution entries.
+            </a>
+          </li>
         </ul>
       </div>
     </div>

@@ -2185,4 +2185,21 @@ and tve.element_link not in ($excludedLinks)
         deleteTreeVersionElement(currentTve)
         return replacementTve
     }
+
+    void addDistributionElements() {
+        Sql sql = getSql()
+        sql.eachRow('''
+select te.id from public.tree_element te
+    join tree_version_element tve on te.id = tve.tree_element_id
+    join tree_version tv on tve.tree_version_id = tv.id
+    join tree t on tv.id = t.current_tree_version_id
+where te.profile -> 'APC Dist.' is not null
+and not exists (select 1 from tree_element_distribution_entries tede where tede.tree_element_id = te.id);
+''') { row ->
+            TreeElement te = TreeElement.get(row.id)
+            distributionService.reconstructDistribution(te, te.profile."APC Dist.".value, true)
+            te.save()
+            log.debug "Updated $te, added ${te.distributionEntries.size()} dist entries."
+        }
+    }
 }

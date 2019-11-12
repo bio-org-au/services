@@ -19,13 +19,19 @@ class DistributionService {
      * @param dist
      * @return
      */
-    List<DistEntry> deconstructDistributionString(String dist) {
+    List<DistEntry> deconstructDistributionString(String dist, Boolean ignoreErrors = false) {
         List<DistEntry> entries = []
         dist.split(',').collect { it.trim() }.each { String desc ->
             DistEntry entry = DistEntry.findByDisplay(desc)
             if (entry == null) {
-                String validEntries = DistEntry.list().sort{(it as DistEntry).sortOrder}.collect { e -> (e as DistEntry).display }.join(', ')
-                throw new IllegalArgumentException("Distribution entry ${desc} is not valid. Try one of $validEntries")
+                if (ignoreErrors) {
+                    log.info "Ignoring bad entry ${desc}"
+                } else {
+                    String validEntries = DistEntry.list().sort {
+                        (it as DistEntry).sortOrder
+                    }.collect { e -> (e as DistEntry).display }.join(', ')
+                    throw new IllegalArgumentException("Distribution entry ${desc} is not valid. Try one of $validEntries")
+                }
             } else {
                 entries.add(entry)
             }
@@ -34,7 +40,7 @@ class DistributionService {
     }
 
     TreeElement removeDistributionEntries(TreeElement element) {
-        if(element.distributionEntries) {
+        if (element.distributionEntries) {
             List<DistEntry> entries = new LinkedList<DistEntry>(element.distributionEntries)
             entries.each { DistEntry entry ->
                 element.removeFromDistributionEntries(entry)
@@ -43,10 +49,10 @@ class DistributionService {
         return element
     }
 
-    void reconstructDistribution(TreeElement element, String dist) {
+    void reconstructDistribution(TreeElement element, String dist, Boolean ignoreErrors = false) {
         removeDistributionEntries(element)
         if (dist) {
-            deconstructDistributionString(dist).each { DistEntry entry ->
+            deconstructDistributionString(dist, ignoreErrors).each { DistEntry entry ->
                 element.addToDistributionEntries(entry)
             }
         }
