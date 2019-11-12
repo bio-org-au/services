@@ -151,6 +151,7 @@ class TreeServiceSpec extends IntegrationSpec {
 
         when: 'I create a new version on a new tree without a version'
         TreeVersion version = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
+        tree.refresh()
 
         then: 'A new version is created on that tree'
         version
@@ -1306,7 +1307,7 @@ class TreeServiceSpec extends IntegrationSpec {
     }
 
     private printTve(TreeVersionElement target) {
-        println "*** Taxon $target.taxonId: $target.treeElement.name.simpleName Children ***"
+        println "*** Taxon $target.taxonId: ${target.treeElement.name.simpleName} Children ***"
         for (TreeVersionElement tve in treeService.getAllChildElements(target)) {
             tve.refresh()
             println "Taxon: $tve.taxonId, Names: $tve.namePath, Path: $tve.treePath"

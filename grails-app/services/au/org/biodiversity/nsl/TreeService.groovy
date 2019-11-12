@@ -618,11 +618,11 @@ DELETE FROM tree_version WHERE id = :treeVersionId;
                 log.debug "deleting $count orphaned elements."
 
                 sql.execute('''
-SELECT id INTO TEMP orphans FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element); 
+SELECT id INTO TEMP orphans FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element);
 UPDATE tree_element SET previous_element_id = NULL FROM orphans o WHERE previous_element_id = o.id;
+DELETE from tree_element_distribution_entries using orphans o where tree_element_id = o.id;
 DELETE FROM tree_element e USING orphans o WHERE e.id = o.id;
-DROP TABLE IF EXISTS orphans;
-''')
+DROP TABLE IF EXISTS orphans;''')
             }
         }
         //We could make this a worker thread that does a GC every so often
