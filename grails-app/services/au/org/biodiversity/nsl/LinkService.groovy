@@ -16,14 +16,9 @@
 
 package au.org.biodiversity.nsl
 
-
-import org.springframework.cache.CacheManager
-
 class LinkService {
     def restCallService
-    def grailsApplication
     def configService
-    CacheManager grailsCacheManager
 
     private String lowerNameSpaceName
     private String preferredHost
@@ -310,7 +305,7 @@ class LinkService {
      */
     private static Object getDomainObjectFromIdentity(Map identity, String uri) {
 
-        Long idNumber = identity.idNumber
+        Long idNumber = identity.idNumber as Long
 
         switch (identity.objectType) {
             case 'name':
@@ -411,19 +406,16 @@ class LinkService {
 
     Map deleteNameLinks(Name name, String reason) {
         String identity = new TargetParam(name, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}"
-        evictAllCache(name)
         deleteTargetLinks(identity)
     }
 
     Map deleteInstanceLinks(Instance instance, String reason) {
         String identity = new TargetParam(instance, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}"
-        evictAllCache(instance)
         deleteTargetLinks(identity)
     }
 
     Map deleteReferenceLinks(Reference reference, String reason) {
         String identity = new TargetParam(reference, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}"
-        evictAllCache(reference)
         deleteTargetLinks(identity)
     }
 
@@ -462,8 +454,6 @@ class LinkService {
     }
 
     Map moveTargetLinks(Reference from, Reference to) {
-        evictAllCache(from)
-        evictAllCache(to)
         if (from && to) {
             Map paramsMap = new TargetParam(from, nameSpace()).paramMap('fromNameSpace', 'fromObjectType', 'fromIdNumber', 'fromVersionNumber') +
                     new TargetParam(to, nameSpace()).paramMap('toNameSpace', 'toObjectType', 'toIdNumber', 'toVersionNumber')
@@ -474,8 +464,6 @@ class LinkService {
     }
 
     Map moveTargetLinks(Author from, Author to) {
-        evictAllCache(from)
-        evictAllCache(to)
         if (from && to) {
             Map paramsMap = new TargetParam(from, nameSpace()).paramMap('fromNameSpace', 'fromObjectType', 'fromIdNumber', 'fromVersionNumber') +
                     new TargetParam(to, nameSpace()).paramMap('toNameSpace', 'toObjectType', 'toIdNumber', 'toVersionNumber')
@@ -486,8 +474,6 @@ class LinkService {
     }
 
     Map moveTargetLinks(Name from, Name to) {
-        evictAllCache(from)
-        evictAllCache(to)
         if (from && to) {
             Map paramsMap = new TargetParam(from, nameSpace()).paramMap('fromNameSpace', 'fromObjectType', 'fromIdNumber', 'fromVersionNumber') +
                     new TargetParam(to, nameSpace()).paramMap('toNameSpace', 'toObjectType', 'toIdNumber', 'toVersionNumber')
@@ -534,21 +520,16 @@ class LinkService {
 
     Map removeNameLink(Name name, String uri) {
         String identity = new TargetParam(name, nameSpace()).identityParamString()
-        evictAllCache(name)
         removeTargetLink(identity, uri)
     }
 
-    @SuppressWarnings("GroovyUnusedDeclaration")
     Map removeInstanceLink(Instance instance, String uri) {
         String identity = new TargetParam(instance, nameSpace()).identityParamString()
-        evictAllCache(instance)
         removeTargetLink(identity, uri)
     }
 
-    @SuppressWarnings("GroovyUnusedDeclaration")
     Map removeReferenceLink(Reference reference, String uri) {
         String identity = new TargetParam(reference, nameSpace()).identityParamString()
-        evictAllCache(reference)
         removeTargetLink(identity, uri)
     }
 
