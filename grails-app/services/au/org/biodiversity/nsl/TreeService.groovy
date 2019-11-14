@@ -160,7 +160,7 @@ class TreeService implements ValidationUtils {
     TreeVersionElement findLatestElementForInstance(Instance instance, Tree tree) {
         if (instance && tree) {
             return TreeVersionElement.find(
-                    'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id desc',
+                    'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.publishedAt desc',
                     [tree: tree, instanceId: instance.id])
         }
         return null
