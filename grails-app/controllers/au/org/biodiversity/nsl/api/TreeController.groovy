@@ -128,7 +128,7 @@ class TreeController extends BaseApiController {
         log.debug "result status is ${resultObject.status} $resultObject"
         if (embed) {
             //noinspection GroovyAssignabilityCheck
-            render(template: '_checkSynContent', model: [treeVersion: treeVersion, data: resultObject], status: resultObject.remove('status'))
+            render(template: 'checkSynContent', model: [treeVersion: treeVersion, data: resultObject], status: resultObject.remove('status'))
         } else {
             //noinspection GroovyAssignabilityCheck
             render(view: 'checkSynReport', model: [treeVersion: treeVersion, data: resultObject], status: resultObject.remove('status'))
