@@ -13,7 +13,7 @@ class ExportController {
         [
                 exports: [
                         [label: "${configService.nameTreeName} Names as CSV", url: 'namesCsv'],
-                        [label: "${configService.classificationTreeName} Taxon as CSV", url: 'taxonCsv'],
+                        /*[label: "${configService.classificationTreeName} Taxon as CSV", url: 'taxonCsv'],*/
                         [label: "${configService.nameTreeName} Common Names as CSV", url: 'commonCsv'],
                 ]
         ]
@@ -42,7 +42,7 @@ class ExportController {
 
         }
     }
-
+/*
     @Timed()
     taxonCsv() {
         File exportFile = null
@@ -53,7 +53,7 @@ class ExportController {
             exportFile?.delete()
         }
     }
-
+*/
     @Timed()
     commonCsv() {
         File exportFile = null
