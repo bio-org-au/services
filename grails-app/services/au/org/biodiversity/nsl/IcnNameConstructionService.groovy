@@ -231,7 +231,9 @@ class IcnNameConstructionService implements NameConstructor {
         if (name.author) {
             if (name.baseAuthor) {
                 if (name.exBaseAuthor) {
-                    bits << "(<ex-base data-id='$name.exBaseAuthor.id' title='${name.exBaseAuthor.name?.encodeAsHTML()}'>${name.exBaseAuthor.abbrev}</ex-base> ex <base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
+                    bits << "(<ex-base data-id='$name.exBaseAuthor.id' title='${name.exBaseAuthor.name?.encodeAsHTML()}'>" +
+                            "${name.exBaseAuthor.abbrev}</ex-base> ex <base data-id='$name.baseAuthor.id' " +
+                            "title='${name.baseAuthor.name.encodeAsHTML()}'>$name.baseAuthor.abbrev</base>)"
                 } else {
                     bits << "(<base data-id='$name.baseAuthor.id' title='${name.baseAuthor.name?.encodeAsHTML()}'>${name.baseAuthor.abbrev}</base>)"
                 }

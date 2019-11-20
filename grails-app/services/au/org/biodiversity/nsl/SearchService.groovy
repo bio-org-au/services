@@ -16,6 +16,8 @@
 
 package au.org.biodiversity.nsl
 
+import au.org.biodiversity.nsl.api.AuthorSearchParams
+import au.org.biodiversity.nsl.api.NameSearchParams
 import org.grails.plugins.metrics.groovy.Timed
 
 class SearchService {
@@ -474,12 +476,18 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
             return NameType.executeQuery('''select n from NameType n where n.deprecated = false and lower(n.name) like :query order by n.name asc''',
                     [query: "${query.toLowerCase()}%"], [max: 15])
                            .collect { type ->
-                type.name
-            }
+                               type.name
+                           }
         }
 
+        suggestService.addSuggestionHandler('name') { String query ->
+            NameSearchParams nameSearchParams = new NameSearchParams([fullName: query, max: 15])
+            nameSearch(nameSearchParams)
+            return nameSearchParams.results.collect { Name name ->
+                name.fullName
+            }
+        }
     }
-
     /**
      * checks the map of checkboxes to see what has been checked and returns a map of those checkboxes only
      * @param params - the params object
@@ -494,6 +502,29 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
             }
         }
         return checked
+    }
+
+    NameSearchParams nameSearch(NameSearchParams params) {
+        String query = regexTokenizeNameQueryString(params.fullName.toLowerCase())
+        String qry = 'from Name n where iregex(n.fullName, :query) = true'
+        Map qryParams = [query: query]
+        if (params.rankName) {
+            qry = 'from Name n where iregex(n.fullName, :query) = true and n.nameRank.name = :rank'
+            qryParams.rank = params.rankName
+        }
+        params.results = Name.executeQuery("select n $qry order by n.sortName", qryParams, [max: params.max ?: 10]) as List<Name>
+        params.countFound = (Name.executeQuery("select count(n) $qry", qryParams)[0]) as Integer
+        return params
+    }
+
+    AuthorSearchParams authorSearch(AuthorSearchParams params) {
+        String query = params.abbrev
+        String qry = 'from Author a where abbrev like :query'
+        Map qryParams = [query: query]
+        println qryParams
+        params.results = Author.executeQuery("select a $qry order by a.abbrev", qryParams, [max: params.max ?: 10]) as List<Author>
+        params.countFound = (Author.executeQuery("select count(a) $qry", qryParams)[0]) as Integer
+        return params
     }
 
 }

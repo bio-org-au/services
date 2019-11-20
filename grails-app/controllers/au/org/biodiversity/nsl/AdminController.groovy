@@ -35,7 +35,7 @@ class AdminController {
     def adminService
     def flatViewService
     def postgresInfoService
-    def jsonRendererService
+    def treeService
 
     @RequiresRoles('admin')
     index() {
@@ -184,6 +184,12 @@ class AdminController {
         flatViewService.refreshTaxonView()
         flatViewService.refreshNameView()
         log.debug "Refreshed views."
+        redirect(action: 'index')
+    }
+
+    @RequiresRoles('admin')
+    addMissingDistEntries() {
+        treeService.addDistributionElements()
         redirect(action: 'index')
     }
 

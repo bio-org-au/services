@@ -16,15 +16,18 @@ class AuthorController implements WithTarget {
 
     static responseFormats = [
             index      : ['html'],
-            deduplicate: ['json', 'xml', 'html']
+            deduplicate: ['json', 'xml', 'html'],
+            search     : ['json', 'xml', 'html']
     ]
 
     static allowedMethods = [
-            deduplicate: ["DELETE"]
+            deduplicate: ["DELETE"],
+            search     : ["GET"]
     ]
 
     AuthorService authorService
     def jsonRendererService
+    def searchService
 
     def index() {}
 
@@ -63,4 +66,17 @@ class AuthorController implements WithTarget {
             }
         }
     }
+
+    @Timed
+    search(String abbrev, String name, Integer max) {
+        withTarget(abbrev, 'abbrev query required') { ResultObject result, js ->
+            AuthorSearchParams searchParams = new AuthorSearchParams([abbrev: abbrev, name: name, max: max])
+            searchService.authorSearch(searchParams)
+            result.count = searchParams.countFound
+            result.query = searchParams.abbrev
+            result.name = searchParams.name
+            result.authors = searchParams.results
+        }
+    }
+
 }

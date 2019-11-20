@@ -24,22 +24,9 @@
     .footer {
         display: none;
     }
+
     branch {
-        display: inline;
-    }
-    branch ul {
-        position: relative;
-        display: inline;
-        border: none;
-    }
-
-    branch li {
-        display: inline;
-    }
-
-    branch li:after {
-        content: ' -> ';
-        padding-right: 10px;
+        display: none;
     }
 }
 

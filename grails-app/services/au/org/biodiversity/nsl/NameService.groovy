@@ -17,16 +17,18 @@
 package au.org.biodiversity.nsl
 
 import grails.transaction.Transactional
+import groovy.sql.Sql
 import org.apache.shiro.grails.annotations.RoleRequired
 import org.quartz.Scheduler
 import org.springframework.transaction.TransactionStatus
 
+import javax.sql.DataSource
 import java.sql.Timestamp
 
 @Transactional
 class NameService {
 
-    def configService
+    DataSource dataSource_nsl
     def restCallService
     def nameConstructionService
     def linkService
@@ -261,6 +263,13 @@ class NameService {
 
         Name.findBySecondParent(duplicate).each { Name child ->
             child.secondParent = target
+            child.updatedAt = now
+            child.updatedBy = user
+            child.save()
+        }
+
+        Name.findByFamily(duplicate).each { Name child ->
+            child.family = target
             child.updatedAt = now
             child.updatedBy = user
             child.save()
@@ -584,4 +593,16 @@ or n.fullNameHtml is null""")?.first() as Integer
             name.save()
         }
     }
+
+    Name getBasionym(Name name) {
+        Sql sql = getSql()
+        Long baseId = sql.firstRow('select basionym(:nameId)', [nameId: name.id])['basionym'] as Long
+        return (baseId == name.id ? null : Name.get(baseId))
+    }
+
+    private Sql getSql() {
+        //noinspection GroovyAssignabilityCheck
+        return Sql.newInstance(dataSource_nsl)
+    }
+
 }

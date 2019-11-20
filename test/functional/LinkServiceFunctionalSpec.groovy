@@ -99,6 +99,7 @@ class LinkServiceFunctionalSpec extends IntegrationSpec {
         noodia.tags = []
         noodia.nameElement = 'noodia'
         noodia.simpleName = 'noodia'
+        noodia.uri = null
         noodia.save()
 
         then:

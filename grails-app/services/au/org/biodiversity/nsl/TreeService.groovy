@@ -160,7 +160,7 @@ class TreeService implements ValidationUtils {
     TreeVersionElement findLatestElementForInstance(Instance instance, Tree tree) {
         if (instance && tree) {
             return TreeVersionElement.find(
-                    'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id desc',
+                    'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.publishedAt desc',
                     [tree: tree, instanceId: instance.id])
         }
         return null
@@ -618,11 +618,11 @@ DELETE FROM tree_version WHERE id = :treeVersionId;
                 log.debug "deleting $count orphaned elements."
 
                 sql.execute('''
-SELECT id INTO TEMP orphans FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element); 
+SELECT id INTO TEMP orphans FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element);
 UPDATE tree_element SET previous_element_id = NULL FROM orphans o WHERE previous_element_id = o.id;
+DELETE from tree_element_distribution_entries using orphans o where tree_element_id = o.id;
 DELETE FROM tree_element e USING orphans o WHERE e.id = o.id;
-DROP TABLE IF EXISTS orphans;
-''')
+DROP TABLE IF EXISTS orphans;''')
             }
         }
         //We could make this a worker thread that does a GC every so often
@@ -994,6 +994,7 @@ INSERT INTO tree_version_element (tree_version_id,
      */
     private void updateParentTaxaId(TreeVersionElement parent) {
         if (parent) {
+            parent.refresh()
             List<TreeVersionElement> branchElements = getParentTreeVersionElements(parent)
             Sql sql = getSql()
             String hostPart = parent.treeVersion.hostPart()
@@ -1164,7 +1165,7 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     TreeVersionElement minorEditDistribution(TreeVersionElement treeVersionElement, String distribution, String reason, String userName) {
-        excludedValidation(treeVersionElement.treeElement.excluded,distribution)
+        excludedValidation(treeVersionElement.treeElement.excluded, distribution)
         String distKey = distributionKey(treeVersionElement)
         //this will throw an exception if the distribution string is bad.
         distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution)
@@ -1213,7 +1214,7 @@ INSERT INTO tree_version_element (tree_version_id,
         Map elementComparators = comparators(treeVersionElement.treeElement)
         elementComparators.excluded = excluded
 
-        excludedValidation(excluded,elementComparators.profile, distributionKey(treeVersionElement))
+        excludedValidation(excluded, elementComparators.profile, distributionKey(treeVersionElement))
 
         TreeElement foundElement = findTreeElement(elementComparators)
         if (foundElement) {
@@ -1504,6 +1505,7 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
      * @return
      */
     private deleteTreeVersionElement(TreeVersionElement target) {
+        log.debug("Deleting $target")
         removeLink(target)
         target.treeElement.removeFromTreeVersionElements(target)
         target.treeVersion.removeFromTreeVersionElements(target)
@@ -1655,14 +1657,14 @@ where parent = :oldParent''', [newParent: newParent, oldParent: oldParent])
         sql.firstRow("SELECT nextval('nsl_global_seq')")[0] as Long
     }
 
-    protected static excludedValidation(Boolean excluded, String distribution){
-        if(excluded && distribution) {
+    protected static excludedValidation(Boolean excluded, String distribution) {
+        if (excluded && distribution) {
             throw new BadArgumentsException("An excluded taxon can't have a distribution.")
         }
     }
 
-    protected static excludedValidation(Boolean excluded, Map profile, String distKey){
-        if(excluded && profile && profile[distKey] && profile[distKey].value) {
+    protected static excludedValidation(Boolean excluded, Map profile, String distKey) {
+        if (excluded && profile && profile[distKey] && profile[distKey].value) {
             throw new BadArgumentsException("An excluded taxon can't have a distribution.")
         }
     }
@@ -2048,40 +2050,52 @@ and tve.element_link not in ($excludedLinks)
      * @return
      */
     private Map doMerge(TreeVersion draftVersion, MergeReport report, String userName) {
+        log.debug "Doing merge..."
         List<String> mergeLog = []
+        try {
+            // collect all *useFrom* diffs and clear the from tve mergeConflict
+            log.debug "*** Using selected entries from this draft."
+            report.getUseFrom().each { diff ->
+                if (diff.from) {
+                    diff.from.mergeConflict = false
+                    mergeLog.add "Kept ${diff.from.treeElement.simpleName}: ${diff.from.elementLink}"
+                }
+            }
 
-        // collect all *useFrom* diffs and clear the from tve mergeConflict
-        report.getUseFrom().each { diff ->
-            diff.from.mergeConflict = false
-            mergeLog.add "Kept ${diff.from.treeElement.simpleName}: ${diff.from.elementLink}"
-        }
-
-        // collect all useTo removed - sort bottom up by treePath and call removeTreeVersionElement on fromTve if exists
-        report.getUseToType(TveDiff.REMOVED)
-              .sort { a, b -> b.to.namePath <=> a.to.namePath }
-              .each { diff ->
-                  if (diff.from) {
-                      removeTreeVersionElement(diff.from)
-                      mergeLog.add "Removed ${diff.to.treeElement.simpleName}"
+            // collect all useTo removed - sort bottom up by namePath and call removeTreeVersionElement on fromTve if exists
+            log.debug "*** Removing selected entries from this draft."
+            report.getUseToType(TveDiff.REMOVED)
+                  .sort { a, b -> b.to.namePath <=> a.to.namePath }
+                  .each { diff ->
+                      if (diff.from) {
+                          removeTreeVersionElement(diff.from)
+                          mergeLog.add "Removed ${diff.to.treeElement.simpleName}"
+                      }
                   }
-              }
 
-        // collect all useTo added - sort top down by treePath and call placePublished on toTve
-        report.getUseToType(TveDiff.ADDED)
-              .sort { a, b -> a.to.namePath <=> b.to.namePath }
-              .each { diff ->
-                  TreeVersionElement newTve = placePublishedTve(diff.to, draftVersion, userName)
-                  mergeLog.add "Added ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
-              }
+            // collect all useTo added - sort top down by namePath and call placePublished on toTve
+            log.debug "*** Adding selected published entries to this draft."
+            report.getUseToType(TveDiff.ADDED)
+                  .sort { a, b -> a.to.namePath <=> b.to.namePath }
+                  .each { diff ->
+                      TreeVersionElement newTve = placePublishedTve(diff.to, draftVersion, userName)
+                      mergeLog.add "Added ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
+                  }
 
-        // collect all useTo modified where tree_element differs between from and to tve and change the element
-        // collect all useTo modified where tree_element is the same for from and to tve and update the placement/tve data(?)
-        report.getUseToType(TveDiff.MODIFIED)
-              .each { diff ->
-                  TreeVersionElement newTve = updateFromPublised(diff.from, diff.to, userName)
-                  mergeLog.add "Updated ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
-              }
-
+            // collect all useTo modified where tree_element differs between from and to tve and change the element
+            // collect all useTo modified where tree_element is the same for from and to tve and update the placement/tve data(?)
+            // sort bottom up by namePath and call removeTreeVersionElement on fromTve if exists
+            log.debug "*** Updating selected modified entries from published to this draft."
+            report.getUseToType(TveDiff.MODIFIED)
+                  .sort { a, b -> b.to.namePath <=> a.to.namePath }
+                  .each { diff ->
+                      TreeVersionElement newTve = updateFromPublished(diff.from, diff.to, userName)
+                      mergeLog.add "Updated ${newTve.treeElement.simpleName}: ${newTve.elementLink} "
+                  }
+        } catch (e) {
+            log.debug "\n\nmergeLog: $mergeLog\n"
+            throw e
+        }
         List<TreeVersionElement> conflicted = TreeVersionElement.findAllByMergeConflictAndTreeVersion(true, draftVersion)
         if (conflicted.size()) {
             return [message: "Merge incomplete: merged ${mergeLog.size()} elements, ${conflicted.size()} conflicts remaining.", merged: mergeLog.size(), complete: false, report: mergeLog]
@@ -2093,21 +2107,25 @@ and tve.element_link not in ($excludedLinks)
     }
 
     private TreeVersionElement placePublishedTve(TreeVersionElement publishedTve, TreeVersion draftVersion, String userName) {
+        log.debug "Placing $publishedTve"
         TreeVersionElement draftParentTve = findElementForNameId(publishedTve.parent.treeElement.nameId, draftVersion)
         TreeVersionElement replacementTve = saveTreeVersionElement(publishedTve.treeElement, draftParentTve,
                 draftVersion, publishedTve.taxonId, publishedTve.taxonLink, userName)
+        log.debug "Placed $replacementTve from $publishedTve"
         return replacementTve
     }
 
-    private TreeVersionElement updateFromPublised(TreeVersionElement currentTve, TreeVersionElement publishedTve, String userName) {
+    private TreeVersionElement updateFromPublished(TreeVersionElement currentTve, TreeVersionElement publishedTve, String userName) {
         notPublished(currentTve)
 
         TreeVersionElement newParentTve = findElementForNameId(publishedTve.parent.treeElement.nameId, currentTve.treeVersion)
 
         Boolean elementChanged = currentTve.treeElement != publishedTve.treeElement
         if (elementChanged) {
+            log.debug "**** updating (copying pulished) $currentTve.treeElement.name.fullName"
             return copyPublishedTve(publishedTve, newParentTve, currentTve, userName)
         } else {
+            log.debug "**** updating (update existing) $currentTve.treeElement.name.fullName"
             return updateExistingTve(currentTve, newParentTve, userName)
         }
     }
@@ -2135,20 +2153,43 @@ and tve.element_link not in ($excludedLinks)
     }
 
     private copyPublishedTve(TreeVersionElement publishedTve, TreeVersionElement newParentTve, TreeVersionElement currentTve, String userName) {
-        TreeVersionElement replacementTve = saveTreeVersionElement(publishedTve.treeElement, newParentTve,
-                currentTve.treeVersion, publishedTve.taxonId, publishedTve.taxonLink, userName)
+        TreeVersionElement replacementTve = saveTreeVersionElement(
+                publishedTve.treeElement,
+                newParentTve,
+                currentTve.treeVersion,
+                publishedTve.taxonId,
+                publishedTve.taxonLink,
+                userName)
         updateParentId(currentTve, replacementTve)
         updateChildTreePath(replacementTve, currentTve)
         updateChildNamePath(replacementTve, currentTve)
         updateChildNameDepth(replacementTve)
 
         updateParentTaxaId(newParentTve)
-        if (newParentTve != currentTve.parent) {
+        if (currentTve.parent && newParentTve != currentTve.parent) {
+            currentTve.refresh()
             updateParentTaxaId(currentTve.parent)
         }
 
         deleteTreeVersionElement(currentTve)
         return replacementTve
+    }
+
+    void addDistributionElements() {
+        Sql sql = getSql()
+        sql.eachRow('''
+select te.id from public.tree_element te
+    join tree_version_element tve on te.id = tve.tree_element_id
+    join tree_version tv on tve.tree_version_id = tv.id
+    join tree t on tv.id = t.current_tree_version_id
+where te.profile -> 'APC Dist.' is not null
+and not exists (select 1 from tree_element_distribution_entries tede where tede.tree_element_id = te.id);
+''') { row ->
+            TreeElement te = TreeElement.get(row.id)
+            distributionService.reconstructDistribution(te, te.profile."APC Dist.".value, true)
+            te.save()
+            log.debug "Updated $te, added ${te.distributionEntries.size()} dist entries."
+        }
     }
 
 }
