@@ -34,7 +34,7 @@ appender("dailyFileAppender", RollingFileAppender) {
                         '%m%n%wex' // Message
     }
     rollingPolicy(TimeBasedRollingPolicy) {
-        FileNamePattern = "${(System.getProperty('catalina.base') ?: 'target')}/log/services-%d{yyyy-MM-dd}.zip"
+        FileNamePattern = "${(System.getProperty('catalina.base') ?: (System.getProperty('user.home') ?: 'target'))}/log/services-%d{yyyy-MM-dd}.zip"
     }
 }
 
