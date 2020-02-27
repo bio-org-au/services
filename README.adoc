@@ -52,7 +52,7 @@ this project. You will need some supporting services i.e.
 . postgresql database with the NSL schema loaded
 . LDAP with users
 
-See below for how to get these running for development
+TIP: See <<Developing with supporting services>> below for how to get these running for development using the included docker-compose scripts.
 
 To run the services in development mode just run `grails run-app` which will run up the service in it's own tomcat instance
 locally. You can also use the gradle task `bootRun` e.g. `./gradlew bootRun`.
@@ -64,7 +64,10 @@ To build a war file you can use `grails war` or you can use `./gradlew assemble`
 in the `build/libs` directory.
 
 To publish to docker use the gradle task `./gradlew dockerPublish`. Note you will have to be logged into docker hub to
-publish. Note we're currently publishing to pmcneil/
+publish.
+
+WARNING: Note we're currently publishing to `biodiversity/` on docker hub. Change the `dockerRepo` property in the
+`gradle.properties` file to your own repository.
 
 === Developing with supporting services
 
@@ -82,8 +85,14 @@ lines to `/etc/hosts` before you run it:
 
 The script uses docker-compose up to run the mapper and ldap. The LDAP is at port 10389 and the mapper is on port 7070.
 
+WARNING: This exposes the ports on the host machine, so the services won't work if you run them via the included Dockerfile,
+as that runs within *another* docker container and doesn't have a network connection/route to the exposed ports.
+
 By default the `grails run-app` or `./gradlew bootRun` will try and use the config file at
 `"${projectDir.absolutePath}/etc/nsl/services-config-g3.groovy"` (see build.gradle task bootRun). This expects the
+
+TIP: The LDAP server include has a user called *test* with the password *test* so you can log into the editor and the
+services
 
 * database to be at localhost:5432,
 * the mapper to be at biodiversity.local:7070
