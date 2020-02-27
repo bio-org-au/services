@@ -69,6 +69,9 @@ publish.
 WARNING: Note we're currently publishing to `biodiversity/` on docker hub. Change the `dockerRepo` property in the
 `gradle.properties` file to your own repository.
 
+NOTE: The docker image runs the services as the nsl_user UID: 5000 GID: 5000 in the container. This user will be mapped
+to the host user:group with those IDs. It may be useful to assign a user to that ID in the host, but not essential.
+
 === Developing with supporting services
 
 We have supplied a docker-compose driven script to run up a mapper and ldap server. Follow thes steps to get it running:
