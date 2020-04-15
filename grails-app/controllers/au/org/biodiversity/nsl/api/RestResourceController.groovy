@@ -183,6 +183,7 @@ order by mx''', [query: "%node/$shard/$idNumber"]).last()
         Object[] result = TreeVersionElement.executeQuery('''select tve.treeElement.id, max(tve.treeVersion.id) as mx 
 from TreeVersionElement tve 
 where taxonId = :idNumber
+  and tve.treeVersion.published = true
 group by tve.treeElement.id
 order by mx''', [idNumber: idNumber]).last()
         if (result && result.size() == 2) {
