@@ -152,31 +152,15 @@ class RestResourceController {
      *
      * This gets the latest version of the the tree element with the node id given and displays that.
      *
+     * ** modified to just use the taxon search since the taxonId uses the nodeID
+     *
      * @param shard
      * @param idNumber
      * @return
      */
 
     def node(String shard, Long idNumber) {
-        Object[] result = TreeVersionElement.executeQuery('''select tve.treeElement.id, max(tve.treeVersion.id) as mx 
-from TreeVersionElement tve 
-where taxonLink like :query
-and treeVersion.published = true
-group by tve.treeElement.id
-order by mx''', [query: "%node/$shard/$idNumber"]).last()
-        if (result && result.size() == 2) {
-            TreeVersionElement treeVersionElement = treeService.getTreeVersionElement(result[1] as Long, result[0] as Long)
-
-            if (treeVersionElement) {
-                List<DisplayElement> children = treeService.childDisplayElements(treeVersionElement)
-                List<TreeVersionElement> path = treeService.getElementPath(treeVersionElement)
-                respond(treeVersionElement, [view: 'taxon', model: [treeVersionElement: treeVersionElement, path: path, children: children, status: OK]])
-            } else {
-                notFound("Couldn't find element ${result[0]} in tree version ${result[1]}.")
-            }
-        } else {
-            notFound("Couldn't find node $idNumber in $shard.")
-        }
+        taxon(shard, idNumber)
     }
 
     def taxon(String shard, Long idNumber) {
@@ -192,7 +176,7 @@ order by mx''', [idNumber: idNumber]).last()
             if (treeVersionElement) {
                 List<DisplayElement> children = treeService.childDisplayElements(treeVersionElement)
                 List<TreeVersionElement> path = treeService.getElementPath(treeVersionElement)
-                respond(treeVersionElement, [model: [treeVersionElement: treeVersionElement, path: path, children: children, status: OK]])
+                respond(treeVersionElement, [view: 'taxon', model: [treeVersionElement: treeVersionElement, path: path, children: children, status: OK]])
             } else {
                 notFound("Couldn't find element ${result[0]} in tree version ${result[1]}.")
             }
