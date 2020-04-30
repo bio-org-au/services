@@ -6,7 +6,6 @@ accessing classification trees of taxons.
 
 The NSL is (and probably always will be) a work in progress, we'll be adding a roadmap and more doco here as we go.
 
-
 This code is Licensed under the Apache 2 License and we welcome contributions from the taxonomic community.
 
 Please use Github issues for any bug reports.
@@ -25,5 +24,6 @@ The current allocated ranges are:
 * Lichen 30,000,001 - 40,000,000
 * DAWR 40,000,001 - 50,000,000 (Aust. Dept. of Agriculture and Water Resources)
 * Fungi 60,000,001 - 70,000,000
+* AFD 70,000,001 - 80,000,000
 
 There is a confluence page for the NSL infrastructure as well at https://www.anbg.gov.au/ibis25/pages/viewpage.action?spaceKey=NSL&title=NSL+Project+2.0

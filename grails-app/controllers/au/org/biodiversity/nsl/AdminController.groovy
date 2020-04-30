@@ -42,6 +42,7 @@ class AdminController {
         Map stats = [:]
         stats.namesNeedingConstruction = nameService.countIncompleteNameStrings()
         stats.deletedNames = Name.executeQuery("select n from Name n where n.nameStatus.name = '[deleted]'")
+        stats.incorrectNamePaths = nameService.countIncorrectNamePaths()
         Boolean servicing = adminService.serviceMode()
         String dbInfo = postgresInfoService.connectionInfo.toString()
         String appConfig = configService.printAppConfig()
@@ -190,6 +191,13 @@ class AdminController {
     @RequiresRoles('admin')
     addMissingDistEntries() {
         treeService.addDistributionElements()
+        redirect(action: 'index')
+    }
+
+    @RequiresRoles('admin')
+    fixNamePaths() {
+        log.debug "Fixing name paths."
+        nameService.fixNamePaths()
         redirect(action: 'index')
     }
 
