@@ -14,7 +14,13 @@
 
 == v 1.0231
 
+* Docker security changes.
+* NSL-3544 modify RestResourceController.node action to use the taxon code.
 * NSL-3549 add admin script to fix broken name paths
+
+== v 1.0229
+
+* NSL-3453: show the latest _published_ accepted taxonomy, not draft accepted taxonomy, for a taxon link.
 
 == v 1.0226
 
