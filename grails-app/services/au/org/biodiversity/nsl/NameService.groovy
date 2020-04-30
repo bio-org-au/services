@@ -593,6 +593,28 @@ or n.fullNameHtml is null""")?.first() as Integer
         return (baseId == name.id ? null : Name.get(baseId))
     }
 
+    void fixNamePaths() {
+        log.info("Fixing name paths")
+        Sql sql = getSql()
+        sql.executeUpdate('''update name n
+set name_path = broken.newpath
+from (select child.id id, parent.name_path || '/' || coalesce(child.name_element, '') newpath
+      from name child
+               join name parent on child.parent_id = parent.id
+               join name_rank nr on child.name_rank_id = nr.id
+          and child.name_path not like (parent.name_path || '/%')
+      order by nr.sort_order) broken
+where broken.id = n.id
+''')
+        log.info("Fix name paths complete. Check that new broken paths have not been created.")
+    }
+
+    Integer countIncorrectNamePaths() {
+        Name.executeQuery('''select count(*)
+from Name child
+where child.namePath not like (child.parent.namePath||'/%')''').first() as Integer
+    }
+
     private Sql getSql() {
         return Sql.newInstance(dataSource)
     }

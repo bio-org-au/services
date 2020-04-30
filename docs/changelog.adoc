@@ -12,6 +12,10 @@
 :links:
 :numbered:
 
+== v 1.0231
+
+* NSL-3549 add admin script to fix broken name paths
+
 == v 1.0226
 
 * Fix API and Auth interceptor tests

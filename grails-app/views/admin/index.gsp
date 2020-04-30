@@ -121,6 +121,13 @@
           </li>
           <li>
             <a class=""
+               href="${g.createLink(controller: "admin", action: "fixNamePaths")}">
+              Fix broken name paths (${stats.incorrectNamePaths})
+            </a>
+            <span class="text text-muted">This may need to be run a couple of times as fixed name paths may break others.</span>
+          </li>
+          <li>
+            <a class=""
                href="${g.createLink(controller: "admin", action: "constructMissingNames")}">
               Construct missing name strings (${stats.namesNeedingConstruction})
             </a>

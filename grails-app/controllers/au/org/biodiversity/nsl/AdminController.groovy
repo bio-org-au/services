@@ -185,6 +185,13 @@ class AdminController {
         redirect(action: 'index')
     }
 
+    @RequiresRoles('admin')
+    fixNamePaths() {
+        log.debug "Fixing name paths."
+        nameService.fixNamePaths()
+        redirect(action: 'index')
+    }
+
     private String logSummary(Integer lineLength) {
         List<String> logLines = configService.getLogFile('dailyFileAppender')?.readLines()?.reverse()?.take(50) ?: []
         StringBuffer processedLog = new StringBuffer()
