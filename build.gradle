@@ -25,8 +25,7 @@ apply plugin: "asset-pipeline"
 apply plugin: "org.grails.grails-gsp"
 apply plugin: 'org.asciidoctor.convert'
 
-war.baseName("nsl#services")
-war.version("##${rootProject.version}")
+war.archiveName("nsl#services##${rootProject.version}.war")
 
 repositories {
     mavenLocal()
