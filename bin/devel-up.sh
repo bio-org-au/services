@@ -20,8 +20,8 @@ echo $DB_HOST
 #update the mapper and nsl db so they point back to biodiversity.local
 psql -f etc/repoint.sql nsl
 
-test ! -d etc/nginx/conf.d/sites-enabled && mkdir etc/nginx/conf.d/sites-enabled
-envsubst '${DOMAIN_PREFIX} ${DOMAIN_PREFIX_DASH} ${BASE_DOMAIN}' < etc/nginx/conf.d/site-template/all-shards.conf > etc/nginx/conf.d/sites-enabled/shards.conf
+#test ! -d etc/nginx/conf.d/sites-enabled && mkdir etc/nginx/conf.d/sites-enabled
+#envsubst '${DOMAIN_PREFIX} ${DOMAIN_PREFIX_DASH} ${BASE_DOMAIN}' < etc/nginx/conf.d/site-template/all-shards.conf > etc/nginx/conf.d/sites-enabled/shards.conf
 
 #unpack the LDAP instance files
 cd etc && test -d instances && rm -rf instances
