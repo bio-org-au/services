@@ -1036,7 +1036,7 @@ INSERT INTO tree_version_element (tree_version_id,
         int count = elements.size()
 
         String message = "Deleted $count elements:\n"
-        elements.each {
+        elements.reverse().each {
             message += "\n * ${it.treeElement.displayHtml}"
         }
 

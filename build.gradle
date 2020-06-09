@@ -64,7 +64,7 @@ dependencies {
     // application plugins
     compile "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.1.21-SNAPSHOT"
     compile 'com.nerderg.plugins:SimpleSuggestions3:1.1'
-    compile "org.grails.plugins:grails-shiro:3.1"
+    compile "org.grails.plugins:grails-shiro:3.3"
     compile 'org.grails.plugins:quartz:2.0.13'
     runtime 'org.grails.plugins:async:4.0.0'
     compile 'org.grails:grails-datastore-rest-client'
