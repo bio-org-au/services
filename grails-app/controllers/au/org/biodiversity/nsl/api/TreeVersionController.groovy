@@ -3,8 +3,6 @@ package au.org.biodiversity.nsl.api
 import au.org.biodiversity.nsl.MergeReport
 import au.org.biodiversity.nsl.ObjectNotFoundException
 import au.org.biodiversity.nsl.TreeVersion
-import au.org.biodiversity.nsl.TreeVersionElement
-import grails.converters.JSON
 
 class TreeVersionController extends BaseApiController {
 
@@ -64,7 +62,7 @@ class TreeVersionController extends BaseApiController {
             if (createNewDraft) {
                 results.autocreate = true
                 String draftName = treeVersion.draftName
-                treeService.bgCreateDefaultDraftVersion(treeVersion.tree, treeVersion, draftName, userName, "Default draft.")
+                treeService.bgCreateDefaultDraftVersion(treeVersion.tree, treeVersion, draftName, userName, treeVersion.logEntry ?: "default draft")
             }
         }
     }
