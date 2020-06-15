@@ -61,8 +61,8 @@ class TreeVersionController extends BaseApiController {
             results.payload = treeService.publishTreeVersion(treeVersion, userName, logEntry)
             if (createNewDraft) {
                 results.autocreate = true
-                String draftName = treeVersion.draftName
-                treeService.bgCreateDefaultDraftVersion(treeVersion.tree, treeVersion, draftName, userName, treeVersion.logEntry ?: "default draft")
+                String draftName = data.nextDraftName ?: treeVersion.draftName
+                treeService.bgCreateDefaultDraftVersion(treeVersion.tree, treeVersion, draftName, userName, logEntry ?: "default draft")
             }
         }
     }
