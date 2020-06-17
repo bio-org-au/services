@@ -86,18 +86,6 @@ class SynonymDiffMarker {
         }
     }
 
-    static String extractNameFromHtml(String synonymHtml) {
-        synonymHtml.replaceAll('.*<scientific>(.*)</scientific>(?!.*</scientific>).*', '$1')
-    }
-
-    static String extractTypeFromHtml(String synonymHtml) {
-        synonymHtml.replaceAll('.*<type>(.*)</type>.*', '$1')
-    }
-
-    static String extractCitationFromHtml(String synonymHtml) {
-        synonymHtml.replaceAll('.*<citation>(.*)</citation>.*', '$1')
-    }
-
     static String extractTagFromHtml(String synonymHtml, String tag) {
         synonymHtml.replaceAll(".*<$tag[^>]*>(.*)</$tag>.*", '$1')
     }

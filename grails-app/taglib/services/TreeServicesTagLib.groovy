@@ -106,22 +106,14 @@ class TreeServicesTagLib {
     }
 
     def findCurrentVersion = { attrs, body ->
-        TreeVersionElement tve = attrs.element
-        TreeVersion currentVersion = tve.treeVersion.tree.currentTreeVersion
-        if (currentVersion && currentVersion != tve.treeVersion) {
-            TreeVersionElement currentElement = TreeVersionElement.
-                    findByTreeVersionAndTreeElement(currentVersion, tve.treeElement)
-            if (!currentElement) {
-                currentElement = treeService.findElementBySimpleName(tve.treeElement.simpleName, currentVersion)
-            }
-            if (!currentElement) {
-                List<TreeVersionElement> tves = treeService.findElementsForSynonym(tve.treeElement.nameId, currentVersion)
-                if (tves?.size()) {
-                    out << body(synonym: true, elements: tves)
-                }
-            }
-            if (currentElement) {
-                out << body(currentElement: currentElement, synonym: false)
+        TreeVersionElement tve = attrs.element as TreeVersionElement
+        if(tve && tve.treeVersion != tve.treeVersion.tree.currentTreeVersion) { //blank if current version
+            TreeVersionElement currentTve = treeService.findCurrentTreeVersionElement(tve)
+            if (currentTve) {
+                out << body(synonym: false, currentElement: currentTve)
+            } else {
+                List<TreeVersionElement> currentTves = tve ? treeService.findCurrentTreeVersionElementAsSynonym(tve) : null
+                out << body(synonym: true, elements: currentTves)
             }
         }
     }

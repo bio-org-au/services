@@ -478,3 +478,7 @@ div.debug {
     overflow: auto;
     white-space: pre
 }
+
+.small {
+    font-size: 0.6em;
+}

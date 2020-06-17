@@ -36,10 +36,10 @@
       </div>
     </help>
 
-    <span class="small text-info">(<tree:versionStatus version="${treeVersionElement.treeVersion}"/>)</span>
+    <span class="small text-secondary">(<tree:versionStatus version="${treeVersionElement.treeVersion}"/>)</span>
 
     <tree:findCurrentVersion element="${treeVersionElement}">
-      <span class="small">
+      <span class="small  text-secondary">
         <g:if test="${synonym}">
           currently
           <g:each in="${elements}" var="currentElement">

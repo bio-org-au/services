@@ -45,13 +45,13 @@ class TreeChangeSet implements ValidationUtils {
                 return
             }
 
-            modified = findModified(first, second, treeElementsNotInFirst)
+            modified = first.findModified(second, treeElementsNotInFirst)
 
             List<Long> treeElementsAddedToSecond = treeElementsNotInFirst - modified.collect { mod -> mod[0].treeElement.id }
-            added = getTvesInVersion(treeElementsAddedToSecond, second)
+            added = second.getTvesInVersion(treeElementsAddedToSecond)
 
             List<Long> treeElementsRemovedFromSecond = treeElementsNotInSecond - modified.collect { mod -> mod[1].treeElement.id }
-            removed = getTvesInVersion(treeElementsRemovedFromSecond, first)
+            removed = first.getTvesInVersion(treeElementsRemovedFromSecond)
 
             this.changed = true
             this.overflow = false
@@ -70,33 +70,4 @@ class TreeChangeSet implements ValidationUtils {
     List<TreeVersionElement> getModifiedResult() {
         modified.collect {it[0]}
     }
-
-    protected
-    static List<List<TreeVersionElement>> findModified(TreeVersion first, TreeVersion second, List<Long> treeElementsNotInFirst) {
-        if (treeElementsNotInFirst.empty) {
-            return []
-        }
-        (TreeVersionElement.executeQuery('''
-select tve, ptve 
-    from TreeVersionElement tve, TreeVersionElement ptve
-where tve.treeVersion = :version
-    and ptve.treeVersion =:previousVersion
-    and ptve.treeElement.nameId = tve.treeElement.nameId
-    and tve.treeElement.id in :elementIds
-    order by tve.namePath
-''', [version: second, previousVersion: first, elementIds: treeElementsNotInFirst])) as List<List<TreeVersionElement>>
-    }
-
-    protected static getTvesInVersion(List<Long> elementIds, TreeVersion version) {
-        printf "querying ${elementIds.size()} elements"
-        if (elementIds.empty) {
-            return []
-        }
-        return TreeVersionElement.executeQuery(
-                'select tve from TreeVersionElement tve where treeVersion = :version and treeElement.id in :elementIds order by namePath',
-                [version: version, elementIds: elementIds]
-        )
-    }
-
-
 }

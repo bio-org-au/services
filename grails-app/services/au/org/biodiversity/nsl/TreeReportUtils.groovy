@@ -25,4 +25,37 @@ class TreeReportUtils {
         return treeElementIdsNotInVersion2
     }
 
+    /**
+     * Get TreeVersionElements by Id in a version
+     * @param elementIds
+     * @param version
+     * @return
+     */
+    static List<TreeVersionElement> getTvesInVersion(TreeVersion version, List<Long> elementIds) {
+        printf "querying ${elementIds.size()} elements"
+        if (elementIds.empty) {
+            return []
+        }
+        return TreeVersionElement.executeQuery(
+                'select tve from TreeVersionElement tve where treeVersion = :version and treeElement.id in :elementIds order by namePath',
+                [version: version, elementIds: elementIds]
+        )
+    }
+
+    static List<List<TreeVersionElement>> findModified(TreeVersion first, TreeVersion second, List<Long> treeElementsNotInFirst) {
+        if (treeElementsNotInFirst.empty) {
+            return []
+        }
+        // Takes the new tree elements and matches with the previous version tree_elements by the name.id.
+        //should possibly use the tree_element.previous_element
+        (TreeVersionElement.executeQuery('''
+select tve, ptve 
+    from TreeVersionElement tve, TreeVersionElement ptve
+where tve.treeVersion = :version
+    and ptve.treeVersion =:previousVersion
+    and ptve.treeElement.nameId = tve.treeElement.nameId
+    and tve.treeElement.id in :elementIds
+    order by tve.namePath
+''', [version: second, previousVersion: first, elementIds: treeElementsNotInFirst])) as List<List<TreeVersionElement>>
+    }
 }

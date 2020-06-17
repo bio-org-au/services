@@ -274,6 +274,46 @@ WHERE tve.tree_version_id = :versionId
         return history
     }
 
+    /**
+     * Find the current tree version element that represents this old tree version element as a synonym of
+     * an accepted name. The current accepted name is returned.
+     *
+     * Since a name may be a synonym of multiple accepted names we return a list of the names this name matches.
+     * If there is no current published tree versions return null
+     * @param tve - target tree version element
+     * @return a list of treeversion elements
+     */
+    List<TreeVersionElement> findCurrentTreeVersionElementAsSynonym(TreeVersionElement tve) {
+        TreeVersion currentVersion = tve.treeVersion.tree.currentTreeVersion
+        if (currentVersion) {
+            if (currentVersion == tve.treeVersion) {
+                return null //this is the current tve, no synonym
+            }
+            return findElementsForSynonym(tve.treeElement.nameId, currentVersion)
+        }
+        return null //there are only drafts
+    }
+
+    /**
+     * Find the current tree version element that represents this old tree version element. It may have moved to a new
+     * TreeElement. Find it by simple name if it has moved because the name itself may have been de-duplicated or otherwise
+     * changed ID.
+     *
+     * If there is no current published tree versions return null
+     * @param tve
+     * @return
+     */
+    TreeVersionElement findCurrentTreeVersionElement(TreeVersionElement tve) {
+        TreeVersion currentVersion = tve.treeVersion.tree.currentTreeVersion
+        if (currentVersion) {
+            if (currentVersion == tve.treeVersion) {
+                return tve //This is the current tve
+            }
+            return findElementBySimpleName(tve.treeElement.simpleName, currentVersion)
+        }
+        return null //there are only drafts
+    }
+
     /************* End Finds *************/
 
     /**
