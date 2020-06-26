@@ -14,10 +14,10 @@ class TreeChangeSet implements ValidationUtils {
 
     TreeVersion v1
     TreeVersion v2
-    List<TreeVersionElement> added
-    List<TreeVersionElement> removed
-    List<List<TreeVersionElement>> modified  //List [current tve, previous tve]
-    List<TreeVersionElement> all
+    List<TreeVersionElement> added = []
+    List<TreeVersionElement> removed = []
+    List<List<TreeVersionElement>> modified =[] //List [current tve, previous tve]
+    List<TreeVersionElement> all = []
 
     Boolean changed = false
     Boolean overflow = false
@@ -28,9 +28,6 @@ class TreeChangeSet implements ValidationUtils {
 
             v1 = first
             v2 = second
-            added = []
-            removed = []
-            modified = []
 
             List<Long> treeElementsNotInSecond = first.notIn(second, sql)
             List<Long> treeElementsNotInFirst = second.notIn(first, sql)

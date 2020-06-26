@@ -44,7 +44,7 @@ class TreeServiceSpec extends Specification {
 
         when: 'I create a new unique tree'
         Tree tree = treeService.createNewTree('aTree', 'aGroup', null,
-                    '<p>A description</p>', 'http://trees.org/aTree', false)
+                '<p>A description</p>', 'http://trees.org/aTree', false)
         mockTxCommit()
 
         then: 'It should work'
@@ -184,9 +184,9 @@ class TreeServiceSpec extends Specification {
         List<TreeElement> testElements = TreeTstHelper.makeTestElements(version, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
         println version.treeVersionElements
 
-        then: 'It should have 30 tree elements'
-        testElements.size() == 30
-        version.treeVersionElements.size() == 30
+        then: 'It should have 60 tree elements'
+        testElements.size() == 60
+        version.treeVersionElements.size() == 60
         version.treeVersionElements.contains(TreeVersionElement.findByTreeElementAndTreeVersion(testElements[3], version))
         version.treeVersionElements.contains(TreeVersionElement.findByTreeElementAndTreeVersion(testElements[13], version))
         version.treeVersionElements.contains(TreeVersionElement.findByTreeElementAndTreeVersion(testElements[23], version))
@@ -202,7 +202,7 @@ class TreeServiceSpec extends Specification {
         version != version2
         version.id != version2.id
         version2.previousVersion == version
-        version2.treeVersionElements.size() == 30
+        version2.treeVersionElements.size() == 60
         versionsAreEqual(version, version2)
         version2.treeVersionElements.contains(TreeVersionElement.findByTreeElementAndTreeVersion(testElements[3], version2))
         version2.treeVersionElements.contains(TreeVersionElement.findByTreeElementAndTreeVersion(testElements[13], version2))
@@ -229,7 +229,7 @@ class TreeServiceSpec extends Specification {
         draftVersion != tree.currentTreeVersion
         tree.defaultDraftTreeVersion == draftVersion
         draftVersion.previousVersion == version2published
-        draftVersion.treeVersionElements.size() == 30
+        draftVersion.treeVersionElements.size() == 60
         versionsAreEqual(version2, draftVersion)
         draftVersion.treeVersionElements.contains(TreeVersionElement.findByTreeElementAndTreeVersion(testElements[3], draftVersion))
         draftVersion.treeVersionElements.contains(TreeVersionElement.findByTreeElementAndTreeVersion(testElements[13], draftVersion))
@@ -276,9 +276,9 @@ class TreeServiceSpec extends Specification {
         expect:
         tree
         draftVersion
-        draftVersion.treeVersionElements.size() == 30
+        draftVersion.treeVersionElements.size() == 60
         publishedVersion
-        publishedVersion.treeVersionElements.size() == 30
+        publishedVersion.treeVersionElements.size() == 60
         tree.defaultDraftTreeVersion == draftVersion
         tree.currentTreeVersion == publishedVersion
 
@@ -319,9 +319,9 @@ class TreeServiceSpec extends Specification {
         expect:
         tree
         draftVersion
-        draftVersion.treeVersionElements.size() == 30
+        draftVersion.treeVersionElements.size() == 60
         publishedVersion
-        publishedVersion.treeVersionElements.size() == 30
+        publishedVersion.treeVersionElements.size() == 60
         tree.defaultDraftTreeVersion == draftVersion
         tree.currentTreeVersion == publishedVersion
         versionsAreEqual(publishedVersion, draftVersion)
@@ -615,7 +615,7 @@ class TreeServiceSpec extends Specification {
         }
 
         println TreeVersionElement.findAllByTaxonId(blechnaceaeElement.taxonId)
-        printTve(blechnaceaeElement)
+        printTveAndCountChildren(blechnaceaeElement)
 
         expect:
         tree
@@ -660,9 +660,7 @@ class TreeServiceSpec extends Specification {
         println result.childElement.elementLink
     }
 
-    def "test replace a taxon"() {
-        given:
-        println "\n\n----- test replace a taxon -----"
+    private TreeVersion setupTree() {
         Tree tree = makeATestTree()
         treeService.linkService.bulkAddTargets(_) >> [success: true]
         TreeVersion draftVersion = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
@@ -672,95 +670,106 @@ class TreeServiceSpec extends Specification {
         mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
         mockTxCommit()
-        TreeVersionElement anthocerotaceaeTve = treeService.findElementBySimpleName('Anthocerotaceae', draftVersion)
-        TreeVersionElement anthocerosTve = treeService.findElementBySimpleName('Anthoceros', draftVersion)
-        TreeVersionElement dendrocerotaceaeTve = treeService.findElementBySimpleName('Dendrocerotaceae', draftVersion)
-        List<Long> originalDendrocerotaceaeParentTaxonIDs = treeService.getParentTreeVersionElements(dendrocerotaceaeTve).collect {
-            it.taxonId
-        }
-        List<Long> originalAnthocerotaceaeParentTaxonIDs = treeService.getParentTreeVersionElements(anthocerotaceaeTve).collect {
-            it.taxonId
-        }
-        Instance replacementAnthocerosInstance = Instance.get(753948)
-        TreeElement anthocerosTe = anthocerosTve.treeElement
-        Long dendrocerotaceaeInitialTaxonId = dendrocerotaceaeTve.taxonId
+        return draftVersion
+    }
 
-        printTve(dendrocerotaceaeTve)
-        printTve(anthocerotaceaeTve)
+    def "test replace a taxon"() {
+        given: "we make a test tree"
+        TreeVersion draftVersion = setupTree()
 
-        expect:
-        tree
-        testElements.size() == 30
-        draftVersion.treeVersionElements.size() == 30
+        expect: "sane results"
+        draftVersion.treeVersionElements.size() == 60
         !draftVersion.published
-        anthocerotaceaeTve
-        anthocerosTve
-        anthocerosTve.parent == anthocerotaceaeTve
-        dendrocerotaceaeTve
-        originalDendrocerotaceaeParentTaxonIDs.size() == 6
-        originalAnthocerotaceaeParentTaxonIDs.size() == 6
+
+        when: "we get some exisitng elements"
+        TreeVersionElement AlseuosmiaceaeTve = treeService.findElementBySimpleName('Alseuosmiaceae', draftVersion)
+        TreeVersionElement CrispilobaTve = treeService.findElementBySimpleName('Crispiloba', draftVersion)
+        TreeVersionElement ArgophyllaceaeTve = treeService.findElementBySimpleName('Argophyllaceae', draftVersion)
+
+        then: "they do exist"
+        AlseuosmiaceaeTve
+        AlseuosmiaceaeTve.treeElement
+        AlseuosmiaceaeTve.treeElement.name
+        CrispilobaTve
+        CrispilobaTve.treeElement
+        CrispilobaTve.treeElement.name
+        CrispilobaTve.parent == AlseuosmiaceaeTve
+        ArgophyllaceaeTve
+
+        when: "we use the elements fot get some data"
+        List<Long> originalArgophyllaceaeParentTaxonIDs = treeService.getParentTreeVersionElements(ArgophyllaceaeTve)
+                                                                     .collect { it.taxonId }
+        List<Long> originalAlseuosmiaceaeParentTaxonIDs = treeService.getParentTreeVersionElements(AlseuosmiaceaeTve)
+                                                                     .collect { it.taxonId }
+        Instance replacementCrispilobaInstance = Instance.get(50729719)
+        TreeElement CrispilobaTe = CrispilobaTve.treeElement
+        Long ArgophyllaceaeInitialTaxonId = ArgophyllaceaeTve.taxonId
+
+        printTveAndCountChildren(ArgophyllaceaeTve)
+        printTveAndCountChildren(AlseuosmiaceaeTve)
+
+        then: "we get the expected results"
+        originalArgophyllaceaeParentTaxonIDs.size() == 2 //fragment of tree, only two parents
+        originalAlseuosmiaceaeParentTaxonIDs.size() == 2
+        replacementCrispilobaInstance
+        CrispilobaTe
+        ArgophyllaceaeInitialTaxonId
         treeService.treeReportService
 
-        when: 'I try to move a taxon, anthoceros under dendrocerotaceae'
-        Map result = treeService.replaceTaxon(anthocerosTve, dendrocerotaceaeTve,
-                'http://localhost:7070/nsl-mapper/instance/apni/753948',
-                anthocerosTve.treeElement.excluded,
-                anthocerosTve.treeElement.profile,
+        when: 'I try to move a taxon, Crispiloba under Argophyllaceae'
+        Map result = treeService.replaceTaxon(CrispilobaTve, ArgophyllaceaeTve,
+                'http://localhost:7070/nsl-mapper/instance/apni/50729719',
+                CrispilobaTve.treeElement.excluded,
+                CrispilobaTve.treeElement.profile,
                 'test move taxon')
         mockTxCommit()
         draftVersion.refresh()
 
-        List<TreeVersionElement> anthocerosChildren = treeService.getAllChildElements(result.replacementElement)
-        List<TreeVersionElement> dendrocerotaceaeChildren = treeService.getAllChildElements(dendrocerotaceaeTve)
+        List<TreeVersionElement> CrispilobaChildren = treeService.getAllChildElements(result.replacementElement)
+        List<TreeVersionElement> ArgophyllaceaeChildren = treeService.getAllChildElements(ArgophyllaceaeTve)
 
-        printTve(dendrocerotaceaeTve)
-        printTve(anthocerotaceaeTve)
+        printTveAndCountChildren(ArgophyllaceaeTve)
+        printTveAndCountChildren(AlseuosmiaceaeTve)
 
         then: 'It works'
         1 * treeService.linkService.bulkRemoveTargets(_) >> { List<TreeVersionElement> elements ->
             [success: true]
         }
-        1 * treeService.linkService.getObjectForLink(_) >> replacementAnthocerosInstance
-        1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerosInstance.name) >> 'http://localhost:7070/nsl-mapper/name/apni/121601'
-        1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerosInstance) >> 'http://localhost:7070/nsl-mapper/instance/apni/753948'
+        1 * treeService.linkService.getObjectForLink(_) >> replacementCrispilobaInstance
+        1 * treeService.linkService.getPreferredLinkForObject(replacementCrispilobaInstance.name) >> 'http://localhost:7070/nsl-mapper/name/apni/121601'
+        1 * treeService.linkService.getPreferredLinkForObject(replacementCrispilobaInstance) >> 'http://localhost:7070/nsl-mapper/instance/apni/50729719'
         1 * treeService.linkService.addTargetLink(_) >> { TreeVersionElement tve -> "http://localhost:7070/nsl-mapper/tree/$tve.treeVersion.id/$tve.treeElement.id" }
-        // 1 for new Anthoceros tve +
-        // 9 unique parents Plantae/Anthocerotophyta/Anthocerotopsida/Dendrocerotidae/Dendrocerotales/Dendrocerotaceae +
-        // Anthocerotidae/Anthocerotales/Anthocerotaceae
-        10 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
+        // Crispiloba, Argophyllaceae, Asterales, Alseuosmiaceae get new taxon identifiers
+        4 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
             println "Adding taxonIdentifier for $tve"
             "http://localhost:7070/nsl-mapper/taxon/apni/$tve.taxonId"
         }
-        deleted(anthocerosTve) //deleted
-        !deleted(anthocerosTe) // not deleted because it's referenced elsewhere
+        deleted(CrispilobaTve) //deleted
+        !deleted(CrispilobaTe) // not deleted because it's referenced elsewhere
         result.replacementElement
-        result.replacementElement == treeService.findElementBySimpleName('Anthoceros', draftVersion)
+        result.replacementElement == treeService.findElementBySimpleName('Crispiloba', draftVersion)
         result.replacementElement.treeVersion == draftVersion
-        result.replacementElement.treeElement != anthocerosTe
-        dendrocerotaceaeTve.taxonId != dendrocerotaceaeInitialTaxonId
-        draftVersion.treeVersionElements.size() == 30
-        anthocerosChildren.size() == 5
-        result.replacementElement.parent == dendrocerotaceaeTve
-        anthocerosChildren[0].treeElement.nameElement == 'capricornii'
-        anthocerosChildren[0].parent == result.replacementElement
-        anthocerosChildren[1].treeElement.nameElement == 'ferdinandi-muelleri'
-        anthocerosChildren[2].treeElement.nameElement == 'fragilis'
-        anthocerosChildren[3].treeElement.nameElement == 'laminifer'
-        anthocerosChildren[4].treeElement.nameElement == 'punctatus'
-        dendrocerotaceaeChildren.containsAll(anthocerosChildren)
+        result.replacementElement.treeElement != CrispilobaTe
+        ArgophyllaceaeTve.taxonId != ArgophyllaceaeInitialTaxonId
+        draftVersion.treeVersionElements.size() == 60
+        CrispilobaChildren.size() == 1 //Crispiloba/disperma
+        result.replacementElement.parent == ArgophyllaceaeTve
+        CrispilobaChildren[0].treeElement.nameElement == 'disperma'
+        CrispilobaChildren[0].parent == result.replacementElement
+        ArgophyllaceaeChildren.containsAll(CrispilobaChildren)
         // all the parent taxonIds should have been updated
-        !treeService.getParentTreeVersionElements(dendrocerotaceaeTve).collect { it.taxonId }.find {
-            originalDendrocerotaceaeParentTaxonIDs.contains(it)
+        !treeService.getParentTreeVersionElements(ArgophyllaceaeTve).collect { it.taxonId }.find {
+            originalArgophyllaceaeParentTaxonIDs.contains(it)
         }
-        !treeService.getParentTreeVersionElements(anthocerotaceaeTve).collect { it.taxonId }.find {
-            originalAnthocerotaceaeParentTaxonIDs.contains(it)
+        !treeService.getParentTreeVersionElements(AlseuosmiaceaeTve).collect { it.taxonId }.find {
+            originalAlseuosmiaceaeParentTaxonIDs.contains(it)
         }
 
         when: 'I publish the version then try a move'
         treeService.publishTreeVersion(draftVersion, 'tester', 'publishing to delete')
         mockTxCommit()
-        treeService.replaceTaxon(anthocerosTve, anthocerotaceaeTve,
-                'http://localhost:7070/nsl-mapper/instance/apni/753948',
+        treeService.replaceTaxon(CrispilobaTve, AlseuosmiaceaeTve,
+                'http://localhost:7070/nsl-mapper/instance/apni/50729719',
                 true,
                 [:],
                 'test move taxon')
@@ -771,87 +780,81 @@ class TreeServiceSpec extends Specification {
     }
 
     def "test replace a taxon with multiple child levels"() {
-        given:
-        Tree tree = makeATestTree()
-        treeService.linkService.bulkAddTargets(_) >> [success: true]
-        TreeVersion draftVersion = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
-        mockTxCommit()
-        List<TreeElement> testElements = TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
-        treeService.publishTreeVersion(draftVersion, 'testy mctestface', 'Publishing draft as a test')
-        mockTxCommit()
-        draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
-        mockTxCommit()
+        given: "we make a test tree"
+        TreeVersion draftVersion = setupTree()
 
-        TreeVersionElement anthocerotalesTve = treeService.findElementBySimpleName('Anthocerotales', draftVersion)
-        TreeVersionElement dendrocerotidaeTve = treeService.findElementBySimpleName('Dendrocerotidae', draftVersion)
-        TreeVersionElement anthocerotidaeTve = treeService.findElementBySimpleName('Anthocerotidae', draftVersion)
-        List<TreeVersionElement> anthocerotalesChildren = treeService.getAllChildElements(anthocerotalesTve)
-        List<Long> originalDendrocerotidaeTaxonIDs = treeService.getParentTreeVersionElements(dendrocerotidaeTve).collect {
-            it.taxonId
-        }
-        List<Long> originalAnthocerotidaeTaxonIDs = treeService.getParentTreeVersionElements(anthocerotidaeTve).collect {
-            it.taxonId
-        }
-        Instance replacementAnthocerotalesInstance = Instance.get(753978)
-        printTve(anthocerotidaeTve)
-        printTve(dendrocerotidaeTve)
-
-        expect:
-        tree
-        testElements.size() == 30
-        draftVersion.treeVersionElements.size() == 30
+        expect: "sane results"
+        draftVersion.treeVersionElements.size() == 60
         !draftVersion.published
-        anthocerotalesTve
-        dendrocerotidaeTve
-        replacementAnthocerotalesInstance
-        anthocerotalesTve.parent == anthocerotidaeTve
-        anthocerotalesChildren.size() == 10
-        originalDendrocerotidaeTaxonIDs.size() == 4
-        originalAnthocerotidaeTaxonIDs.size() == 4
 
-        when: 'I move Anthocerotales under Dendrocerotidae'
-        Map result = treeService.replaceTaxon(anthocerotalesTve, dendrocerotidaeTve,
+        when: "we get some exisitng elements"
+        TreeVersionElement AdenostemmaTve = treeService.findElementBySimpleName('Adenostemma', draftVersion)
+        TreeVersionElement ArgophyllaceaeTve = treeService.findElementBySimpleName('Argophyllaceae', draftVersion)
+        TreeVersionElement AsteraceaeTve = treeService.findElementBySimpleName('Asteraceae', draftVersion)
+
+        then: "they exist"
+        AdenostemmaTve
+        ArgophyllaceaeTve
+        AsteraceaeTve
+
+        when: "we use the elements to get some data"
+        List<Long> originalArgophyllaceaeTaxonIDs = treeService.getParentTreeVersionElements(ArgophyllaceaeTve).collect {
+            it.taxonId
+        }
+        List<Long> originalAsteraceaeTaxonIDs = treeService.getParentTreeVersionElements(AsteraceaeTve).collect {
+            it.taxonId
+        }
+        Instance replacementAdenostemmaInstance = Instance.get(489499)
+
+        then: "we get the expected results"
+        replacementAdenostemmaInstance
+        AdenostemmaTve.parent == AsteraceaeTve
+        originalArgophyllaceaeTaxonIDs.size() == 2
+        originalAsteraceaeTaxonIDs.size() == 2
+        printTveAndCountChildren(AdenostemmaTve) == 4
+        printTveAndCountChildren(AsteraceaeTve) == 42
+        printTveAndCountChildren(ArgophyllaceaeTve) == 10
+
+        when: 'I move Adenostemma under Argophyllaceae'
+        Map result = treeService.replaceTaxon(AdenostemmaTve, ArgophyllaceaeTve,
                 'http://localhost:7070/nsl-mapper/instance/apni/753978',
-                anthocerotalesTve.treeElement.excluded,
-                anthocerotalesTve.treeElement.profile,
+                AdenostemmaTve.treeElement.excluded,
+                AdenostemmaTve.treeElement.profile,
                 'test move taxon')
         mockTxCommit()
 
-        List<TreeVersionElement> newAnthocerotalesChildren = treeService.getAllChildElements(result.replacementElement)
-        List<TreeVersionElement> dendrocerotidaeChildren = treeService.getAllChildElements(dendrocerotidaeTve)
-
-        printTve(anthocerotidaeTve)
-        printTve(dendrocerotidaeTve)
+        TreeVersionElement replacementAdenostemma = result.replacementElement
         draftVersion.refresh()
 
         then: 'It works'
         1 * treeService.linkService.bulkRemoveTargets(_) >> { List<TreeVersionElement> elements ->
             [success: true]
         }
-        1 * treeService.linkService.getObjectForLink(_) >> replacementAnthocerotalesInstance
-        1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerotalesInstance.name) >> 'http://localhost:7070/nsl-mapper/name/apni/142301'
-        1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerotalesInstance) >> 'http://localhost:7070/nsl-mapper/instance/apni/753978'
+        1 * treeService.linkService.getObjectForLink(_) >> replacementAdenostemmaInstance
+        1 * treeService.linkService.getPreferredLinkForObject(replacementAdenostemmaInstance.name) >> 'http://localhost:7070/nsl-mapper/name/apni/142301'
+        1 * treeService.linkService.getPreferredLinkForObject(replacementAdenostemmaInstance) >> 'http://localhost:7070/nsl-mapper/instance/apni/753978'
         1 * treeService.linkService.addTargetLink(_) >> { TreeVersionElement tve -> "http://localhost:7070/nsl-mapper/tree/$tve.treeVersion.id/$tve.treeElement.id" }
-        // old and new parent taxon need new taxon ids 4 + 4 = 8 - 2 the same or unique
-        6 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
+        //  Argophyllaceae, Argophyllaceae, Asterales, Asteraceae
+        4 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
             println "Adding taxonIdentifier for $tve"
             "http://localhost:7070/nsl-mapper/taxon/apni/$tve.taxonId"
         }
 
-        deleted(anthocerotalesTve) //deleted
+        deleted(AdenostemmaTve) //deleted
         result.replacementElement
-        result.replacementElement == treeService.findElementBySimpleName('Anthocerotales', draftVersion)
+        result.replacementElement == treeService.findElementBySimpleName('Adenostemma', draftVersion)
         result.replacementElement.treeVersion == draftVersion
 
-        draftVersion.treeVersionElements.size() == 30
-        newAnthocerotalesChildren.size() == 10
-        dendrocerotidaeChildren.size() == 25
+        draftVersion.treeVersionElements.size() == 60
+        printTveAndCountChildren(replacementAdenostemma) == 4
+        printTveAndCountChildren(ArgophyllaceaeTve) == 15
+        printTveAndCountChildren(AsteraceaeTve) == 37
         // all the parent taxonIds should have been updated
-        !treeService.getParentTreeVersionElements(dendrocerotidaeTve).collect { it.taxonId }.find {
-            originalDendrocerotidaeTaxonIDs.contains(it)
+        !treeService.getParentTreeVersionElements(ArgophyllaceaeTve).collect { it.taxonId }.find {
+            originalArgophyllaceaeTaxonIDs.contains(it)
         }
-        !treeService.getParentTreeVersionElements(anthocerotidaeTve).collect { it.taxonId }.find {
-            originalAnthocerotidaeTaxonIDs.contains(it)
+        !treeService.getParentTreeVersionElements(AsteraceaeTve).collect { it.taxonId }.find {
+            originalAsteraceaeTaxonIDs.contains(it)
         }
 
     }
@@ -899,49 +902,43 @@ class TreeServiceSpec extends Specification {
     }
 
     def "test remove a taxon"() {
-        given:
-        Tree tree = makeATestTree()
-        treeService.linkService.bulkAddTargets(_) >> [success: true]
+        given: "we make a test tree"
         treeService.linkService.bulkRemoveTargets(_) >> [success: true]
-        TreeVersion draftVersion = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
-        mockTxCommit()
-        List<TreeElement> testElements = TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
-        treeService.publishTreeVersion(draftVersion, 'testy mctestface', 'Publishing draft as a test')
-        mockTxCommit()
-        draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
-        mockTxCommit()
+        TreeVersion draftVersion = setupTree()
 
-        TreeVersionElement anthocerotaceae = treeService.findElementBySimpleName('Anthocerotaceae', draftVersion)
-        TreeVersionElement anthoceros = treeService.findElementBySimpleName('Anthoceros', draftVersion)
-        List<Long> originalAnthocerotaceaeTaxonIDs = treeService.getParentTreeVersionElements(anthocerotaceae).collect {
+        expect: "sane results"
+        draftVersion.treeVersionElements.size() == 60
+        !draftVersion.published
+
+        when: "we use the elements to get some data"
+        TreeVersionElement Asteraceae = treeService.findElementBySimpleName('Asteraceae', draftVersion)
+        TreeVersionElement Adenostemma = treeService.findElementBySimpleName('Adenostemma', draftVersion)
+        List<Long> originalAsteraceaeTaxonIDs = treeService.getParentTreeVersionElements(Asteraceae).collect {
             it.taxonId
         }
 
-        expect:
-        tree
-        testElements.size() == 30
-        draftVersion.treeVersionElements.size() == 30
-        !draftVersion.published
-        anthocerotaceae
-        anthoceros
-        anthoceros.parent == anthocerotaceae
-        originalAnthocerotaceaeTaxonIDs.size() == 6
+        then: "We get expected results"
+        Asteraceae
+        Adenostemma
+        Adenostemma.parent == Asteraceae
+        originalAsteraceaeTaxonIDs.size() == 2
 
         when: 'I try to remove a taxon'
-        Map result = treeService.removeTreeVersionElement(anthoceros)
+        Map result = treeService.removeTreeVersionElement(Adenostemma)
         mockTxCommit()
 
         then: 'It works'
-        6 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
+        //Asteraceae, Asterales
+        2 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
             println "Adding taxonIdentifier for $tve"
             "http://localhost:7070/nsl-mapper/taxon/apni/$tve.taxonId"
         }
-        result.count == 6
-        draftVersion.treeVersionElements.size() == 24
-        treeService.findElementBySimpleName('Anthoceros', draftVersion) == null
-        //The taxonIds for Anthoceros' parents should have changed
-        !treeService.getParentTreeVersionElements(anthocerotaceae).collect { it.taxonId }.find {
-            originalAnthocerotaceaeTaxonIDs.contains(it)
+        result.count == 5
+        draftVersion.treeVersionElements.size() == 55
+        treeService.findElementBySimpleName('Adenostemma', draftVersion) == null
+        //The taxonIds for Adenostemma' parents should have changed
+        !treeService.getParentTreeVersionElements(Asteraceae).collect { it.taxonId }.find {
+            originalAsteraceaeTaxonIDs.contains(it)
         }
     }
 
@@ -957,43 +954,42 @@ class TreeServiceSpec extends Specification {
         mockTxCommit()
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my next draft', 'irma', 'This is a log entry')
         mockTxCommit()
-        TreeVersionElement anthocerosTve = treeService.findElementBySimpleName('Anthoceros', draftVersion)
-        TreeVersionElement pubAnthocerosTve = treeService.findElementBySimpleName('Anthoceros', publishedVersion)
+        TreeVersionElement AdenostemmaTve = treeService.findElementBySimpleName('Adenostemma', draftVersion)
+        TreeVersionElement pubAdenostemmaTve = treeService.findElementBySimpleName('Adenostemma', publishedVersion)
 
         expect:
         tree
         tree.config.distribution_key == "Dist." // note not the same as the APC Dist below
         draftVersion
-        draftVersion.treeVersionElements.size() == 30
+        draftVersion.treeVersionElements.size() == 60
         publishedVersion
-        publishedVersion.treeVersionElements.size() == 30
+        publishedVersion.treeVersionElements.size() == 60
         tree.defaultDraftTreeVersion == draftVersion
         tree.currentTreeVersion == publishedVersion
-        pubAnthocerosTve
-        anthocerosTve.treeElement.profile == [
-                "APC Dist.": [
-                        value      : "WA, NT, SA, Qld, NSW, ACT, Vic, Tas",
-                        created_at : "2011-01-27T00:00:00+11:00",
-                        created_by : "KIRSTENC",
-                        updated_at : "2011-01-27T00:00:00+11:00",
-                        updated_by : "KIRSTENC",
-                        source_link: "http://localhost:7070/nsl-mapper/instanceNote/apni/1117116"
-                ]
+        pubAdenostemmaTve
+        AdenostemmaTve.treeElement.profile == [
+                "APC Dist.":
+                        ["value"      : "WA, NT, Qld, NSW",
+                         "created_at" : "2011-06-29T00:00:00+10:00",
+                         "created_by" : "BRONWYNC",
+                         "updated_at" : "2011-06-29T00:00:00+10:00",
+                         "updated_by" : "BRONWYNC",
+                         "source_link": "https://id.biodiversity.org.au/instanceNote/apni/1118806"]
         ]
 
         when: 'I update the profile on the published version'
-        treeService.editProfile(pubAnthocerosTve, ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]], 'test edit profile')
+        treeService.editProfile(pubAdenostemmaTve, ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]], 'test edit profile')
         mockTxCommit()
 
         then: 'I get a PublishedVersionException'
         thrown(PublishedVersionException)
 
         when: 'I update a profile on the draft version'
-        List<TreeVersionElement> childTves = TreeVersionElement.findAllByParent(anthocerosTve)
-        TreeElement oldElement = anthocerosTve.treeElement
-        Timestamp oldUpdatedAt = anthocerosTve.treeElement.updatedAt
-        Long oldTaxonId = anthocerosTve.taxonId
-        TreeVersionElement replacedAnthocerosTve = treeService.editProfile(anthocerosTve, ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]], 'test edit profile')
+        List<TreeVersionElement> childTves = TreeVersionElement.findAllByParent(AdenostemmaTve)
+        TreeElement oldElement = AdenostemmaTve.treeElement
+        Timestamp oldUpdatedAt = AdenostemmaTve.treeElement.updatedAt
+        Long oldTaxonId = AdenostemmaTve.taxonId
+        TreeVersionElement replacedAdenostemmaTve = treeService.editProfile(AdenostemmaTve, ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]], 'test edit profile')
         mockTxCommit()
         childTves.each {
             it.refresh()
@@ -1002,28 +998,28 @@ class TreeServiceSpec extends Specification {
         then: 'It updates the treeElement profile'
         1 * treeService.linkService.addTargetLink(_) >> { TreeVersionElement tve -> "http://localhost:7070/nsl-mapper/tree/$tve.treeVersion.id/$tve.treeElement.id" }
         oldElement
-        deleted(anthocerosTve)
-        replacedAnthocerosTve
+        deleted(AdenostemmaTve)
+        replacedAdenostemmaTve
         childTves.findAll {
-            it.parent == replacedAnthocerosTve
+            it.parent == replacedAdenostemmaTve
         }.size() == childTves.size()
-        replacedAnthocerosTve.taxonId == oldTaxonId
-        replacedAnthocerosTve.treeElement != oldElement
-        replacedAnthocerosTve.treeElement.profile == ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]]
-        replacedAnthocerosTve.treeElement.updatedBy == 'test edit profile'
-        replacedAnthocerosTve.treeElement.updatedAt.after(oldUpdatedAt)
+        replacedAdenostemmaTve.taxonId == oldTaxonId
+        replacedAdenostemmaTve.treeElement != oldElement
+        replacedAdenostemmaTve.treeElement.profile == ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]]
+        replacedAdenostemmaTve.treeElement.updatedBy == 'test edit profile'
+        replacedAdenostemmaTve.treeElement.updatedAt.after(oldUpdatedAt)
 
         when: 'I change a profile to the same thing'
-        TreeVersionElement anthocerosCapricornii = treeService.findElementBySimpleName('Anthoceros capricornii', draftVersion)
-        TreeElement oldACElement = anthocerosCapricornii.treeElement
-        oldTaxonId = anthocerosCapricornii.taxonId
-        Map oldProfile = new HashMap(anthocerosCapricornii.treeElement.profile)
-        TreeVersionElement treeVersionElement1 = treeService.editProfile(anthocerosCapricornii, oldProfile, 'test edit profile')
+        TreeVersionElement AdenostemmaLavenia = treeService.findElementBySimpleName('Adenostemma lavenia', draftVersion)
+        TreeElement oldACElement = AdenostemmaLavenia.treeElement
+        oldTaxonId = AdenostemmaLavenia.taxonId
+        Map oldProfile = new HashMap(AdenostemmaLavenia.treeElement.profile)
+        TreeVersionElement treeVersionElement1 = treeService.editProfile(AdenostemmaLavenia, oldProfile, 'test edit profile')
         mockTxCommit()
 
         then: 'nothing changes'
 
-        treeVersionElement1 == anthocerosCapricornii
+        treeVersionElement1 == AdenostemmaLavenia
         treeVersionElement1.taxonId == oldTaxonId
         treeVersionElement1.treeElement == oldACElement
         treeVersionElement1.treeElement.profile == oldProfile
@@ -1035,36 +1031,35 @@ class TreeServiceSpec extends Specification {
         TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
         mockTxCommit()
         TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
-        TreeVersionElement anthoceros = treeService.findElementBySimpleName('Anthoceros', draftVersion)
+        TreeVersionElement Adenostemma = treeService.findElementBySimpleName('Adenostemma', draftVersion)
 
         expect:
         tree
         draftVersion
-        draftVersion.treeVersionElements.size() == 30
+        draftVersion.treeVersionElements.size() == 60
         tree.defaultDraftTreeVersion == draftVersion
         tree.currentTreeVersion == null
-        anthoceros.treeElement.profile == [
-                "APC Dist.": [
-                        value      : "WA, NT, SA, Qld, NSW, ACT, Vic, Tas",
-                        created_at : "2011-01-27T00:00:00+11:00",
-                        created_by : "KIRSTENC",
-                        updated_at : "2011-01-27T00:00:00+11:00",
-                        updated_by : "KIRSTENC",
-                        source_link: "http://localhost:7070/nsl-mapper/instanceNote/apni/1117116"
-                ]
+        Adenostemma.treeElement.profile == [
+                "APC Dist.":
+                        ["value"      : "WA, NT, Qld, NSW",
+                         "created_at" : "2011-06-29T00:00:00+10:00",
+                         "created_by" : "BRONWYNC",
+                         "updated_at" : "2011-06-29T00:00:00+10:00",
+                         "updated_by" : "BRONWYNC",
+                         "source_link": "https://id.biodiversity.org.au/instanceNote/apni/1118806"]
         ]
 
         when: 'I update a profile on the draft version'
-        TreeElement oldElement = anthoceros.treeElement
-        Timestamp oldTimestamp = anthoceros.treeElement.updatedAt
-        Long oldTaxonId = anthoceros.taxonId
-        TreeVersionElement treeVersionElement = treeService.editProfile(anthoceros, ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]], 'test edit profile')
+        TreeElement oldElement = Adenostemma.treeElement
+        Timestamp oldTimestamp = Adenostemma.treeElement.updatedAt
+        Long oldTaxonId = Adenostemma.taxonId
+        TreeVersionElement treeVersionElement = treeService.editProfile(Adenostemma, ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]], 'test edit profile')
         mockTxCommit()
 
         then: 'It updates the treeElement and updates the profile and not the taxonId'
         treeVersionElement
         oldElement
-        treeVersionElement == anthoceros
+        treeVersionElement == Adenostemma
         treeVersionElement.taxonId == oldTaxonId
         treeVersionElement.treeElement == oldElement
         treeVersionElement.treeElement.profile == ['APC Dist.': [value: "WA, NT, SA, Qld, NSW"]]
@@ -1076,44 +1071,32 @@ class TreeServiceSpec extends Specification {
         given:
         treeService.linkService.bulkAddTargets(_) >> [success: true]
         treeService.linkService.bulkRemoveTargets(_) >> [success: true]
-        Tree tree = makeATestTree()
-        TreeVersion draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my default draft', 'irma', 'This is a log entry')
-        mockTxCommit()
-        TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
-        TreeVersion publishedVersion = treeService.publishTreeVersion(draftVersion, 'tester', 'publishing to delete')
-        mockTxCommit()
-        draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my next draft', 'irma', 'This is a log entry')
-        mockTxCommit()
+        TreeVersion draftVersion = setupTree()
+        TreeVersion publishedVersion = draftVersion.tree.currentTreeVersion
 
-        sessionFactory.currentSession.clear()
-        publishedVersion.refresh()
-        draftVersion.refresh()
+        expect: "sane results"
+        draftVersion.treeVersionElements.size() == 60
+        !draftVersion.published
 
-        TreeVersionElement anthoceros = treeService.findElementBySimpleName('Anthoceros', draftVersion)
-        TreeVersionElement pubAnthoceros = treeService.findElementBySimpleName('Anthoceros', publishedVersion)
+        when: "I get some elements"
+        TreeVersionElement Adenostemma = treeService.findElementBySimpleName('Adenostemma', draftVersion)
+        TreeVersionElement pubAdenostemma = treeService.findElementBySimpleName('Adenostemma', publishedVersion)
 
-        expect:
-        tree
-        draftVersion
-        draftVersion.treeVersionElements.size() == 30
-        publishedVersion
-        publishedVersion.treeVersionElements.size() == 30
-        tree.defaultDraftTreeVersion == draftVersion
-        tree.currentTreeVersion == publishedVersion
-        pubAnthoceros
-        !anthoceros.treeElement.excluded
+        then:
+        pubAdenostemma
+        !Adenostemma.treeElement.excluded
 
         when: 'I update the profile on the published version'
-        treeService.editExcluded(pubAnthoceros, true, 'test edit profile')
+        treeService.editExcluded(pubAdenostemma, true, 'test edit profile')
         mockTxCommit()
 
         then: 'I get a PublishedVersionException'
         thrown(PublishedVersionException)
 
         when: 'I update a profile on the draft version'
-        Long oldTaxonId = anthoceros.taxonId
-        TreeElement oldElement = anthoceros.treeElement
-        TreeVersionElement treeVersionElement = treeService.editExcluded(anthoceros, true, 'test edit status')
+        Long oldTaxonId = Adenostemma.taxonId
+        TreeElement oldElement = Adenostemma.treeElement
+        TreeVersionElement treeVersionElement = treeService.editExcluded(Adenostemma, true, 'test edit status')
         mockTxCommit()
 
         then: 'It creates a new treeVersionElement and treeElement updates the children TVEs and updates the status'
@@ -1121,21 +1104,21 @@ class TreeServiceSpec extends Specification {
         1 * treeService.linkService.addTargetLink(_) >> { TreeVersionElement tve -> "http://localhost:7070/nsl-mapper/tree/$tve.treeVersion.id/$tve.treeElement.id" }
         treeVersionElement
         oldElement
-        deleted(anthoceros)
+        deleted(Adenostemma)
         treeVersionElement.taxonId == oldTaxonId
         treeVersionElement.treeElement != oldElement
         treeVersionElement.treeElement.excluded
         treeVersionElement.treeElement.updatedBy == 'test edit status'
 
         when: 'I change status to the same thing'
-        TreeVersionElement anthocerosCapricornii = treeService.findElementBySimpleName('Anthoceros capricornii', draftVersion)
-        TreeElement oldACElement = anthocerosCapricornii.treeElement
-        oldTaxonId = anthocerosCapricornii.taxonId
-        TreeVersionElement treeVersionElement1 = treeService.editExcluded(anthocerosCapricornii, false, 'test edit status')
+        TreeVersionElement AdenostemmaLavenia = treeService.findElementBySimpleName('Adenostemma lavenia', draftVersion)
+        TreeElement oldACElement = AdenostemmaLavenia.treeElement
+        oldTaxonId = AdenostemmaLavenia.taxonId
+        TreeVersionElement treeVersionElement1 = treeService.editExcluded(AdenostemmaLavenia, false, 'test edit status')
         mockTxCommit()
 
         then: 'nothing changes'
-        treeVersionElement1 == anthocerosCapricornii
+        treeVersionElement1 == AdenostemmaLavenia
         treeVersionElement1.taxonId == oldTaxonId
         treeVersionElement1.treeElement == oldACElement
         !treeVersionElement1.treeElement.excluded
@@ -1154,117 +1137,107 @@ class TreeServiceSpec extends Specification {
         draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
         mockTxCommit()
 
-        TreeVersionElement anthocerosTve = treeService.findElementBySimpleName('Anthoceros', draftVersion)
+        TreeVersionElement AdenostemmaTve = treeService.findElementBySimpleName('Adenostemma', draftVersion)
         TreeVersionElement doodiaTve = treeService.findElementBySimpleName('Doodia', draftVersion)
-        List<TreeVersionElement> anthocerosChildren = treeService.getAllChildElements(anthocerosTve)
-        printTve(anthocerosTve)
+        List<TreeVersionElement> AdenostemmaChildren = treeService.getAllChildElements(AdenostemmaTve)
+        printTveAndCountChildren(AdenostemmaTve)
 
         expect:
         tree
-        draftVersion.treeVersionElements.size() == 31
+        draftVersion.treeVersionElements.size() == 61
         !draftVersion.published
-        anthocerosTve
+        AdenostemmaTve
         doodiaTve
-        anthocerosChildren.size() == 5
-        anthocerosChildren.findAll { it.treePath.contains(anthocerosTve.treeElement.id.toString()) }.size() == 5
+        AdenostemmaChildren.size() == 4
+        AdenostemmaChildren.findAll { it.treePath.contains(AdenostemmaTve.treeElement.id.toString()) }.size() == 4
 
         when: "I update the tree path changing an element"
-        treeService.updateChildTreePath(doodiaTve.treePath, anthocerosTve.treePath, anthocerosTve.treeVersion)
+        treeService.updateChildTreePath(doodiaTve.treePath, AdenostemmaTve.treePath, AdenostemmaTve.treeVersion)
         mockTxCommit()
 
         List<TreeVersionElement> doodiaChildren = treeService.getAllChildElements(doodiaTve)
 
-        then: "The tree paths of anthoceros kids have changed"
-        doodiaChildren.size() == 5
-        anthocerosChildren.containsAll(doodiaChildren)
-
+        then: "The tree paths of Adenostemma kids have changed"
+        doodiaChildren.size() == 4
+        AdenostemmaChildren.containsAll(doodiaChildren)
     }
 
     def "test change a taxons parent"() {
         given:
-        Tree tree = makeATestTree()
-        treeService.linkService.bulkAddTargets(_) >> [success: true]
-        TreeVersion draftVersion = treeService.createTreeVersion(tree, null, 'my first draft', 'irma', 'This is a log entry')
-        mockTxCommit()
-        List<TreeElement> testElements = TreeTstHelper.makeTestElements(draftVersion, TreeTstHelper.testElementData(), TreeTstHelper.testTreeVersionElementData())
-        treeService.publishTreeVersion(draftVersion, 'testy mctestface', 'Publishing draft as a test')
-        mockTxCommit()
-        draftVersion = treeService.createDefaultDraftVersion(tree, null, 'my new default draft', 'irma', 'This is a log entry')
-        mockTxCommit()
-        TreeVersionElement anthocerotaceaeTve = treeService.findElementBySimpleName('Anthocerotaceae', draftVersion)
-        TreeVersionElement anthocerosTve = treeService.findElementBySimpleName('Anthoceros', draftVersion)
-        TreeVersionElement dendrocerotaceaeTve = treeService.findElementBySimpleName('Dendrocerotaceae', draftVersion)
-        List<Long> originalDendrocerotaceaeParentTaxonIDs = treeService.getParentTreeVersionElements(dendrocerotaceaeTve).collect {
-            it.taxonId
-        }
-        List<Long> originalAnthocerotaceaeParentTaxonIDs = treeService.getParentTreeVersionElements(anthocerotaceaeTve).collect {
-            it.taxonId
-        }
-        Instance replacementAnthocerosInstance = Instance.get(753948)
-        TreeElement anthocerosTe = anthocerosTve.treeElement
-        Long dendrocerotaceaeInitialTaxonId = dendrocerotaceaeTve.taxonId
-
-        printTve(dendrocerotaceaeTve)
-        printTve(anthocerotaceaeTve)
-
-        expect:
-        tree
-        testElements.size() == 30
-        draftVersion.treeVersionElements.size() == 30
+        TreeVersion draftVersion = setupTree()
+        expect: "sane results"
+        draftVersion.treeVersionElements.size() == 60
         !draftVersion.published
-        anthocerotaceaeTve
-        anthocerosTve
-        anthocerosTve.parent == anthocerotaceaeTve
-        dendrocerotaceaeTve
-        originalDendrocerotaceaeParentTaxonIDs.size() == 6
-        originalAnthocerotaceaeParentTaxonIDs.size() == 6
+
+        when: "we get some data"
+        TreeVersionElement AsteraceaeTve = treeService.findElementBySimpleName('Asteraceae', draftVersion)
+        TreeVersionElement AdenostemmaTve = treeService.findElementBySimpleName('Adenostemma', draftVersion)
+        TreeVersionElement ArgophyllaceaeTve = treeService.findElementBySimpleName('Argophyllaceae', draftVersion)
+        List<Long> originalArgophyllaceaeParentTaxonIDs = treeService.getParentTreeVersionElements(ArgophyllaceaeTve).collect {
+            it.taxonId
+        }
+        List<Long> originalAsteraceaeParentTaxonIDs = treeService.getParentTreeVersionElements(AsteraceaeTve).collect {
+            it.taxonId
+        }
+        Instance replacementAdenostemmaInstance = Instance.get(489499)
+        TreeElement AdenostemmaTe = AdenostemmaTve.treeElement
+        Long ArgophyllaceaeInitialTaxonId = ArgophyllaceaeTve.taxonId
+
+        printTveAndCountChildren(ArgophyllaceaeTve)
+        printTveAndCountChildren(AsteraceaeTve)
+
+        then: "it looks right"
+        AsteraceaeTve
+        AdenostemmaTve
+        AdenostemmaTve.parent == AsteraceaeTve
+        ArgophyllaceaeTve
+        originalArgophyllaceaeParentTaxonIDs.size() == 2
+        originalAsteraceaeParentTaxonIDs.size() == 2
         treeService.treeReportService
 
-        when: 'I try to move a taxon, anthoceros under dendrocerotaceae'
-        Map result = treeService.changeParentTaxon(anthocerosTve, dendrocerotaceaeTve, 'test move taxon')
+        when: 'I try to move a taxon, Adenostemma under Argophyllaceae'
+        Map result = treeService.changeParentTaxon(AdenostemmaTve, ArgophyllaceaeTve, 'test move taxon')
         mockTxCommit()
         draftVersion.refresh()
 
-        List<TreeVersionElement> anthocerosChildren = treeService.getAllChildElements(result.replacementElement)
-        List<TreeVersionElement> dendrocerotaceaeChildren = treeService.getAllChildElements(dendrocerotaceaeTve)
+        List<TreeVersionElement> AdenostemmaChildren = treeService.getAllChildElements(result.replacementElement)
+        List<TreeVersionElement> ArgophyllaceaeChildren = treeService.getAllChildElements(ArgophyllaceaeTve)
 
-        printTve(dendrocerotaceaeTve)
-        printTve(anthocerotaceaeTve)
+        printTveAndCountChildren(ArgophyllaceaeTve)
+        printTveAndCountChildren(AsteraceaeTve)
 
         then: 'It works'
-        1 * treeService.linkService.getObjectForLink(_) >> replacementAnthocerosInstance
-        1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerosInstance.name) >> 'http://localhost:7070/nsl-mapper/name/apni/121601'
-        1 * treeService.linkService.getPreferredLinkForObject(replacementAnthocerosInstance) >> 'http://localhost:7070/nsl-mapper/instance/apni/753948'
-        // Plantae/Anthocerotophyta/Anthocerotopsida/Dendrocerotidae/Dendrocerotales/Dendrocerotaceae +
-        // Anthocerotidae/Anthocerotales/Anthocerotaceae
-        9 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
+        1 * treeService.linkService.getObjectForLink(_) >> replacementAdenostemmaInstance
+        1 * treeService.linkService.getPreferredLinkForObject(replacementAdenostemmaInstance.name) >> 'http://localhost:7070/nsl-mapper/name/apni/121601'
+        1 * treeService.linkService.getPreferredLinkForObject(replacementAdenostemmaInstance) >> 'http://localhost:7070/nsl-mapper/instance/apni/753948'
+        // Argophyllaceae, Asterales, Asteraceae
+        3 * treeService.linkService.addTaxonIdentifier(_) >> { TreeVersionElement tve ->
             println "Adding taxonIdentifier for $tve"
             "http://localhost:7070/nsl-mapper/taxon/apni/$tve.taxonId"
         }
-        !deleted(anthocerosTve)// changing the parent simply changes the parent
-        !deleted(anthocerosTe) // We are using the same tree element
+        !deleted(AdenostemmaTve)// changing the parent simply changes the parent
+        !deleted(AdenostemmaTe) // We are using the same tree element
         result.replacementElement
-        result.replacementElement == treeService.findElementBySimpleName('Anthoceros', draftVersion)
-        result.replacementElement.elementLink == anthocerosTve.elementLink //haven't changed tree version elements
+        result.replacementElement == treeService.findElementBySimpleName('Adenostemma', draftVersion)
+        result.replacementElement.elementLink == AdenostemmaTve.elementLink //haven't changed tree version elements
         result.replacementElement.treeVersion == draftVersion
-        result.replacementElement.treeElement == anthocerosTe
-        dendrocerotaceaeTve.taxonId != dendrocerotaceaeInitialTaxonId
-        draftVersion.treeVersionElements.size() == 30
-        anthocerosChildren.size() == 5
-        result.replacementElement.parent == dendrocerotaceaeTve
-        anthocerosChildren[0].treeElement.nameElement == 'capricornii'
-        anthocerosChildren[0].parent == result.replacementElement
-        anthocerosChildren[1].treeElement.nameElement == 'ferdinandi-muelleri'
-        anthocerosChildren[2].treeElement.nameElement == 'fragilis'
-        anthocerosChildren[3].treeElement.nameElement == 'laminifer'
-        anthocerosChildren[4].treeElement.nameElement == 'punctatus'
-        dendrocerotaceaeChildren.containsAll(anthocerosChildren)
+        result.replacementElement.treeElement == AdenostemmaTe
+        ArgophyllaceaeTve.taxonId != ArgophyllaceaeInitialTaxonId
+        draftVersion.treeVersionElements.size() == 60
+        AdenostemmaChildren.size() == 4
+        result.replacementElement.parent == ArgophyllaceaeTve
+        AdenostemmaChildren[0].treeElement.nameElement == 'lavenia'
+        AdenostemmaChildren[0].parent == result.replacementElement
+        AdenostemmaChildren[1].treeElement.nameElement == 'lanceolatum'
+        AdenostemmaChildren[2].treeElement.nameElement == 'lavenia'
+        AdenostemmaChildren[3].treeElement.nameElement == 'macrophyllum'
+        ArgophyllaceaeChildren.containsAll(AdenostemmaChildren)
         // all the parent taxonIds should have been updated
-        !treeService.getParentTreeVersionElements(dendrocerotaceaeTve).collect { it.taxonId }.find {
-            originalDendrocerotaceaeParentTaxonIDs.contains(it)
+        !treeService.getParentTreeVersionElements(ArgophyllaceaeTve).collect { it.taxonId }.find {
+            originalArgophyllaceaeParentTaxonIDs.contains(it)
         }
-        !treeService.getParentTreeVersionElements(anthocerotaceaeTve).collect { it.taxonId }.find {
-            originalAnthocerotaceaeParentTaxonIDs.contains(it)
+        !treeService.getParentTreeVersionElements(AsteraceaeTve).collect { it.taxonId }.find {
+            originalAsteraceaeParentTaxonIDs.contains(it)
         }
     }
 
@@ -1392,13 +1365,15 @@ class TreeServiceSpec extends Specification {
         return t
     }
 
-    private printTve(TreeVersionElement target) {
-        println "\n*** Taxon $target.taxonId: $target.treeElement.name.simpleName Children ***"
-        for (TreeVersionElement tve in treeService.getAllChildElements(target)) {
+    private long printTveAndCountChildren(TreeVersionElement target) {
+        println "\n*** Taxon ${target?.taxonId}: ${target?.treeElement?.name?.simpleName} Children ***"
+        List<TreeVersionElement> children = treeService.getAllChildElements(target)
+        for (TreeVersionElement tve in children) {
             tve.refresh()
             println "Taxon: $tve.taxonId, Names: $tve.namePath, Path: $tve.treePath"
         }
         println "***\n"
+        return children.size()
     }
 
     /**

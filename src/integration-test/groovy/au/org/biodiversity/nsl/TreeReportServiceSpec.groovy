@@ -14,7 +14,7 @@ import javax.sql.DataSource
 class TreeReportServiceSpec extends Specification  {
 
     DataSource dataSource
-    def treeReportService
+    TreeReportService treeReportService
 
 
     def setup() {
@@ -23,5 +23,17 @@ class TreeReportServiceSpec extends Specification  {
     def cleanup() {
     }
 
+    void "Test getting a diff v1=51357046&v2=51357890"() {
+        when:
+        TreeChangeSet changeSet = treeReportService.diffReport(TreeVersion.get(51357046), TreeVersion.get(51357890))
+        println changeSet.modified
+        
+        then:
+        changeSet.added.empty
+        changeSet.removed.empty
+        changeSet.changed
+        !changeSet.modified.empty
+
+    }
 
 }
