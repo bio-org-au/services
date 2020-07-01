@@ -3,6 +3,7 @@ package au.org.biodiversity.nsl.api
 import au.org.biodiversity.nsl.MergeReport
 import au.org.biodiversity.nsl.ObjectNotFoundException
 import au.org.biodiversity.nsl.TreeVersion
+import au.org.biodiversity.nsl.TreeVersionElement
 
 class TreeVersionController extends BaseApiController {
 
@@ -94,10 +95,10 @@ class TreeVersionController extends BaseApiController {
         }
     }
 
-    def diff(Long v1, Long v2, Boolean embed) {
+    def diff(Long v1, Long v2, Boolean embed, Boolean list) {
         ResultObject results = require('Version 1 ID': v1, 'Version 2 ID': v2)
-
-        handleResults(results, { viewRespond('diff', results, embed) }) {
+        String view = list ? 'diffList' : 'diff'
+        handleResults(results, { viewRespond(view, results, embed) }) {
             TreeVersion first = TreeVersion.get(v1)
             if (!first) {
                 throw new ObjectNotFoundException("Version $v1, not found.")
@@ -108,6 +109,17 @@ class TreeVersionController extends BaseApiController {
             }
             results.payload = treeReportService.diffReport(first, second).toMap()
         }
+    }
+
+    def diffElement(String e1, String e2) {
+        TreeVersionElement tve1 = TreeVersionElement.get(e1)
+        TreeVersionElement tve2 = TreeVersionElement.get(e2)
+        TreeVersion v1 = tve2.treeVersion
+        TreeVersion v2 = tve1.treeVersion
+
+        [v1 : v1,
+         v2 : v2,
+         mod: [tve1, tve2]]
     }
 
     def mergeReport(Long draftId, Boolean embed) {
@@ -147,7 +159,7 @@ class TreeVersionController extends BaseApiController {
     private viewRespond(String view, ResultObject resultObject, Boolean embed) {
         log.debug "result status is ${resultObject.status}"
         resultObject.put('embed', embed)
-        respond(resultObject)
+        respond(resultObject, view: view, model: resultObject)
     }
 
 }

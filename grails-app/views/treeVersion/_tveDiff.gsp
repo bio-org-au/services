@@ -49,12 +49,12 @@
         <td></td>
         <td class="${tveDiff.fromTypeString}">
           <dl class="dl-horizontal">
-            <dt>${key}</dt><dd>${raw(diffA)}</dd>
+            <dt>${key}</dt><dd>${raw(diffProfileA)}</dd>
           </dl>
         </td>
         <td class="${tveDiff.toTypeString}">
           <dl class="dl-horizontal">
-            <dt>${key}</dt><dd>${raw(diffB)}</dd>
+            <dt>${key}</dt><dd>${raw(diffProfileB)}</dd>
           </dl>
         </td>
       </tr>

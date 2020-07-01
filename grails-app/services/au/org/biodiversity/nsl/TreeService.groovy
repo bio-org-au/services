@@ -1061,6 +1061,21 @@ INSERT INTO tree_version_element (tree_version_id,
         return parents
     }
 
+    static TreeVersionElement getFamily(TreeVersionElement tve) {
+        if(tve.treeElement.rank == 'Familia') return tve
+        use(RankUtils) {
+            NameRank family = NameRank.findByName('Familia')
+            if (family.rankHigherThan(tve.treeElement.rank)) {
+                TreeVersionElement famlyTve = tve.parent
+                while (famlyTve.treeElement.rank != 'Familia') {
+                    famlyTve = famlyTve.parent
+                }
+                return famlyTve
+            }
+            return null
+        }
+    }
+
     /**
      * Remove this tree version element and all it's children.
      * @param treeVersionElement

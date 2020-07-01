@@ -20,6 +20,32 @@ div.indented div.tr {
     );
 }
 
+div.indented div.tr.added {
+    display: block;
+    border: none;
+}
+
+div.indented div.tr.added data {
+    background-color: rgba(0,255,0,0.3) !important;
+}
+
+div.indented div.tr.removed data {
+    background-color: rgba(255,0,0,0.3);
+}
+
+div.indented div.family {
+    margin-top: 1em;
+    padding-top: 0.5em;
+    font-size: 1.2em;
+    font-weight: bold;
+    border-top: 1px solid lightblue;
+}
+
+div.indented div.family name-status,
+div.indented div.family citation {
+    display: none;
+}
+
 .excluded {
     color: red !important;
 }

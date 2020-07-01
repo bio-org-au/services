@@ -16,13 +16,13 @@ class TreeChangeSet implements ValidationUtils {
     TreeVersion v2
     List<TreeVersionElement> added = []
     List<TreeVersionElement> removed = []
-    List<List<TreeVersionElement>> modified =[] //List [current tve, previous tve]
+    List<List<TreeVersionElement>> modified = [] //List [current tve, previous tve]
     List<TreeVersionElement> all = []
 
     Boolean changed = false
     Boolean overflow = false
 
-    TreeChangeSet(TreeVersion first,  TreeVersion second, Sql sql, Integer limit) {
+    TreeChangeSet(TreeVersion first, TreeVersion second, Sql sql, Integer limit) {
         mustHave("version 1": first, "version 2": second)
         use(TreeReportUtils) {
 
@@ -42,22 +42,22 @@ class TreeChangeSet implements ValidationUtils {
                 return
             }
 
-            modified = first.findModified(second, treeElementsNotInFirst)
+            modified = first.findModified(second, treeElementsNotInFirst).sort { a, b -> a[0].namePath <=> b[0].namePath }
 
             List<Long> treeElementsAddedToSecond = treeElementsNotInFirst - modified.collect { mod -> mod[0].treeElement.id }
-            added = second.getTvesInVersion(treeElementsAddedToSecond)
+            added = second.getTvesInVersion(treeElementsAddedToSecond).sorted()
 
             List<Long> treeElementsRemovedFromSecond = treeElementsNotInSecond - modified.collect { mod -> mod[1].treeElement.id }
-            removed = first.getTvesInVersion(treeElementsRemovedFromSecond)
+            removed = first.getTvesInVersion(treeElementsRemovedFromSecond).sorted()
 
             this.changed = true
             this.overflow = false
-            all = added + removed + modifiedResult
+            all = (added + removed + modifiedResult).sorted()
         }
     }
 
     Map toMap() {
-        [v1: v1, v2: v2, added: added, removed: removed, modified: modified, changed: changed, overflow: overflow]
+        [changeSet: this, v1: v1, v2: v2, all: all, added: added, removed: removed, modified: modified, changed: changed, overflow: overflow]
     }
 
     /**
@@ -65,6 +65,14 @@ class TreeChangeSet implements ValidationUtils {
      * @return
      */
     List<TreeVersionElement> getModifiedResult() {
-        modified.collect {it[0]}
+        modified.collect { it[0] }
+    }
+
+    TreeVersionElement was(TreeVersionElement tve) {
+        List<TreeVersionElement> mod = modified.find { it[0] == tve }
+        if(mod) {
+            return mod[1]
+        }
+        return null
     }
 }

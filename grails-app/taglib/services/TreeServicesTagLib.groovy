@@ -45,8 +45,8 @@ class TreeServicesTagLib {
     }
 
     def diffProfiles = { attrs, body ->
-        Map profileA = attrs.a ?: [:]
-        Map profileB = attrs.b ?: [:]
+        Map profileA = (attrs.a ?: [:]) as Map
+        Map profileB = (attrs.b ?: [:]) as Map
         List<String> allKeys = (profileA.keySet() + profileB.keySet()).sort() as List<String>
         allKeys.each { String key ->
             String valueA = profileA[key]?.value
@@ -54,12 +54,12 @@ class TreeServicesTagLib {
 
             TextDiff diffForward = new TextDiff(valueA, valueB)
             TextDiff diffBackward = new TextDiff(valueB, valueA)
-            out << body(key: key, diffA: diffBackward.diffHtml('span', 'missing'), diffB: diffForward.diffHtml('span', 'added'))
+            out << body(key: key, diffProfileA: diffBackward.diffHtml('span', 'missing'), diffProfileB: diffForward.diffHtml('span', 'added'))
         }
     }
 
     def profile = { attrs ->
-        Map profileData = attrs.profile
+        Map profileData = attrs.profile as Map
         if (profileData) {
             out << "<dl class='dl-horizontal'>"
             profileData.each { k, v ->
@@ -77,6 +77,39 @@ class TreeServicesTagLib {
                 out << "</dd>"
             }
             out << "</dl>"
+        }
+    }
+
+    def withDiffList = { attrs, body ->
+        TreeChangeSet changeSet = attrs.changeSet as TreeChangeSet
+        TreeVersionElement lastFamily = null
+        TreeVersionElement family
+        for (TreeVersionElement tve in changeSet.all) {
+            family = null
+            if (!(lastFamily && tve.treePath.startsWith(lastFamily.treePath))) {
+                lastFamily = treeService.getFamily(tve)
+                family = lastFamily
+            }
+            String action = 'modified'
+            Boolean added = changeSet.added.contains(tve)
+            Boolean removed = changeSet.removed.contains(tve)
+            if (added) {
+                action = 'added'
+            }
+            if (removed) {
+                action = 'removed'
+            }
+
+            TreeVersionElement prev = changeSet.was(tve)
+
+            out << body(tve: tve,
+                    prev: prev,
+                    depth: lastFamily ? (tve.depth - lastFamily.depth) : tve.depth,
+                    higherRank: lastFamily == null,
+                    family: family,
+                    added: added,
+                    removed: removed,
+                    action: action)
         }
     }
 
@@ -107,7 +140,7 @@ class TreeServicesTagLib {
 
     def findCurrentVersion = { attrs, body ->
         TreeVersionElement tve = attrs.element as TreeVersionElement
-        if(tve && tve.treeVersion != tve.treeVersion.tree.currentTreeVersion) { //blank if current version
+        if (tve && tve.treeVersion != tve.treeVersion.tree.currentTreeVersion) { //blank if current version
             TreeVersionElement currentTve = treeService.findCurrentTreeVersionElement(tve)
             if (currentTve) {
                 out << body(synonym: false, currentElement: currentTve)

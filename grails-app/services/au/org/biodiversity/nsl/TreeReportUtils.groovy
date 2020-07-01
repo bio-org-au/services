@@ -58,4 +58,8 @@ where tve.treeVersion = :version
     order by tve.namePath
 ''', [version: second, previousVersion: first, elementIds: treeElementsNotInFirst])) as List<List<TreeVersionElement>>
     }
+
+    static List<TreeVersionElement> sorted(List<TreeVersionElement> tves) {
+        tves.sort { a,b -> a.namePath <=> b.namePath }
+    }
 }
