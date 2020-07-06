@@ -111,15 +111,18 @@ class TreeVersionController extends BaseApiController {
         }
     }
 
-    def diffElement(String e1, String e2) {
+    def diffElement(String e1, String e2, Boolean embed) {
         TreeVersionElement tve1 = TreeVersionElement.get(e1)
         TreeVersionElement tve2 = TreeVersionElement.get(e2)
         TreeVersion v1 = tve2.treeVersion
         TreeVersion v2 = tve1.treeVersion
 
-        [v1 : v1,
-         v2 : v2,
-         mod: [tve1, tve2]]
+        [
+                v1   : v1,
+                v2   : v2,
+                mod  : [tve1, tve2],
+                embed: embed
+        ]
     }
 
     def mergeReport(Long draftId, Boolean embed) {
