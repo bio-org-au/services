@@ -602,7 +602,7 @@ from (select child.id id, parent.name_path || '/' || coalesce(child.name_element
       from name child
                join name parent on child.parent_id = parent.id
                join name_rank nr on child.name_rank_id = nr.id
-          and child.name_path not like (parent.name_path || '/%')
+          and child.name_path not like (parent.name_path || '/' || child.name_element)
       order by nr.sort_order) broken
 where broken.id = n.id
 ''')
