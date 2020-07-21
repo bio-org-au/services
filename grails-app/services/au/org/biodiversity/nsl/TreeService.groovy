@@ -1062,7 +1062,7 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     static TreeVersionElement getFamily(TreeVersionElement tve) {
-        if(tve.treeElement.rank == 'Familia') return tve
+        if (tve.treeElement.rank == 'Familia') return tve
         use(RankUtils) {
             NameRank family = NameRank.findByName('Familia')
             if (family.rankHigherThan(tve.treeElement.rank)) {
@@ -1145,6 +1145,7 @@ INSERT INTO tree_version_element (tree_version_id,
     TreeVersionElement editProfile(TreeVersionElement treeVersionElement, Map profile, String userName) {
         mustHave(treeVersionElement: treeVersionElement, userName: userName)
         notPublished(treeVersionElement)
+        treeVersionElement.refresh()
         treeVersionElement.treeElement.refresh() //fetch the element data including treeVersionElements
 
         log.debug treeVersionElement.treeElement.profile.toString()
@@ -1173,12 +1174,17 @@ INSERT INTO tree_version_element (tree_version_id,
         if (matchingElements?.size()) {
             foundElement = matchingElements.find { TreeElement te ->
                 log.debug "Checking profile of ${te}"
+                log.debug "${profile}\n vs \n ${te.profile}"
                 profile && te.profile &&
                         compareProfileMapValues(profile, te.profile)
             }
         }
 
         if (foundElement) {
+            if (treeVersionElement.treeElement.id == foundElement.id) {
+                log.debug "Same Tree element $foundElement as before - nothing to do?"
+                return treeVersionElement
+            }
             log.debug "Reusing $foundElement"
             return changeElement(treeVersionElement, foundElement, userName)
         }
@@ -1474,6 +1480,10 @@ update tree_element te
      * @return the replacement tree version element
      */
     private TreeVersionElement changeElement(TreeVersionElement treeVersionElement, TreeElement newElement, String userName) {
+        if (treeVersionElement.treeElement.id == newElement.id) {
+            log.warn "changeElement called with the same element. Doing nothing."
+            return treeVersionElement
+        }
         TreeVersionElement replacementTve = saveTreeVersionElement(newElement, treeVersionElement.parent,
                 treeVersionElement.treeVersion, treeVersionElement.taxonId, treeVersionElement.taxonLink, userName)
         updateParentId(treeVersionElement, replacementTve)

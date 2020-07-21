@@ -92,7 +92,7 @@ dependencies {
 }
 
 bootRun {
-//    environment "nsl_services_config", "${projectDir.absolutePath}/etc/nsl/services-config-g3.groovy"
+    environment "nsl_services_config", "${projectDir.absolutePath}/etc/nsl/services-config-g3.groovy"
     jvmArgs(['-Dspring.output.ansi.enabled=always', '-Xmx2G', '-Xms2G'])
     addResources = true
     String springProfilesActive = 'spring.profiles.active'
