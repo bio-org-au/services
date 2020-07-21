@@ -520,10 +520,10 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
 
     AuthorSearchParams authorSearch(AuthorSearchParams params) {
         String query = params.abbrev
-        Map qryParams = [query: query]
+        Map qryParams = [query: query.toLowerCase()]
         println qryParams
-        params.results = Author.executeQuery("select a from Author a where abbrev like :query order by a.abbrev", qryParams, [max: params.max ?: 10]) as List<Author>
-        params.countFound = (Author.executeQuery("select count(a) from Author a where abbrev like :query", qryParams)[0]) as Integer
+        params.results = Author.executeQuery("select a from Author a where lower(abbrev) like :query order by a.abbrev", qryParams, [max: params.max ?: 10]) as List<Author>
+        params.countFound = (Author.executeQuery("select count(a) from Author a where lower(abbrev) like :query", qryParams)[0]) as Integer
         return params
     }
 
