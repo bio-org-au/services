@@ -27,6 +27,7 @@ class JsonRendererService {
     def linkService
     def instanceService
     def treeService
+    def nameService
 
     def registerObjectMashallers() {
         JSON.registerObjectMarshaller(Namespace) { Namespace namespace -> getBriefNamespace(namespace) }
