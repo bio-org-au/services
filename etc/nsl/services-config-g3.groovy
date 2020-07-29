@@ -16,7 +16,7 @@ services {
     }
 
     link {
-        mapperURL = "http://biodiversity.local:7070/broker"
+        mapperURL = "http://biodiversity.local:7070"
         internalMapperURL = 'http://biodiversity.local:7070'
         editor = "http://biodiversity.local:3000/nsl/editor"
     }
