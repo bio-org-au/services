@@ -1708,8 +1708,8 @@ and regex(namePath, :newPath) = true
                 updatedAt: new Timestamp(System.currentTimeMillis())
         )
 
-        treeVersionElement.elementLink = (addTargetLinkOrBust(treeVersionElement) - version.hostPart())
-        treeVersionElement.taxonLink = taxonLink ?: (addTaxonIdentifierOrBust(treeVersionElement) - version.hostPart())
+        treeVersionElement.elementLink = "/" + (addTargetLinkOrBust(treeVersionElement) - version.hostPart())
+        treeVersionElement.taxonLink = taxonLink ?: "/" + (addTaxonIdentifierOrBust(treeVersionElement) - version.hostPart())
         treeVersionElement.save()
         return treeVersionElement
     }
