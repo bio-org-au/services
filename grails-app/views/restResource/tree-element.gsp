@@ -74,11 +74,11 @@
           <a href="${historyElement.fullElementLink()}" title="taxon ID: ${historyElement.taxonLink}">
             <g:if test="${currentTreeVersion == historyElement.treeVersion}">Now</g:if>
             <g:else><date>${historyElement.treeVersion.publishedAt}</date></g:else>
-            <i class="fa fa-long-arrow-left"></i> <date>${historyElement.updatedAt}</date>
+            <i class="fas fa-long-arrow-alt-left"></i> <date>${historyElement.updatedAt}</date>
           </a>
         </span>
       </g:if>
-      <g:else>&nbsp;<i class="fa fa-long-arrow-left"></i>
+      <g:else>&nbsp;<i class="fas fa-long-arrow-alt-left"></i>
         <span class="timeline ${currentPos ? 'active' : ''}">
           <a href="${historyElement.fullElementLink()}" title="taxon ID: ${historyElement.taxonLink}">
             <date>${historyElement.updatedAt}</date>
