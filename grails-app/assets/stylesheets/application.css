@@ -197,7 +197,8 @@ span#page-footer-inner-right {
 
 div#main-content {
     margin-bottom: 75px;
-    padding-top: 0.5rem;
+    padding-top: 3rem;
+    padding-left: 3rem;
     padding-bottom: 0.5rem;
 }
 
