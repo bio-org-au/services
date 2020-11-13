@@ -37,7 +37,7 @@ class SynonymDiffMarker {
                     if (!comp.b.contains(oldComp)) {
                         output.a << markUp(oldLine, 'target minus')
                     } else if (oldComp != newComp) {
-                        output.a << '<div class="targetMoved">⇅ ' + oldLine + '</div>'
+                        output.a << '<div class="targetMoved"><i class="fas fa-arrows-alt-v"></i> ' + oldLine + '</div>'
                     } else {
                         output.a << oldLine
                     }
@@ -47,7 +47,7 @@ class SynonymDiffMarker {
                     if (!comp.a.contains(newComp)) {
                         output.b << markUp(newLine, 'target plus')
                     } else if (newComp != oldComp) {
-                        output.b << '<div class="targetMoved">⇅ ' + newLine + '</div>'
+                        output.b << '<div class="targetMoved"><i class="fas fa-arrows-alt-v"></i> ' + newLine + '</div>'
                     } else {
                         output.b << newLine
                     }
