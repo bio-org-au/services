@@ -837,7 +837,7 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     String authorizeTreeBuilder() {
-        SecurityUtils.subject.checkRole('treeBuilder')
+        SecurityUtils.subject.checkRole('treebuilder')
         return SecurityUtils.subject.principal as String
     }
 
