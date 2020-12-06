@@ -58,7 +58,7 @@ class AuthorControllerSpec extends Specification implements ControllerUnitTest<A
 
         then:
         status == 404
-        response.text == '{"action":null,"error":"Target author not found.\\n Duplicate author not found.","ok":false}'
+        response.text == '{"action":null,"status":{"enumType":"org.springframework.http.HttpStatus","name":"NOT_FOUND"},"error":"Target author not found.\\n Duplicate author not found.","ok":false}'
 
         when:
         resetCallToDedupe()

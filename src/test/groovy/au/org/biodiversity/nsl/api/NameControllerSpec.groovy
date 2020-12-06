@@ -80,7 +80,7 @@ class NameControllerSpec extends Specification implements ControllerUnitTest<Nam
 
         then: "not found is returned"
         controller.response.status == 404
-        controller.response.text == '{"action":null,"error":"Object not found."}'
+        controller.response.text == '{"action":null,"status":{"enumType":"org.springframework.http.HttpStatus","name":"NOT_FOUND"},"error":"Object not found."}'
 
         when: "Doodia is provided"
         controller.response.reset()
@@ -89,7 +89,7 @@ class NameControllerSpec extends Specification implements ControllerUnitTest<Nam
 
         then: "expected name strings are returned"
         controller.response.status == 200
-        controller.response.text == '{"action":null,"name":{"class":"au.org.biodiversity.nsl.Name","_links":{"permalink":{"link":"Link for [Name 1: Doodia]","preferred":true,"resources":1}},"nameElement":"Doodia","fullNameHtml":null},"result":{"fullMarkedUpName":"<scientific><name data-id=\'1\'><element>Doodia<\\/element><\\/name><\\/scientific>","simpleMarkedUpName":"<scientific><name data-id=\'1\'><element>Doodia<\\/element><\\/name><\\/scientific>","fullName":"Doodia","simpleName":"Doodia","sortName":"doodia"}}'
+        controller.response.text == '{"action":null,"status":{"enumType":"org.springframework.http.HttpStatus","name":"OK"},"name":{"class":"au.org.biodiversity.nsl.Name","_links":{"permalink":{"link":"Link for [Name 1: Doodia]","preferred":true,"resources":1}},"nameElement":"Doodia","fullNameHtml":null},"result":{"fullMarkedUpName":"<scientific><name data-id=\'1\'><element>Doodia<\\/element><\\/name><\\/scientific>","simpleMarkedUpName":"<scientific><name data-id=\'1\'><element>Doodia<\\/element><\\/name><\\/scientific>","fullName":"Doodia","simpleName":"Doodia","sortName":"doodia"}}'
         controller.response.json.result.fullName == 'Doodia'
     }
 
