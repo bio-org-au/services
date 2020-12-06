@@ -106,7 +106,7 @@ trait WithTarget {
                 render(view: view, model: [data: resultObject], status: resultObject.remove('status'))
             }
             json {
-                respond(resultObject, status: resultObject.remove('status'))
+                respond(resultObject, status: resultObject.get('status'))
             }
             xml {
                 respond(resultObject, status: resultObject.remove('status'))

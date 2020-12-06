@@ -124,13 +124,10 @@ class FlatViewService implements WithSql {
             result.acceptedNameUsage == null
         }
         allResults.removeAll(acceptedResults)
-        if (!allResults.empty) {
-            results.synonyms = allResults
-        }
         results.acceptedNames = [:]
-        acceptedResults.each { Map result ->
+        allResults.each { Map result ->
             results.acceptedNames[result.scientificNameID as String] = result
-            List<Map> synonyms = executeQuery("select * from $TAXON_VIEW where \"acceptedNameUsage\" = ? limit 100", [result.scientificName])
+            List<Map> synonyms = executeQuery("select * from $TAXON_VIEW where \"acceptedNameUsage\" = ? and \"taxonomicStatus\" <> \'accepted\' limit 100", [result.scientificName])
             results.acceptedNames[result.scientificNameID as String].synonyms = synonyms
         }
         return results
