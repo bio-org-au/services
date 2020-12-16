@@ -86,7 +86,7 @@ class ServiceTagLib {
                 String text = message.text
                 if (text) {
                     out << """<div class="alert alert-danger alert-dismissible" role="alert">
-  <span class="fa fa-warning" aria-hidden="true"></span>
+  <span class="fas fa-exclamation-triangle" aria-hidden="true"></span>
   <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span>
   </button>
   $text</div>"""

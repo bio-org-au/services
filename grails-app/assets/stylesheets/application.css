@@ -488,3 +488,7 @@ div.debug {
 .fa-arrows-alt-v {
     color: royalblue;
 }
+
+.alert {
+    margin-top: 20px;
+}
