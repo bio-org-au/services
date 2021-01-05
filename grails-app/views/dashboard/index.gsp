@@ -13,7 +13,7 @@
 
   <h2>APNI NSL statistics</h2>
   <ul>
-    <li>Services Version: <g:meta name="app.version"/></li>
+    <li>Services Version: <g:meta name="info.app.version"/></li>
     <g:each in="${stats}" var="info">
       <li><st:camelToLabel camel="${info.key}"/>: <span class="text-success"><st:linkedData val="${info.value}"/></span></li>
     </g:each>
