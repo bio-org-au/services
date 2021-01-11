@@ -91,7 +91,7 @@ class RestResourceController {
             return notFound("We couldn't find a tree with id $idNumber in $shard")
         }
 
-        List<TreeVersion> versions = TreeVersion.findAllByTree(tree, [sort: 'id', order: 'desc'])
+        List<TreeVersion> versions = TreeVersion.findAllByTree(tree, [sort: 'publishedAt', order: 'desc'])
 
         if (!versions) {
             return notFound("We couldn't find any versions for $tree.name. You need to create one.")
