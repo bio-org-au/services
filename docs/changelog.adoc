@@ -12,6 +12,25 @@
 :links:
 :numbered:
 
+== v 1.0232
+* NSL-3661 Fixed the broken tree and taxon URLs from editor to services
+* NSL-3659: Renamed the view name to match controller action
+* NSL-3702: Elements missing on tree action; Fix padding and removed box layout
+* NSL-3705: Fixed the icons in the timeline
+* NSL-3589: Swapped the unicode character ⇅ with fa icon
+* NSL-3705: Fixed the icons in the timeline
+* NSL-3589: Swapped the unicode character ⇅ with fa icon
+* NSL-3729: Fixed the role to match for deleting comments and distribution from tree elements
+* NSL-3738: Fixed the json response for taxon-search to have accepted name and synonyms
+* NSL-3738: Changed response test in test cases for author and name
+* NSL-3704: Change the sorting in tree index to be by published_date
+* Get broadcasts file to be recognised in g3
+* Fixed the app version to display in Dashboard
+* Removed the /boa/foa/taxa/ calls from being sent to a non-existent end-point
+* Change logback log pattern
+* Fix ajax event preventDefault();
+* Increase the timeout duration for services to wait
+
 == v 1.0231
 
 * Docker security changes.
