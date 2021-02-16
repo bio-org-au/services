@@ -14,10 +14,10 @@ appender('STDOUT', ConsoleAppender) {
         charset = Charset.forName('UTF-8')
 
         pattern =
-                '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} ' + // Date
+                '%clr(%d{yyyy-MM-dd HH:mm:ss}){magenta} ' + // Date
                         '%clr(%5p) ' + // Log level
-                        '%clr(---){faint} %clr([%15.15t]){faint} ' + // Thread
-                        '%clr(%-40.40logger{39}){cyan} %clr(:){faint} ' + // Logger
+                        '%clr([%4.5t]){green} ' + // Thread
+                        '%clr(%-15.20logger{39}){cyan} %clr(:){faint} ' + // Logger
                         '%m%n%wex' // Message
     }
 }
@@ -27,10 +27,10 @@ appender("dailyFileAppender", RollingFileAppender) {
         charset = Charset.forName('UTF-8')
 
         pattern =
-                '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} ' + // Date
+                '%clr(%d{yyyy-MM-dd HH:mm:ss}){magenta} ' + // Date
                         '%clr(%5p) ' + // Log level
-                        '%clr(---){faint} %clr([%15.15t]){faint} ' + // Thread
-                        '%clr(%-40.40logger{39}){cyan} %clr(:){faint} ' + // Logger
+                        '%clr([%4.5t]){green} ' + // Thread
+                        '%clr(%-15.20logger{39}){cyan} %clr(:){faint} ' + // Logger
                         '%m%n%wex' // Message
     }
     rollingPolicy(TimeBasedRollingPolicy) {

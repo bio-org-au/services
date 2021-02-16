@@ -32,7 +32,7 @@ class RestCallService {
 
     static transactional = false
 
-    private RestBuilder rest = new RestBuilder(proxy: Proxy.NO_PROXY)
+    private RestBuilder rest = new RestBuilder(readTimeout: 60000, proxy: Proxy.NO_PROXY)
 
     /**
      * log into the mapper and store the JWT and refresh token
@@ -45,7 +45,7 @@ class RestCallService {
         }
         if (response.status == 200) {
             Map resp = response.json as Map
-            log.info "logged into mapper. ${resp.access_token[0..5]}"
+            log.info "logged into mapper. ${resp.access_token[0..5]}, ${resp.refresh_token[0..5]}"
             return new AccessToken(resp.access_token as String, resp.refresh_token as String, refreshUrl)
         } else {
             log.error("Can't log into mapper, status: ${response.status}, ${response.json}")
@@ -56,6 +56,7 @@ class RestCallService {
     Boolean refreshLogin(AccessToken accessToken) {
         log.info "refreshing login to $accessToken.refreshUrl"
         Map data = [grant_type: 'refresh_token', refresh_token: accessToken.refreshToken]
+        log.info("json POST data: $data")
         RestResponse response = rest.post(accessToken.refreshUrl) {
             header 'Accept', "application/json"
             json(data)

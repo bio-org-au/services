@@ -153,7 +153,7 @@ $(function () {
         if (qry != '...') {
           $(this).val(qry);
         }
-        event.cancel();
+        event.preventDefault();
       }
     });
   });

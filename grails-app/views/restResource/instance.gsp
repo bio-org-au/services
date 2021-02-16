@@ -143,9 +143,6 @@
     <i class="fa fa-caret-down" style="display: none;"></i>
   </div>
 
-  <div style="display: none;">
-    <foa data-id="${st.mapperUrl()}/boa/foa/taxa/${instance.id}"></foa>
-  </div>
   <g:render template="links"/>
 </div>
 </body>

@@ -1,7 +1,9 @@
 package au.org.biodiversity.nsl
 
 import groovy.sql.Sql
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class TreeReportUtils {
     /**
      * returns a list of element ids that are in version 1 but not version 2
@@ -32,7 +34,7 @@ class TreeReportUtils {
      * @return
      */
     static List<TreeVersionElement> getTvesInVersion(TreeVersion version, List<Long> elementIds) {
-        printf "querying ${elementIds.size()} elements"
+        log.info "querying ${elementIds.size()} elements"
         if (elementIds.empty) {
             return []
         }
