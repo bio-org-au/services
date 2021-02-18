@@ -30,6 +30,7 @@
 * Change logback log pattern
 * Fix ajax event preventDefault();
 * Increase the timeout duration for services to wait
+* NSL-3792: Dashes appearing for no-author works during reference citation reconstruction
 
 == v 1.0231
 

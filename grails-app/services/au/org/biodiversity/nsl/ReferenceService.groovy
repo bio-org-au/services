@@ -63,10 +63,10 @@ class ReferenceService implements AsyncHelper {
 
             if (reference.parent && reference.parent.author != unknownAuthor) {
                 if (reference.author != reference.parent.author) {
-                    parentAuthorName = "in ${reference.parent.author.name?.trim()}"
+                    parentAuthorName = (reference.parent.author.name?.trim() == "-") ? "" : "in ${reference.parent.author.name?.trim()}"
                 }
                 if (reference.parent?.refAuthorRole == editor) {
-                    parentAuthorName = "in ${reference.parent.author.name?.trim()} (ed.)"
+                    parentAuthorName = (reference.parent.author.name == "-") ? "" : "in ${reference.parent.author.name?.trim()} (ed.)"
                 }
             }
 
