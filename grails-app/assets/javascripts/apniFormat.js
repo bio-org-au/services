@@ -35,7 +35,7 @@ $(function () {
                     // default behaviour on a hyperlink click
                   }
                   else {
-                    $(this).children('ul').toggle();
+                    $(this).children('ul').toggleClass("pop-classify");
                     event.preventDefault();
                   }
                 });
@@ -184,7 +184,7 @@ $(function () {
   var checkProtologue = function (el) {
     var thisEl = el;
     var url = $(el).data('id');
-    var link = '<a title="Protologue PDF image" href="' + url + '"><i class="fa fa-file-pdf-o"></i></a>';
+    var link = '<a title="Protologue PDF image" href="' + url + '"><i class="far fa-file-pdf"></i></a>';
     window.console && console.log("found protologue pdf, trying " + url);
     $.ajax({
       type: "HEAD",

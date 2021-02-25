@@ -26,8 +26,24 @@
     }
 }
 
+branch {
+    position: relative;
+}
+
 branch ul {
-    display: none
+    display: none;
+}
+
+.pop-classify {
+    border: 1px solid gray;
+    border-radius: 10px;
+    box-sizing: border-box;
+    background-color: white;
+    width: inherit;
+    display: block;
+    position: absolute;
+    top: 10px;
+    left: 10px;
 }
 
 body {
