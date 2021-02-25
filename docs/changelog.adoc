@@ -12,6 +12,10 @@
 :links:
 :numbered:
 
+== v 1.0233
+* Fixed font awesome icons for protologue and images
+* Fixed classification in APC view to be a popup
+
 == v 1.0232
 * NSL-3661 Fixed the broken tree and taxon URLs from editor to services
 * NSL-3659: Renamed the view name to match controller action

@@ -239,9 +239,9 @@ class ApniFormatTagLib {
             elementPath.each { TreeVersionElement tve ->
                 String link = tve.fullElementLink()
                 if (link) {
-                    out << "<li><a href='${link}'>${tve.treeElement.name?.nameElement}</a> <span class=\"text-muted\">(${tve.treeElement.name?.nameRank?.abbrev})</span></li>"
+                    out << "<li><a href='${link}'>${tve.treeElement.name?.nameElement}</a><span class=\"text-muted\">(${tve.treeElement.name?.nameRank?.abbrev})</span></li>"
                 } else {
-                    out << "<li>${tve.treeElement.name?.nameElement} <span class=\"text-muted\">(${tve.treeElement.name?.nameRank?.abbrev})</span></li>"
+                    out << "<li>${tve.treeElement.name?.nameElement}<span class=\"text-muted\">(${tve.treeElement.name?.nameRank?.abbrev})</span></li>"
                 }
             }
             out << '</ul></branch>'
