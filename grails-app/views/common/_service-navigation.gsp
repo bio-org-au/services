@@ -62,7 +62,7 @@
         <shiro:hasRole name="QA">
           <li class="nav-item">
             <a class="nav-link home" href="${createLink(controller: 'dashboard', action: 'audit')}">
-              <i class="fa fa-file-text-o"></i> audit
+              <i class="far fa-file-pdf"></i> audit
             </a>
           </li>
         </shiro:hasRole>

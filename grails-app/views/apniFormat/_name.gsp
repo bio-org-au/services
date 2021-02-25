@@ -51,7 +51,7 @@
             <span class="small" title="photos in APII">
               <a href="${photo}">
                 <span class="fa-stack">
-                  <i class="fa fa-picture-o fa-stack-2x"></i>
+                  <i class="fas fa-image fa-stack-2x"></i>
                 </span>
               </a>
             </span>
