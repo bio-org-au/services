@@ -30,6 +30,7 @@ import org.springframework.web.client.ResourceAccessException
  */
 class RestCallService {
 
+    LinkService linkService
     static transactional = false
 
     private RestBuilder rest = new RestBuilder(readTimeout: 60000, proxy: Proxy.NO_PROXY)
@@ -45,10 +46,10 @@ class RestCallService {
         }
         if (response.status == 200) {
             Map resp = response.json as Map
-            log.info "logged into mapper. ${resp.access_token[0..5]}, ${resp.refresh_token[0..5]}"
+            log.info "${credentials.username} logged into mapper. Access: ${resp.access_token[0..5]}, Refrsh: ${resp.refresh_token[0..5]}"
             return new AccessToken(resp.access_token as String, resp.refresh_token as String, refreshUrl)
         } else {
-            log.error("Can't log into mapper, status: ${response.status}, ${response.json}")
+            log.error("${credentials.username} can't log into mapper, status: ${response.status}, ${response.json}")
             return null
         }
     }
@@ -56,15 +57,24 @@ class RestCallService {
     Boolean refreshLogin(AccessToken accessToken) {
         log.info "refreshing login to $accessToken.refreshUrl"
         Map data = [grant_type: 'refresh_token', refresh_token: accessToken.refreshToken]
-        log.info("json POST data: $data")
+        log.info("json POST data: ${data.refresh_token[0..5]}")
         RestResponse response = rest.post(accessToken.refreshUrl) {
             header 'Accept', "application/json"
             json(data)
         }
+        log.debug "Response of initial refresh req is ${response.status}"
         if (response.status == 200) {
             accessToken.accessToken = response.json.access_token as String
             accessToken.refreshToken = response.json.refresh_token as String
             log.info "refreshed JWT. ${accessToken.accessToken[0..5]}"
+            return true
+        }
+        if (response.status == 400) {
+            log.info "Re-Logging In"
+            AccessToken JWT = linkService.mapperAuthForce()
+            accessToken.accessToken = JWT.accessToken
+            accessToken.refreshToken = JWT.refreshToken
+            log.info "After re-login: Access Token: ${accessToken.accessToken[0..5]}"
             return true
         }
         log.error "Refreshing JWT failed."

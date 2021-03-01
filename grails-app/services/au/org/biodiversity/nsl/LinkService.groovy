@@ -404,6 +404,12 @@ class LinkService {
         return JWT != null
     }
 
+    AccessToken mapperAuthForce() {
+        String mapper = mapper(true)
+        JWT = restCallService.jwtLogin("$mapper/api/login", configService.mapperCredentials, "$mapper/api/oauth/access_token")
+        return JWT
+    }
+
     Map deleteNameLinks(Name name, String reason) {
         String identity = new TargetParam(name, nameSpace()).identityParamString() + "&reason=${reason.encodeAsURL()}"
         deleteTargetLinks(identity)
