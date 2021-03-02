@@ -50,6 +50,6 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
     }
     logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
 }
-root(ERROR, ['STDOUT'])
+root(ERROR, ['dailyFileAppender'])
 logger("au.org.biodiversity", DEBUG, ['dailyFileAppender'])
 logger("services3", DEBUG, ['dailyFileAppender'])
