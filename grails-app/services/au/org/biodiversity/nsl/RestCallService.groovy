@@ -49,7 +49,7 @@ class RestCallService {
             log.info "${credentials.username} logged into mapper. Access: ${resp.access_token[0..5]}, Refrsh: ${resp.refresh_token[0..5]}"
             return new AccessToken(resp.access_token as String, resp.refresh_token as String, refreshUrl)
         } else {
-            log.error("${credentials.username} can't log into mapper, status: ${response.status}, ${response.json}")
+            log.warn("${credentials.username} can't log into mapper, status: ${response.status}, ${response.json}")
             return null
         }
     }
@@ -77,7 +77,7 @@ class RestCallService {
             log.info "After re-login: Access Token: ${accessToken.accessToken[0..5]}"
             return true
         }
-        log.error "Refreshing JWT failed."
+        log.warn "Refreshing JWT failed."
         return false
     }
 
@@ -147,7 +147,7 @@ class RestCallService {
             processResponse(response, ok, error, notFound, notOk)
         }
         catch (ResourceAccessException e) {
-            log.error e.message
+            log.warn "Error Message: ${e.message}"
             throw new RestCallException("Unable to connect to the service at $url", e)
         }
     }
@@ -170,7 +170,7 @@ class RestCallService {
             processResponse(response, ok, error, notFound, notOk)
         }
         catch (ResourceAccessException e) {
-            log.error e.message
+            log.warn "Error Message: ${e.message}"
             throw new RestCallException("Unable to connect to the service at $url", e)
         }
     }
@@ -203,7 +203,7 @@ class RestCallService {
 
     @SuppressWarnings("GrMethodMayBeStatic")
     private logResponseError(RestResponse response) {
-        log.error "Got ${response.status}. headers: ${response.headers}, body: ${response.text}"
+        log.warn "Got ${response.status}. headers: ${response.headers}, body: ${response.text}"
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
@@ -221,7 +221,7 @@ class RestCallService {
                 worker(jsonData)
             }
         } else {
-            log.error "No JSON response: ${response.text}"
+            log.warn "No JSON response: ${response.text}"
             worker(null)
         }
     }

@@ -327,15 +327,15 @@ class NameService implements AsyncHelper {
         }
         author.namesForExAuthor.each { Name name ->
             updateFullName(name, author.updatedBy)
-            log.debug "Author change updated name of $name.fullName ($name.id)"
+            log.debug "Ex Author change updated name of $name.fullName ($name.id)"
         }
         author.namesForBaseAuthor.each { Name name ->
             updateFullName(name, author.updatedBy)
-            log.debug "Author change updated name of $name.fullName ($name.id)"
+            log.debug "Base Author change updated name of $name.fullName ($name.id)"
         }
         author.namesForExBaseAuthor.each { Name name ->
             updateFullName(name, author.updatedBy)
-            log.debug "Author change updated name of $name.fullName ($name.id)"
+            log.debug "Ex Base Author change updated name of $name.fullName ($name.id)"
         }
     }
 
