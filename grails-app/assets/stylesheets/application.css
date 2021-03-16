@@ -508,3 +508,7 @@ div.debug {
 .alert {
     margin-top: 20px;
 }
+
+.btn,.btn-light {
+    margin-bottom: 1em;
+}
