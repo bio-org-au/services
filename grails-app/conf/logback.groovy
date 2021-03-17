@@ -40,16 +40,15 @@ appender("dailyFileAppender", RollingFileAppender) {
 
 
 def targetDir = BuildSettings.TARGET_DIR
+println ("ENV is ${Environment.getCurrent()}")
 if (Environment.isDevelopmentMode() && targetDir != null) {
-    appender("FULL_STACKTRACE", FileAppender) {
-        file = "${targetDir}/stacktrace.log"
-        append = true
-        encoder(PatternLayoutEncoder) {
-            pattern = "%level %logger - %msg%n"
-        }
-    }
-    logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
+    root(ERROR, ['STDOUT'])
+    logger("au.org.biodiversity", DEBUG, ['STDOUT'])
+    logger("services3", DEBUG, ['STDOUT'])
 }
-root(ERROR, ['dailyFileAppender'])
-logger("au.org.biodiversity", DEBUG, ['dailyFileAppender'])
-logger("services3", DEBUG, ['dailyFileAppender'])
+
+if (Environment.getCurrent() == Environment.PRODUCTION && targetDir != null) {
+    root(ERROR, ['dailyFileAppender'])
+    logger("au.org.biodiversity", DEBUG, ['dailyFileAppender'])
+    logger("services3", DEBUG, ['dailyFileAppender'])
+}

@@ -18,6 +18,7 @@
 * Fix error logging from going to STDOUT instead of log file
 * NSL-3811: Services will now re-synchronize with mapper token
 * NSL-3827: Added a new button and collapsible search interface to name check results screen
+* NSL-3844: Fixed arrows in datepicker. Setup logging based on environment
 
 == v 1.0232
 * NSL-3661 Fixed the broken tree and taxon URLs from editor to services
