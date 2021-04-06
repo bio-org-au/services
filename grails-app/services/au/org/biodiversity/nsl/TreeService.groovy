@@ -750,7 +750,7 @@ DROP TABLE IF EXISTS orphans;''')
     }
 
     TreeVersion createTreeVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
-        log.debug "createTreeVersion: create tree version '$draftName' on '$tree' using verion '${treeVersion.id}'"
+        log.debug "createTreeVersion: create tree version '$draftName' on '$tree' using verion '${treeVersion}'"
         if (!draftName) {
             throw new BadArgumentsException("Draft name is required and can't be blank.")
         }
