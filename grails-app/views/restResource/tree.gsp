@@ -79,7 +79,7 @@
             target="${currentTreeVersion}">${currentTreeVersion.id} published ${currentTreeVersion.publishedAt.dateString}</st:preferredLink>
         are for reference only.</p>
         <table class="table">
-          <tr><th>Version</th><th>published</th><th>Notes</th></tr>
+          <tr><th>Version</th><th>published</th><th>Notes</th><th>Remove action</th></tr>
           <g:each in="${versions}" var="version">
             <tr>
               <td><st:preferredLink target="${version}">${version.id}</st:preferredLink></td>

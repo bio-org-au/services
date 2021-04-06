@@ -349,7 +349,7 @@ WHERE tve.tree_version_id = :versionId
     @Transactional(readOnly = true)
     List<TreeVersionElement> getAllChildElements(TreeVersionElement parent) {
         mustHave(parent: parent, 'parent.treeElement': parent.treeElement, 'parent.treeVersion': parent.treeVersion)
-        log.debug "getting children for $parent.treeElement.simpleName"
+        log.debug "getAllChildElements: getting children for $parent.treeElement.simpleName"
         String pattern = "^${parent.treePath}/.*"
         getElementsByPath(parent.treeVersion, pattern)
     }
@@ -439,7 +439,7 @@ WHERE tve.tree_version_id = :versionId
     @Transactional(readOnly = true)
     private List<DisplayElement> fetchDisplayElements(String pattern, TreeVersion treeVersion) {
         mustHave(treeVersion: treeVersion, pattern: pattern)
-        log.debug("getting $pattern")
+        log.debug("fetchDisplayElements pattern: $pattern")
         String hostPart = treeVersion.hostPart()
         TreeElement.executeQuery('''
 select tve.treeElement.displayHtml, tve.elementLink, tve.treeElement.nameLink, tve.treeElement.instanceLink, 
@@ -462,7 +462,7 @@ select tve.treeElement.displayHtml, tve.elementLink, tve.treeElement.nameLink, t
     @Transactional(readOnly = true)
     List<TreeVersionElement> getElementsByPath(TreeVersion version, String pattern) {
         mustHave(version: version, pattern: pattern)
-        log.debug("getting $pattern")
+        log.debug("getElementsByPath pattern: $pattern")
 
         TreeVersionElement.executeQuery('''
 select tve 
@@ -476,7 +476,7 @@ select tve
     @Transactional(readOnly = true)
     int countElementsByPath(TreeVersion parent, String pattern) {
         mustHave(parent: parent, pattern: pattern)
-        log.debug("counting $pattern")
+        log.debug("countElementsByPath: counting $pattern")
 
         int count = TreeElement.executeQuery('''
 select count(tve) 
@@ -600,7 +600,7 @@ select count(tve)
      * @param tree
      */
     void deleteTree(Tree tree) {
-        log.debug "Delete tree $tree"
+        log.debug "deleteTree: Deleting tree $tree"
 
         Sql sql = getSql()
         for (TreeVersion v in tree.treeVersions) {
@@ -626,12 +626,12 @@ select count(tve)
      */
     Tree deleteTreeVersion(TreeVersion treeVersion, Sql sql = getSql()) {
         notPublished(treeVersion)
-        log.debug "deleting version $treeVersion"
+        log.debug "deleteTreeVersion: deleting version $treeVersion"
         Long treeVersionId = treeVersion.id
         Long treeId = treeVersion.tree.id
 
         Map result = linkService.bulkRemoveTargets(treeVersion.treeVersionElements)
-        log.info result.toString()
+        log.info "Result of bulkRemoveTargets: ${result.toString()}"
         if (!result.success) {
             throw new ServiceException("Error deleting tree links from the mapper: ${result.errors}")
         }
@@ -658,7 +658,7 @@ DELETE FROM tree_version WHERE id = :treeVersionId;
             sql.withTransaction { t ->
                 Integer count = sql.firstRow('SELECT count(*) FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element)')[0] as Integer
                 if (count) {
-                    log.debug "deleting $count orphaned elements."
+                    log.debug "deleteOrphanedTreeElements: deleting $count orphaned elements."
 
                     sql.executeUpdate('''
 SELECT id INTO TEMP orphans FROM tree_element WHERE id NOT IN (SELECT DISTINCT(tree_element_id) FROM tree_version_element);
@@ -667,7 +667,7 @@ DELETE from tree_element_distribution_entries using orphans o where tree_element
 DELETE FROM tree_element e USING orphans o WHERE e.id = o.id;
 DROP TABLE IF EXISTS orphans;''')
                 }
-                log.debug "orphan delete complete"
+                log.debug "deleteOrphanedTreeElements: orphan delete complete"
                 t.commit()
             }
         }
@@ -677,7 +677,7 @@ DROP TABLE IF EXISTS orphans;''')
     }
 
     TreeVersion publishTreeVersion(TreeVersion treeVersion, String publishedBy, String logEntry) {
-        log.debug "Publish tree version $treeVersion by $publishedBy, with log entry $logEntry"
+        log.debug "publishTreeVersion: Publishing v:$treeVersion by $publishedBy, with log entry $logEntry"
         treeVersion.published = true
         treeVersion.logEntry = logEntry
         treeVersion.publishedAt = new Timestamp(System.currentTimeMillis())
@@ -722,7 +722,7 @@ DROP TABLE IF EXISTS orphans;''')
             Thread.sleep(1000)
             TreeVersion.withNewSession { s ->
                 TreeVersion.withNewTransaction {
-                    log.debug "Async create"
+                    log.debug "bgCreateDefaultDraftVersion: Async create"
                     tree.refresh()
                     treeVersion.refresh()
                     createDefaultDraftVersion(tree, treeVersion, draftName, userName, logEntry)
@@ -732,14 +732,15 @@ DROP TABLE IF EXISTS orphans;''')
     }
 
     TreeVersion createDefaultDraftVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
-        log.debug "create default draft version $draftName on $tree using $treeVersion"
+        log.debug "createDefaultDraftVersion: Name: '$draftName' on '$tree' using '$treeVersion'"
         tree.defaultDraftTreeVersion = createTreeVersion(tree, treeVersion, draftName, userName, logEntry)
         tree.save()
+        log.debug "createDefaultDraftVersion: New def draft tv created"
         return tree.defaultDraftTreeVersion
     }
 
     TreeVersion setDefaultDraftVersion(TreeVersion treeVersion) {
-        log.debug "set default draft version $treeVersion"
+        log.debug "setDefaultDraftVersion: $treeVersion"
         if (treeVersion.published) {
             throw new BadArgumentsException("TreeVersion must be draft to set as the default draft version. $treeVersion")
         }
@@ -749,7 +750,7 @@ DROP TABLE IF EXISTS orphans;''')
     }
 
     TreeVersion createTreeVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
-        log.debug "create tree version $draftName on $tree using $treeVersion"
+        log.debug "createTreeVersion: create tree version '$draftName' on '$tree' using verion '${treeVersion.id}'"
         if (!draftName) {
             throw new BadArgumentsException("Draft name is required and can't be blank.")
         }
@@ -762,13 +763,15 @@ DROP TABLE IF EXISTS orphans;''')
                 createdBy: userName,
                 createdAt: new Timestamp(System.currentTimeMillis())
         )
+        log.debug "createTreeVersion: saving new TreeVersion ${newVersion}"
         newVersion.save() // set the ID before it's placed in the tree.treeVersions collection
+        log.debug "createTreeVersion: adding the new TreeVersion '${newVersion}' to database"
         tree.addToTreeVersions(newVersion)
         tree.save(flush: true)
         EventRecord event = eventService.createDraftTreeEvent([tree: tree.id, version: newVersion.id], userName)
 
         String link = linkService.addTargetLink(newVersion)
-        log.debug "added TreeVersion link $link"
+        log.debug "createTreeVersion: added TreeVersion link $link"
 
         if (fromVersion) {
             copyVersion(fromVersion, newVersion)
@@ -782,7 +785,7 @@ DROP TABLE IF EXISTS orphans;''')
         if (!(fromVersion && toVersion)) {
             throw new BadArgumentsException("A from and to version are required to copy a version.")
         }
-        log.debug "copying from $fromVersion to $toVersion"
+        log.debug "copyVersion: copying from $fromVersion to $toVersion"
 
         Sql sql = getSql()
 
@@ -816,14 +819,16 @@ INSERT INTO tree_version_element (tree_version_id,
                  toVersionIdMatch  : "/${toVersion.id}/".toString()])
 
         //we need this for the postgresql edge case of not regenerating the stats for tree_version_element and picking the wrong strategy
+        log.debug "copyVersion: running analyse on tree_version_id"
         sql.execute('analyse tree_version_element (tree_version_id);')
         toVersion.refresh()
+        log.debug "copyVersion: copied and refreshed"
 
         if (fromVersion.treeVersionElements.size() != toVersion.treeVersionElements.size()) {
             throw new ServiceException("Error copying tree version $fromVersion to $toVersion. They are not the same size. ${fromVersion.treeVersionElements.size()} != ${toVersion.treeVersionElements.size()}")
         }
         Map result = linkService.bulkAddTargets(toVersion.treeVersionElements)
-        log.info result.toString()
+        log.info "copyVersion: Result of bulkAddTargets: ${result.toString()}"
         if (!result.success) {
             throw new ServiceException("Error adding new tree links to the mapper: ${result.errors}")
         }
@@ -831,7 +836,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
     String authorizeTreeOperation(Tree tree) {
         String groupName = tree.groupName
-        log.debug("checking ${SecurityUtils.subject.principal} has role ${groupName}")
+        log.debug("authorizeTreeOperation: checking ${SecurityUtils.subject.principal} has role ${groupName}")
         SecurityUtils.subject.checkRole(groupName)
         return SecurityUtils.subject.principal as String
     }
