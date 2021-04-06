@@ -117,6 +117,7 @@ class LinkService {
             if (mapperAuth()) {
                 String url = "$mapper/api/bulk-add-identifiers"
                 String action = "Bulk add TreeVersionElements"
+                log.debug "Calling restCallService.jsonPost with identities"
                 restCallService.jsonPost([identifiers: identities], url,
                         { Map data ->
                             log.debug "$action. Response: $data"

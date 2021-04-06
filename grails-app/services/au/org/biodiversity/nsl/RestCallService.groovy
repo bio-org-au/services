@@ -163,14 +163,14 @@ class RestCallService {
 
     def jsonPost(Map data, String url, Closure ok, Closure error, Closure notFound, Closure notOk, AccessToken accessToken = null) {
         try {
-            log.debug "Post ${data.toMapString(200)} as json to ${url}"
+            log.debug "jsonPost to ${url} with ${data.toMapString(200)} as json"
             RestResponse response = refreshIfAuthErr(accessToken) {
                 postWithToken(url, accessToken, data)
             }
             processResponse(response, ok, error, notFound, notOk)
         }
         catch (ResourceAccessException e) {
-            log.warn "Error Message: ${e.message}"
+            log.warn "jsonPost: Error Message: ${e.message}"
             throw new RestCallException("Unable to connect to the service at $url", e)
         }
     }
