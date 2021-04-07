@@ -88,13 +88,16 @@ class TreeController extends BaseApiController {
             Boolean defaultVersion = data.defaultDraft
 
             Tree tree = Tree.get(treeId)
+            log.debug "createVersion: Getting tree: $tree"
             if (tree) {
                 String userName = treeService.authorizeTreeOperation(tree)
-
+                log.debug "createVersion: Getting version: $fromVersion"
                 TreeVersion fromVersion = TreeVersion.get(fromVersionId)
                 if (defaultVersion) {
+                    log.debug "createVersion: creating default draft version"
                     results.payload = treeService.createDefaultDraftVersion(tree, fromVersion, draftName, userName, logEntry)
                 } else {
+                    log.debug "createVersion: creating a non-default draft version"
                     results.payload = treeService.createTreeVersion(tree, fromVersion, draftName, userName, logEntry)
                 }
             } else {
@@ -106,6 +109,7 @@ class TreeController extends BaseApiController {
 
     def checkCurrentSynonymy(Long treeVersionId, Boolean embed) {
         TreeVersion treeVersion = TreeVersion.get(treeVersionId)
+        log.debug "checkCurrentSynonymy: for treeVersion $treeVersion"
         ResultObject results = requireTarget(treeVersion, "No Tree version with id: $treeVersionId found")
         handleResults(results, { checkSynRespond(results, treeVersion, embed) }) {
             results.payload = treeReportService.checkCurrentSynonymy(treeVersion, 100)
@@ -114,23 +118,26 @@ class TreeController extends BaseApiController {
 
     def synonymyOrderingInfo(Instance instance) {
         ResultObject results = requireTarget(instance, "No instance supplied.")
-
+        log.debug "synonymyOrderingInfo: Getting Synonomy ordering info"
         handleResults(results, { synOrderRespond(results) }) {
             results.payload = treeReportService.getSynonymOrderingInfo(instance)
         }
     }
 
     private synOrderRespond(ResultObject resultObject) {
+        log.debug "synOrderRespond: Rendering synOrderInfo view with $resultObject"
         render(view: 'synOrderInfo', model: resultObject.payload)
     }
 
     private checkSynRespond(ResultObject resultObject, TreeVersion treeVersion, Boolean embed) {
-        log.debug "result status is ${resultObject.status} $resultObject"
+        log.debug "checkSynRespond: result status is ${resultObject.status} $resultObject"
         if (embed) {
             //noinspection GroovyAssignabilityCheck
+            log.debug "checkSynRespond: Rendering checkSynContent for treeVersion: $treeVersion"
             render(template: 'checkSynContent', model: [treeVersion: treeVersion, data: resultObject], status: resultObject.remove('status'))
         } else {
             //noinspection GroovyAssignabilityCheck
+            log.debug "checkSynRespond: Rendering checkSynReport for treeVersion: $treeVersion"
             render(view: 'checkSynReport', model: [treeVersion: treeVersion, data: resultObject], status: resultObject.remove('status'))
         }
     }
