@@ -91,8 +91,8 @@ class TreeController extends BaseApiController {
             log.debug "createVersion: Getting tree: $tree"
             if (tree) {
                 String userName = treeService.authorizeTreeOperation(tree)
-                log.debug "createVersion: Getting version: $fromVersion"
                 TreeVersion fromVersion = TreeVersion.get(fromVersionId)
+                log.debug "createVersion: Getting version: $fromVersion"
                 if (defaultVersion) {
                     log.debug "createVersion: creating default draft version"
                     results.payload = treeService.createDefaultDraftVersion(tree, fromVersion, draftName, userName, logEntry)
