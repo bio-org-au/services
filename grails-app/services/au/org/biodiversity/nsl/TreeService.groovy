@@ -745,7 +745,7 @@ DROP TABLE IF EXISTS orphans;''')
             throw new BadArgumentsException("TreeVersion must be draft to set as the default draft version. $treeVersion")
         }
         treeVersion.tree.defaultDraftTreeVersion = treeVersion
-        treeVersion.tree.save()
+        treeVersion.tree.save(flush: true)
         return treeVersion
     }
 
