@@ -160,7 +160,7 @@ class TreeVersionController extends BaseApiController {
 
 
     private viewRespond(String view, ResultObject resultObject, Boolean embed) {
-        log.debug "result status is ${resultObject.status}"
+        log.debug "viewRespond: result status is ${resultObject.status}"
         resultObject.put('embed', embed)
         respond(resultObject, view: view, model: resultObject)
     }
