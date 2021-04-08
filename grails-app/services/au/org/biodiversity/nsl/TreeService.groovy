@@ -734,7 +734,7 @@ DROP TABLE IF EXISTS orphans;''')
     TreeVersion createDefaultDraftVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
         log.debug "createDefaultDraftVersion: Name: '$draftName' on '$tree' using '$treeVersion'"
         tree.defaultDraftTreeVersion = createTreeVersion(tree, treeVersion, draftName, userName, logEntry)
-        tree.save()
+        tree.save(flush: true)
         log.debug "createDefaultDraftVersion: New def draft tv created"
         return tree.defaultDraftTreeVersion
     }
