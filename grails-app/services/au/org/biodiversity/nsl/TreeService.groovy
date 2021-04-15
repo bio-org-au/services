@@ -726,31 +726,35 @@ DROP TABLE IF EXISTS orphans;''')
                     tree.refresh()
                     treeVersion.refresh()
                     createDefaultDraftVersion(tree, treeVersion, draftName, userName, logEntry)
+                    log.debug "bgCreateDefaultDraftVersion: finishing"
                 }
             }
         }
     }
 
     TreeVersion createDefaultDraftVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
+        log.debug "createDefaultDraftVersion: starting"
         log.debug "createDefaultDraftVersion: Name: '$draftName' on '$tree' using '$treeVersion'"
         tree.defaultDraftTreeVersion = createTreeVersion(tree, treeVersion, draftName, userName, logEntry)
         tree.save(flush: true)
         log.debug "createDefaultDraftVersion: New def draft tv created"
+        log.debug "createDefaultDraftVersion: finishing"
         return tree.defaultDraftTreeVersion
     }
 
     TreeVersion setDefaultDraftVersion(TreeVersion treeVersion) {
-        log.debug "setDefaultDraftVersion: $treeVersion"
+        log.debug "setDefaultDraftVersion: starting for $treeVersion"
         if (treeVersion.published) {
             throw new BadArgumentsException("TreeVersion must be draft to set as the default draft version. $treeVersion")
         }
         treeVersion.tree.defaultDraftTreeVersion = treeVersion
         treeVersion.tree.save(flush: true)
+        log.debug "setDefaultDraftVersion: finishing"
         return treeVersion
     }
 
     TreeVersion createTreeVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
-        log.debug "createTreeVersion: create tree version '$draftName' on '$tree' using verion '${treeVersion}'"
+        log.debug "createTreeVersion: starting create tree version '$draftName' on '$tree' using verion '${treeVersion}'"
         if (!draftName) {
             throw new BadArgumentsException("Draft name is required and can't be blank.")
         }
@@ -774,10 +778,13 @@ DROP TABLE IF EXISTS orphans;''')
         log.debug "createTreeVersion: added TreeVersion link $link"
 
         if (fromVersion) {
+            log.debug "createTreeVersion: calling copy version"
             copyVersion(fromVersion, newVersion)
+            log.debug "createTreeVersion: returning to createTreeVersion from copyVersion"
             newVersion.previousVersion = fromVersion
         }
         eventService.dealWith(event)
+        log.debug "createTreeVersion: finishing"
         return newVersion
     }
 
@@ -788,7 +795,7 @@ DROP TABLE IF EXISTS orphans;''')
         log.debug "copyVersion: copying from $fromVersion to $toVersion"
 
         Sql sql = getSql()
-
+        log.debug "copyVersion: Running SQL to copy elements"
         sql.execute('''
 INSERT INTO tree_version_element (tree_version_id, 
                                   tree_element_id, 
@@ -822,11 +829,12 @@ INSERT INTO tree_version_element (tree_version_id,
         log.debug "copyVersion: running analyse on tree_version_id"
         sql.execute('analyse tree_version_element (tree_version_id);')
         toVersion.refresh()
-        log.debug "copyVersion: copied and refreshed"
+        log.debug "copyVersion: Copied TVEs and refreshed"
 
         if (fromVersion.treeVersionElements.size() != toVersion.treeVersionElements.size()) {
             throw new ServiceException("Error copying tree version $fromVersion to $toVersion. They are not the same size. ${fromVersion.treeVersionElements.size()} != ${toVersion.treeVersionElements.size()}")
         }
+        log.debug "Calling mapper to add identifiers"
         Map result = linkService.bulkAddTargets(toVersion.treeVersionElements)
         log.info "copyVersion: Result of bulkAddTargets: ${result.toString()}"
         if (!result.success) {

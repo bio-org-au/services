@@ -81,6 +81,7 @@ class TreeController extends BaseApiController {
      */
     def createVersion() {
         withJsonData(request.JSON, false, ['treeId', 'draftName']) { ResultObject results, Map data ->
+            log.debug "createVersion: starting"
             Long treeId = data.treeId
             Long fromVersionId = data.fromVersionId
             String draftName = data.draftName
