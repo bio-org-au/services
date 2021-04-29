@@ -13,8 +13,9 @@ class RecheckSynonymyJob {
 
     def execute() {
         Name.withTransaction {
-            println "refresh synonymy cache"
+            println "execute: refresh synonymy cache - started"
             treeService.refreshSynonymHtmlCache()
+            println "execute: refresh synonymy cache - complete"
         }
     }
 }

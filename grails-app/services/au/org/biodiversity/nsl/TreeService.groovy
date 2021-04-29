@@ -1161,8 +1161,8 @@ INSERT INTO tree_version_element (tree_version_id,
         treeVersionElement.refresh()
         treeVersionElement.treeElement.refresh() //fetch the element data including treeVersionElements
 
-        log.debug treeVersionElement.treeElement.profile.toString()
-        log.debug profile.toString()
+        log.debug "Stored Pdata: ${treeVersionElement.treeElement.profile.toString()}"
+        log.debug "Passed Pdata: ${profile.toString()}"
         if (treeVersionElement.treeElement.profile == profile) {
             return treeVersionElement // data is equal, do nothing
         }
@@ -1387,9 +1387,10 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     def refreshSynonymHtmlCache() {
-        log.debug "Refreshing synonymy cache"
+        log.debug "refreshSynonymHtmlCache: Refreshing synonymy cache"
         Sql sql = getSql()
         sql.executeUpdate("update instance set cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>') where id in (select distinct instance_id from tree_element);")
+        log.debug "refreshSynonymHtmlCache: Completed Refreshing synonymy cache"
     }
 
     /**

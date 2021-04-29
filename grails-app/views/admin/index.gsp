@@ -206,6 +206,12 @@
               Replace XICs in Instance Notes
             </a>
           </li>
+          <li>
+            <a class=""
+               href="${g.createLink(controller: "admin", action: "runSynonomyUpdateOnInstances")}">
+              Update Cached Synonomy on instances
+            </a> <span class="text text-muted">(Browser Hangs Until completion)</span>
+          </li>
         </ul>
       </div>
     </div>

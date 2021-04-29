@@ -474,7 +474,7 @@ class ServiceTagLib {
     def appConfig = {attrs, body ->
         Properties props = grailsApplication.config.toProperties()
                 props.keySet().sort().each { key ->
-                    if(key.contains('assword')) {
+                    if(key.toLowerCase().contains('pass')) {
                         out << body(key: key, value: '•••••••')
                     } else {
                         out << body(key: key, value: props[key])
