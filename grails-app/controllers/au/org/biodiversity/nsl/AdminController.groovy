@@ -188,6 +188,18 @@ class AdminController {
     }
 
     @RequiresRoles('admin')
+    updateInvalidTreePaths() {
+        treeService.updateInvalidTreePaths()
+        redirect(action: 'index')
+    }
+
+    @RequiresRoles('admin')
+    refreshDisplayHtml() {
+        treeService.refreshDisplayHtml()
+        redirect(action: 'index')
+    }
+
+    @RequiresRoles('admin')
     addMissingDistEntries() {
         log.debug "Updating distribution entries on elements"
         treeService.addDistributionElements()

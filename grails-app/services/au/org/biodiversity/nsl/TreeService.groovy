@@ -1386,10 +1386,53 @@ INSERT INTO tree_version_element (tree_version_id,
         instance.save()
     }
 
+    /**
+     * Updates the cached_synonymy_html field for an Instance directly in the database if references
+     * or authors were changed. This is triggered at 17:53 every day. Only updates the instances
+     * if the previous tree publication has changes to authors. Accepting synonymy changes will
+     * trigger creation of new treeElements
+     *
+     * This will be decommissioned soon.
+     */
+    def updateInvalidTreePaths() {
+        log.debug "updateInvalidTreePaths: Started updating tree_paths"
+        Sql sql = getSql()
+        def treeDetails = sql.firstRow('''
+            select current_tree_version_id,default_draft_tree_version_id from tree
+            ;''')
+        log.debug("Tree Stats: ${treeDetails}")
+        def treeVersionsToUpdate = [treeDetails['default_draft_tree_version_id'],
+                                    treeDetails['current_tree_version_id']]
+        for (tvId in treeVersionsToUpdate) {
+
+            sql.executeUpdate('''
+            UPDATE tree_version_element AS tve
+            SET tree_path = get_tree_path(tve.tree_element_id, :tvId)
+            FROM searchByName('%', :tvId) as s
+            WHERE tve.tree_path <> get_tree_path(tve.tree_element_id, :tvId)
+            AND tve.element_link = s.element_link;
+            ''', [tvId: tvId])
+            log.debug "Completed updating tvId: ${tvId}"
+        }
+        log.debug "updateInvalidTreePaths: Completed updating tree_paths"
+    }
+
+    /**
+     * Updates the tree_path field for TreeVersionElement directly in the database when the
+     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
+     * reference or author was updated, synonomy accepted and tree published.
+     *
+     * This is a stop gap measure.
+     */
     def refreshSynonymHtmlCache() {
         log.debug "refreshSynonymHtmlCache: Refreshing synonymy cache"
         Sql sql = getSql()
-        sql.executeUpdate("update instance set cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>') where id in (select distinct instance_id from tree_element);")
+        sql.executeUpdate('''
+            update instance 
+            set 
+            cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>') 
+            where 
+            id in (select distinct instance_id from tree_element);''')
         log.debug "refreshSynonymHtmlCache: Completed Refreshing synonymy cache"
     }
 

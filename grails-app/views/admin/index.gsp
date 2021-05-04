@@ -82,6 +82,12 @@
       </a>
     </li>
     <li role="presentation" class="nav-item">
+      <a href="#tree" id="tree-tab" aria-controls="tree" role="tab" data-toggle="tab" aria-selected="false"
+         class="nav-link">
+        Tree
+      </a>
+    </li>
+    <li role="presentation" class="nav-item">
       <a href="#configuration" id="configuration-tab" aria-controls="configuration" role="tab" aria-selected="false"
          data-toggle="tab"
          class="nav-link">
@@ -210,7 +216,7 @@
             <a class=""
                href="${g.createLink(controller: "admin", action: "runSynonomyUpdateOnInstances")}">
               Update Cached Synonomy on instances
-            </a> <span class="text text-muted">(Browser Hangs Until completion)</span>
+            </a> <span class="text text-muted">(Browser Hangs - But Navigate Away)</span>
           </li>
         </ul>
       </div>
@@ -230,6 +236,31 @@
                href="${g.createLink(controller: "admin", action: "refreshViews")}">
               Refresh all views
             </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div role="tabpanel" class="tab-pane fade show" id="tree">
+
+      <h2>
+        Admin tasks for Tree
+      </h2>
+
+      <div>
+
+        <ul>
+          <li>
+            <a class=""
+               href="${g.createLink(controller: "admin", action: "updateInvalidTreePaths")}">
+              Update Invalid Tree Paths
+            </a> <span class="text text-muted">(Browser Hangs - But Navigate Away)</span>
+          </li>
+          <li>
+            <a class=""
+               href="${g.createLink(controller: "admin", action: "refreshDisplayHtml")}">
+              Update Tree Version Element Display
+            </a> <span class="text text-muted">(Browser Hangs - But Navigate Away)</span>
           </li>
         </ul>
       </div>
