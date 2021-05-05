@@ -1469,17 +1469,20 @@ where te.display_html <> ('<data>' || n.full_name_html || ' <citation>' || r.cit
      * triggers.
      */
     def refreshDisplayHtml() {
+        log.debug "refreshDisplayHtml: Started"
         Sql sql = getSql()
         sql.executeUpdate('''
-update tree_element te 
-    set display_html = '<data>' || n.full_name_html || 
-    '<name-status class="' || ns.name|| '">, ' || ns.name || '</name-status> <citation>' || r.citation_html || '</citation></data>'
-  from name n join name_status ns on n.name_status_id = ns.id, 
-  instance i, reference r
-  where te.name_id = n.id
-    and te.instance_id = i.id
-    and i.reference_id = r.id;
-''')
+           update tree_element te 
+             set display_html = '<data>' || n.full_name_html || 
+             '<name-status class="' || ns.name|| '">, ' || ns.name || 
+             '</name-status> <citation>' || r.citation_html || '</citation></data>'
+           from name n join name_status ns on n.name_status_id = ns.id, 
+           instance i, reference r
+           where te.name_id = n.id
+             and te.instance_id = i.id
+             and i.reference_id = r.id;
+           ''')
+        log.debug "refreshDisplayHtml: Finished"
     }
 
     /**
