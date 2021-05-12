@@ -100,7 +100,7 @@ trait WithTarget {
     }
 
     void serviceRespond(ResultObject resultObject, String view = '/common/serviceResult') {
-        log.debug "serviceRespond: result status is ${resultObject.status} $resultObject"
+        log.debug "serviceRespond: result status is ${resultObject.status}"
         withFormat {
             html {
                 render(view: view, model: [data: resultObject], status: resultObject.remove('status'))
