@@ -947,7 +947,7 @@ INSERT INTO tree_version_element (tree_version_id,
     Map replaceTaxon(TreeVersionElement currentTve, TreeVersionElement parentTve, String instanceUri, Boolean excluded, Map profile, String userName) {
         mustHave('Current Element': currentTve, 'Parent Element': parentTve, 'Instance Uri': instanceUri, userName: userName)
         notPublished(parentTve)
-
+        log.debug "replaceTaxon: with ${currentTve}"
         if (currentTve.treeElement.instanceLink == instanceUri) {
             return [replacementElement: currentTve, problems: "#### Same instance #### \\n\\n *Didn't do anything*"]
         }
@@ -963,13 +963,13 @@ INSERT INTO tree_version_element (tree_version_id,
         List<String> warnings = validateReplacementElement(parentTve, currentTve, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, currentTve.treeElement, userName)
-
+        log.debug "replaceTaxon: treeElement is ${treeElement}"
         String distKey = distributionKey(currentTve)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
         distributionService.reconstructDistribution(treeElement, distString)
 
         TreeVersionElement replacementTve = saveTreeVersionElement(treeElement, parentTve, nextSequenceId(), null, userName)
-
+        log.debug "replaceTaxon: replacementTve is ${replacementTve}"
         updateParentId(currentTve, replacementTve)
         //using flush mode commit, means we have to flush here
         sessionFactory.currentSession.flush()
@@ -1168,10 +1168,13 @@ INSERT INTO tree_version_element (tree_version_id,
         }
 
         //if there is an element that matches the new data use that element
+        // Build the comparator map for the treeElement
         Map elementComparators = comparators(treeVersionElement.treeElement)
 
+        // Get disitKey from DB
         String distKey = distributionKey(treeVersionElement)
 
+        // If excluded and has profile data, throw badargs exception
         excludedValidation(elementComparators.excluded, profile, distKey)
 
         //we don't want to check the whole profile, just the *values* of the comment and distribution
@@ -1184,6 +1187,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         TreeElement foundElement = null
 
+        // Find a te with the same profile data as the one passed to this function
         if (matchingElements?.size()) {
             foundElement = matchingElements.find { TreeElement te ->
                 log.debug "Checking profile of ${te}"

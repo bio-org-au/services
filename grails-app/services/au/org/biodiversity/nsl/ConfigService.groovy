@@ -131,6 +131,10 @@ class ConfigService {
         return getShardConfigOrfail("$productName description")
     }
 
+    String getMenuLabel() {
+        return getShardConfigOrfail('menu label')
+    }
+
     /**
      * Disable the checkPolynomialsBelowNameParent function for virus shard
      */
