@@ -13,7 +13,7 @@ class ExportController {
                 exports: [
                         [label: "${configService.nameTreeName} - Australian ${configService.getMenuLabel()} Names as CSV", url: 'namesCsv'],
                         [label: "${configService.classificationTreeName} - Australian ${configService.getMenuLabel()} Taxon as CSV", url: 'taxonCsv'],
-                        [label: "${configService.nameTreeName} - Australian ${configService.getMenuLabel()} Common Names as CSV", url: 'commonCsv'],
+                        [label: "Australian ${configService.getMenuLabel()} Common Names as CSV", url: 'commonCsv'],
                 ]
         ]
     }
