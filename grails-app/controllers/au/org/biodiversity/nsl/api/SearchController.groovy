@@ -27,6 +27,7 @@ class SearchController implements RequestUtil {
     ConfigService configService
     SearchService searchService
     FlatViewService flatViewService
+    def maxResults = 50
 
     def product(String product) {
         log.debug "Search product $product"
@@ -48,7 +49,7 @@ class SearchController implements RequestUtil {
         String referer = request.getHeader('Referer')
         String remoteIP = remoteAddress(request)
         log.info "Search params $params, Referer: ${referer}, Remote: ${remoteIP}"
-        max = max ?: 100
+        max = max ?: maxResults
         params.display = 'apc'
         //cater for searches that dont use the form
         if (params.name && params.search != 'true' && params.advanced != 'true' && params.nameCheck != 'true') {
@@ -125,7 +126,7 @@ class SearchController implements RequestUtil {
         String remoteIP = remoteAddress(request)
         log.info "Search params $params, Referer: ${referer}, Remote: ${remoteIP}"
 
-        max = max ?: 100
+        max = max ?: maxResults
 
         params.product = configService.nameTreeName
         params.display = 'apni'

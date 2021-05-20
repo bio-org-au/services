@@ -10,7 +10,7 @@ import au.org.biodiversity.nsl.Name
 class NameSearchParams {
     String fullName
     String rankName
-    Integer max = 100
+    Integer max = 50
     Integer countFound = 0
     List<Name> results = []
 
