@@ -5,7 +5,7 @@
     The total number of results available will also be displayed.
   </div>
 </help>
-  <g:select from="${[1, 10, 50, 100, 500, 1000]}" name="max" value="${max}" class="form-control"
+  <g:select from="${[1, 10, 50, 100, 1000, 2000, 5000]}" name="max" value="${max}" class="form-control"
             title="Select the number of results to display."/>
 </label>
 
