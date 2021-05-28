@@ -136,6 +136,7 @@ class SearchService {
         log.debug queryParams.toString()
         Long start = System.currentTimeMillis()
         List<List> counter = (Name.executeQuery(countQuery, queryParams, [max: max])) as List<List>
+        log.debug "count query took ${System.currentTimeMillis() - start}ms"
         Integer total = 0
         Map count = [:]
         counter.each { c ->
@@ -143,7 +144,7 @@ class SearchService {
             count.put(c[1], c[0])
         }
         List<List> nameResults = (Name.executeQuery(query, queryParams, [max: max])) as List<List>
-        log.debug "query took ${System.currentTimeMillis() - start}ms"
+        log.debug "name query took ${System.currentTimeMillis() - start}ms"
         //filter for just names.
         List<Name> names = nameResults.collect { result ->
             result[0] as Name

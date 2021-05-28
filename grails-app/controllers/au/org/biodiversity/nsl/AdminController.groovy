@@ -179,8 +179,29 @@ class AdminController {
         redirect(action: 'index')
     }
 
+
+    @RequiresRoles('admin')
+    runSynonomyUpdateOnInstances() {
+        log.debug "Updating Cached Synonomy on instances"
+        treeService.refreshSynonymHtmlCache()
+        redirect(action: 'index')
+    }
+
+    @RequiresRoles('admin')
+    updateInvalidTreePaths() {
+        treeService.updateInvalidTreePaths()
+        redirect(action: 'index')
+    }
+
+    @RequiresRoles('admin')
+    refreshDisplayHtml() {
+        treeService.refreshDisplayHtml()
+        redirect(action: 'index')
+    }
+
     @RequiresRoles('admin')
     addMissingDistEntries() {
+        log.debug "Updating distribution entries on elements"
         treeService.addDistributionElements()
         redirect(action: 'index')
     }

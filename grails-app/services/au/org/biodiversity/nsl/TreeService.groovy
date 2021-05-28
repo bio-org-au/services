@@ -726,31 +726,37 @@ DROP TABLE IF EXISTS orphans;''')
                     tree.refresh()
                     treeVersion.refresh()
                     createDefaultDraftVersion(tree, treeVersion, draftName, userName, logEntry)
+                    log.debug "bgCreateDefaultDraftVersion: finishing"
                 }
             }
         }
     }
 
     TreeVersion createDefaultDraftVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
+        log.debug "createDefaultDraftVersion: starting"
         log.debug "createDefaultDraftVersion: Name: '$draftName' on '$tree' using '$treeVersion'"
         tree.defaultDraftTreeVersion = createTreeVersion(tree, treeVersion, draftName, userName, logEntry)
-        tree.save()
+        tree.save(flush: true)
         log.debug "createDefaultDraftVersion: New def draft tv created"
+        log.debug "createDefaultDraftVersion: finishing"
+
         return tree.defaultDraftTreeVersion
     }
 
     TreeVersion setDefaultDraftVersion(TreeVersion treeVersion) {
-        log.debug "setDefaultDraftVersion: $treeVersion"
+        log.debug "setDefaultDraftVersion: starting for $treeVersion"
         if (treeVersion.published) {
             throw new BadArgumentsException("TreeVersion must be draft to set as the default draft version. $treeVersion")
         }
         treeVersion.tree.defaultDraftTreeVersion = treeVersion
-        treeVersion.tree.save()
+        treeVersion.tree.save(flush: true)
+        log.debug "setDefaultDraftVersion: finishing"
         return treeVersion
     }
 
     TreeVersion createTreeVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
-        log.debug "createTreeVersion: create tree version '$draftName' on '$tree' using verion '${treeVersion.id}'"
+
+        log.debug "createTreeVersion: starting create tree version '$draftName' on '$tree' using verion '${treeVersion}'"
         if (!draftName) {
             throw new BadArgumentsException("Draft name is required and can't be blank.")
         }
@@ -774,10 +780,13 @@ DROP TABLE IF EXISTS orphans;''')
         log.debug "createTreeVersion: added TreeVersion link $link"
 
         if (fromVersion) {
+            log.debug "createTreeVersion: calling copy version"
             copyVersion(fromVersion, newVersion)
+            log.debug "createTreeVersion: returning to createTreeVersion from copyVersion"
             newVersion.previousVersion = fromVersion
         }
         eventService.dealWith(event)
+        log.debug "createTreeVersion: finishing"
         return newVersion
     }
 
@@ -788,7 +797,7 @@ DROP TABLE IF EXISTS orphans;''')
         log.debug "copyVersion: copying from $fromVersion to $toVersion"
 
         Sql sql = getSql()
-
+        log.debug "copyVersion: Running SQL to copy elements"
         sql.execute('''
 INSERT INTO tree_version_element (tree_version_id, 
                                   tree_element_id, 
@@ -822,11 +831,13 @@ INSERT INTO tree_version_element (tree_version_id,
         log.debug "copyVersion: running analyse on tree_version_id"
         sql.execute('analyse tree_version_element (tree_version_id);')
         toVersion.refresh()
-        log.debug "copyVersion: copied and refreshed"
+
+        log.debug "copyVersion: Copied TVEs and refreshed"
 
         if (fromVersion.treeVersionElements.size() != toVersion.treeVersionElements.size()) {
             throw new ServiceException("Error copying tree version $fromVersion to $toVersion. They are not the same size. ${fromVersion.treeVersionElements.size()} != ${toVersion.treeVersionElements.size()}")
         }
+        log.debug "Calling mapper to add identifiers"
         Map result = linkService.bulkAddTargets(toVersion.treeVersionElements)
         log.info "copyVersion: Result of bulkAddTargets: ${result.toString()}"
         if (!result.success) {
@@ -939,7 +950,7 @@ INSERT INTO tree_version_element (tree_version_id,
     Map replaceTaxon(TreeVersionElement currentTve, TreeVersionElement parentTve, String instanceUri, Boolean excluded, Map profile, String userName) {
         mustHave('Current Element': currentTve, 'Parent Element': parentTve, 'Instance Uri': instanceUri, userName: userName)
         notPublished(parentTve)
-
+        log.debug "replaceTaxon: with ${currentTve}"
         if (currentTve.treeElement.instanceLink == instanceUri) {
             return [replacementElement: currentTve, problems: "#### Same instance #### \\n\\n *Didn't do anything*"]
         }
@@ -955,13 +966,13 @@ INSERT INTO tree_version_element (tree_version_id,
         List<String> warnings = validateReplacementElement(parentTve, currentTve, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, currentTve.treeElement, userName)
-
+        log.debug "replaceTaxon: treeElement is ${treeElement}"
         String distKey = distributionKey(currentTve)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
         distributionService.reconstructDistribution(treeElement, distString)
 
         TreeVersionElement replacementTve = saveTreeVersionElement(treeElement, parentTve, nextSequenceId(), null, userName)
-
+        log.debug "replaceTaxon: replacementTve is ${replacementTve}"
         updateParentId(currentTve, replacementTve)
         //using flush mode commit, means we have to flush here
         sessionFactory.currentSession.flush()
@@ -1153,17 +1164,20 @@ INSERT INTO tree_version_element (tree_version_id,
         treeVersionElement.refresh()
         treeVersionElement.treeElement.refresh() //fetch the element data including treeVersionElements
 
-        log.debug treeVersionElement.treeElement.profile.toString()
-        log.debug profile.toString()
+        log.debug "Stored Pdata: ${treeVersionElement.treeElement.profile.toString()}"
+        log.debug "Passed Pdata: ${profile.toString()}"
         if (treeVersionElement.treeElement.profile == profile) {
             return treeVersionElement // data is equal, do nothing
         }
 
         //if there is an element that matches the new data use that element
+        // Build the comparator map for the treeElement
         Map elementComparators = comparators(treeVersionElement.treeElement)
 
+        // Get disitKey from DB
         String distKey = distributionKey(treeVersionElement)
 
+        // If excluded and has profile data, throw badargs exception
         excludedValidation(elementComparators.excluded, profile, distKey)
 
         //we don't want to check the whole profile, just the *values* of the comment and distribution
@@ -1176,6 +1190,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         TreeElement foundElement = null
 
+        // Find a te with the same profile data as the one passed to this function
         if (matchingElements?.size()) {
             foundElement = matchingElements.find { TreeElement te ->
                 log.debug "Checking profile of ${te}"
@@ -1378,10 +1393,54 @@ INSERT INTO tree_version_element (tree_version_id,
         instance.save()
     }
 
-    def refreshSynonymHtmlCache() {
-        log.debug "Refreshing synonymy cache"
+    /**
+     * Updates the cached_synonymy_html field for an Instance directly in the database if references
+     * or authors were changed. This is triggered at 17:53 every day. Only updates the instances
+     * if the previous tree publication has changes to authors. Accepting synonymy changes will
+     * trigger creation of new treeElements
+     *
+     * This will be decommissioned soon.
+     */
+    def updateInvalidTreePaths() {
+        log.debug "updateInvalidTreePaths: Started updating tree_paths"
         Sql sql = getSql()
-        sql.executeUpdate("update instance set cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>') where id in (select distinct instance_id from tree_element);")
+        def treeDetails = sql.firstRow('''
+            select current_tree_version_id,default_draft_tree_version_id from tree
+            ;''')
+        log.debug("Tree Stats: ${treeDetails}")
+        def treeVersionsToUpdate = [treeDetails['default_draft_tree_version_id'],
+                                    treeDetails['current_tree_version_id']]
+        for (tvId in treeVersionsToUpdate) {
+
+            sql.executeUpdate('''
+            UPDATE tree_version_element AS tve
+            SET tree_path = get_tree_path(tve.tree_element_id, :tvId)
+            FROM searchByName('%', :tvId) as s
+            WHERE tve.tree_path <> get_tree_path(tve.tree_element_id, :tvId)
+            AND tve.element_link = s.element_link;
+            ''', [tvId: tvId])
+            log.debug "Completed updating tvId: ${tvId}"
+        }
+        log.debug "updateInvalidTreePaths: Completed updating tree_paths"
+    }
+
+    /**
+     * Updates the tree_path field for TreeVersionElement directly in the database when the
+     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
+     * reference or author was updated, synonomy accepted and tree published.
+     *
+     * This is a stop gap measure.
+     */
+    def refreshSynonymHtmlCache() {
+        log.debug "refreshSynonymHtmlCache: Refreshing synonymy cache"
+        Sql sql = getSql()
+        sql.executeUpdate('''
+            update instance 
+            set 
+            cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>') 
+            where 
+            id in (select distinct instance_id from tree_element);''')
+        log.debug "refreshSynonymHtmlCache: Completed Refreshing synonymy cache"
     }
 
     /**
@@ -1417,17 +1476,20 @@ where te.display_html <> ('<data>' || n.full_name_html || ' <citation>' || r.cit
      * triggers.
      */
     def refreshDisplayHtml() {
+        log.debug "refreshDisplayHtml: Started"
         Sql sql = getSql()
         sql.executeUpdate('''
-update tree_element te 
-    set display_html = '<data>' || n.full_name_html || 
-    '<name-status class="' || ns.name|| '">, ' || ns.name || '</name-status> <citation>' || r.citation_html || '</citation></data>'
-  from name n join name_status ns on n.name_status_id = ns.id, 
-  instance i, reference r
-  where te.name_id = n.id
-    and te.instance_id = i.id
-    and i.reference_id = r.id;
-''')
+           update tree_element te 
+             set display_html = '<data>' || n.full_name_html || 
+             '<name-status class="' || ns.name|| '">, ' || ns.name || 
+             '</name-status> <citation>' || r.citation_html || '</citation></data>'
+           from name n join name_status ns on n.name_status_id = ns.id, 
+           instance i, reference r
+           where te.name_id = n.id
+             and te.instance_id = i.id
+             and i.reference_id = r.id;
+           ''')
+        log.debug "refreshDisplayHtml: Finished"
     }
 
     /**

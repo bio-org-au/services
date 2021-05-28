@@ -269,7 +269,7 @@
                       <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v1: tree.currentTreeVersion.id, v2: draft.id])}">diff</a>,
                     </g:if>
                     <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'validate', params: [version: draft.id])}">validate</a>,
-                    <a href="${createLink(namespace: 'api', controller: 'tree', action: 'eventReport', params: [treeId: tree.id])}">events</a>
+                    <a href="${createLink(namespace: 'api', controller: 'tree', action: 'checkCurrentSynonymy', params: [treeVersionId: draft.id])}">synonymy</a>
                   </shiro:hasRole>
                 </span>
               </div>

@@ -87,7 +87,7 @@ class AuthorService implements AsyncHelper {
                     rewireDuplicateTo(targetAuthor, dupeAuthor, user)
                     result.rewired = true
 
-                    log.debug "move links to $targetAuthor from $dupeAuthor"
+                    log.debug "move links to TARGET AUTHOR: $targetAuthor FROM DUPE_AUTHOR: $dupeAuthor"
 
                     Map linkResult = linkService.moveTargetLinks(dupeAuthor, targetAuthor)
                     if (!linkResult.success) {

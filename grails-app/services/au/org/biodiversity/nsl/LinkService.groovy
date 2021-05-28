@@ -110,6 +110,7 @@ class LinkService {
     }
 
     Map bulkAddTargets(Collection<TreeVersionElement> targets) {
+        log.debug "bulkAddTargets: starting"
         List<Map> identities = targets.collect { target -> new TargetParam(target, nameSpace()).briefParamMap() }
         String mapper = mapper(true)
         Map result = [success: true]
@@ -143,6 +144,7 @@ class LinkService {
             log.error e.message
             result = [success: false, errors: "Communication error with mapper."]
         }
+        log.debug "bulkAddTargets: Finishing"
         return result
     }
 

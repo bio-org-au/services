@@ -15,8 +15,10 @@ class BaseApiController implements WithTarget {
     def index() {}
 
     protected handleResults(ResultObject results, Closure response, Closure work) {
+        log.debug "handleResults: starting"
         if (results.ok) {
             try {
+                log.debug "handleResults: doing work"
                 work()
             } catch (ObjectExistsException exists) {
                 results.ok = false
@@ -47,33 +49,41 @@ class BaseApiController implements WithTarget {
                 log.error("$published.message : $results")
             }
         }
+        log.debug "handleResults: finishing without exception"
         response()
     }
 
     protected handleResults(ResultObject results, Closure work) {
+        log.debug "handleResults results work : starting"
         handleResults(results, { serviceRespond(results) }, work)
+        log.debug "handleResults results work : finishing"
     }
 
     protected withJsonData(Object json, Boolean list, List<String> requiredKeys, Closure work) {
+        log.debug "withJsonData: starting"
         ResultObject results = new ResultObject([action: params.action], jsonRendererService as JsonRendererService)
         results.ok = true
         if (!json) {
+            log.debug "withJsonData: branch NOT JSON"
             results.ok = false
             results.fail("JSON paramerters not supplied. You must supply JSON parameters ${list ? 'as a list' : requiredKeys}.",
                     BAD_REQUEST)
             return serviceRespond(results)
         }
         if (list && !(json.class instanceof JSONArray)) {
+            log.debug "withJsonData: branch LIST and NOT JSONArray"
             results.ok = false
             results.fail("JSON paramerters not supplied. You must supply JSON parameters as a list.", BAD_REQUEST)
             return serviceRespond(results)
         }
         if (list) {
+            log.debug "withJsonData: branch LIST"
             List data = RestCallService.convertJsonList(json as JSONArray)
             handleResults(results) {
                 work(results, data)
             }
         } else {
+            log.debug "withJsonData: branch ELSE"
             Map data = RestCallService.jsonObjectToMap(json as JSONObject)
             for (String key in requiredKeys) {
                 if (data[key] == null) {

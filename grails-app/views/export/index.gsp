@@ -23,12 +23,15 @@
   <ul>
     <g:each in="${exports}" var="export">
       <li><a href="${export.url}" title="The export file">export ${export.label}</a>
-        (<a href="https://www.anbg.gov.au/ibis25/display/NSL/Data+Extracts+-+Darwin+Core"
-            title="About this export"
-            target="_blank">about</a>)</li>
+        </li>
     </g:each>
   </ul>
-
+  <h5>What do these exports mean?</h5>
+  <div class="text-muted">Read more about these exports
+  <a href="https://ibis-cloud.atlassian.net/wiki/spaces/NSL/pages/1636381/Data+Extracts+-+Darwin+Core"
+                                   title="Read more about these exports"
+                                   target="_blank"><strong>here</strong></a>
+  </div>
 </div>
 </body>
 </html>
