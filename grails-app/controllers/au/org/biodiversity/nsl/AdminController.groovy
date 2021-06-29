@@ -182,9 +182,15 @@ class AdminController {
 
     @RequiresRoles('admin')
     runSynonomyUpdateOnInstances() {
-        log.debug "Updating Cached Synonomy on instances"
-        treeService.refreshSynonymHtmlCache()
-        redirect(action: 'index')
+        if (treeService.checkQueryStatus('synonyms_as_html') < 2) {
+            treeService.refreshSynonymHtmlCache()
+            redirect(action: 'index')
+            flash.message = "Updating Cached Synonomy on instances"
+        } else {
+            redirect(action: 'index')
+            flash.message = "Refresh synonymy cache is already in progress"
+            log.debug "refreshSynonymHtmlCache: Refresh synonymy cache already is in progress"
+        }
     }
 
     @RequiresRoles('admin')
