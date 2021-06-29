@@ -1429,15 +1429,20 @@ INSERT INTO tree_version_element (tree_version_id,
      * This is a stop gap measure.
      */
     def refreshSynonymHtmlCache() {
-        log.debug "refreshSynonymHtmlCache: Refreshing synonymy cache"
         Sql sql = getSql()
-        sql.executeUpdate('''
-            update instance 
-            set 
-            cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>') 
-            where 
+        List<Map> rows = sql.rows('''select query from pg_stat_activity where state = 'active' and query ilike '%synonyms_as_html%';''')
+        if (rows.size() < 2) {
+            log.debug "refreshSynonymHtmlCache: Refreshing synonymy cache"
+            sql.executeUpdate('''
+            update instance
+            set
+            cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>')
+            where
             id in (select distinct instance_id from tree_element);''')
-        log.debug "refreshSynonymHtmlCache: Completed Refreshing synonymy cache"
+            log.debug "refreshSynonymHtmlCache: Completed Refreshing synonymy cache"
+        } else {
+            log.debug "refreshSynonymHtmlCache: Refresh synonymy cache already in progress"
+        }
     }
 
     /**
