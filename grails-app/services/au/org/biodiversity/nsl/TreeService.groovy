@@ -739,6 +739,7 @@ DROP TABLE IF EXISTS orphans;''')
         tree.save(flush: true)
         log.debug "createDefaultDraftVersion: New def draft tv created"
         log.debug "createDefaultDraftVersion: finishing"
+
         return tree.defaultDraftTreeVersion
     }
 
@@ -754,6 +755,7 @@ DROP TABLE IF EXISTS orphans;''')
     }
 
     TreeVersion createTreeVersion(Tree tree, TreeVersion treeVersion, String draftName, String userName, String logEntry) {
+
         log.debug "createTreeVersion: starting create tree version '$draftName' on '$tree' using verion '${treeVersion}'"
         if (!draftName) {
             throw new BadArgumentsException("Draft name is required and can't be blank.")
@@ -829,6 +831,7 @@ INSERT INTO tree_version_element (tree_version_id,
         log.debug "copyVersion: running analyse on tree_version_id"
         sql.execute('analyse tree_version_element (tree_version_id);')
         toVersion.refresh()
+
         log.debug "copyVersion: Copied TVEs and refreshed"
 
         if (fromVersion.treeVersionElements.size() != toVersion.treeVersionElements.size()) {

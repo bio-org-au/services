@@ -27,7 +27,7 @@ class SearchController implements RequestUtil {
     ConfigService configService
     SearchService searchService
     FlatViewService flatViewService
-    def maxResults = 50
+    def maxResults = 100
 
     def product(String product) {
         log.debug "Search product $product"
