@@ -33,7 +33,7 @@ class RestCallService {
     LinkService linkService
     static transactional = false
 
-    private RestBuilder rest = new RestBuilder(readTimeout: 60000, proxy: Proxy.NO_PROXY)
+    private RestBuilder rest = new RestBuilder(readTimeout: 180000, proxy: Proxy.NO_PROXY)
 
     /**
      * log into the mapper and store the JWT and refresh token
