@@ -11,7 +11,7 @@ shard {
 services {
 
     mapper {
-        username = 'TEST-services'
+        username = 'TEST-apni-services'
         password = 'buy-me-a-pony'
     }
 
