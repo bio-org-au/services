@@ -40,37 +40,29 @@ class DistributionService {
     }
 
     TreeElement removeDistributionEntries(TreeElement element) {
-        boolean modified = false
         if (element.distributionEntries) {
             List<DistEntry> entries = new LinkedList<DistEntry>(element.distributionEntries)
             entries.each { DistEntry entry ->
                 element.removeFromDistributionEntries(entry)
-                modified = true
+                // From the documentation: "isDirty() does not currently check collection associations, but it does check all other persistent properties and associations."
+                // I have no idea why the save(flush) is needed to force a save
+                element.save(flush: true)
+                element.markDirty()
             }
-        }
-        if (modified) {
-            // From the documentation: "isDirty() does not currently check collection associations, but it does check all other persistent properties and associations."
-            // I have no idea why the save(flush) is needed to force a save
-            element.save(flush: true)
-            element.markDirty()
         }
         return element
     }
 
     void reconstructDistribution(TreeElement element, String dist, Boolean ignoreErrors = false) {
         removeDistributionEntries(element)
-        boolean modified = false
         if (dist) {
             deconstructDistributionString(dist, ignoreErrors).each { DistEntry entry ->
                 element.addToDistributionEntries(entry)
-                modified = true
+                // From the documentation: "isDirty() does not currently check collection associations, but it does check all other persistent properties and associations."
+                // I have no idea why the save(flush) is needed to force a save
+                element.save(flush: true)
+                element.markDirty()
             }
-        }
-        if (modified) {
-            // From the documentation: "isDirty() does not currently check collection associations, but it does check all other persistent properties and associations."
-            // I have no idea why the save(flush) is needed to force a save
-            element.save(flush: true)
-            element.markDirty()
         }
     }
 }
