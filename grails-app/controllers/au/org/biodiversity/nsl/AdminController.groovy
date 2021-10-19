@@ -184,8 +184,8 @@ class AdminController {
     runSynonomyUpdateOnInstances() {
         if (treeService.checkQueryStatus('synonyms_as_html') < 2) {
             treeService.refreshSynonymHtmlCache()
-            redirect(action: 'index')
             flash.message = "Updating Cached Synonomy on instances"
+            redirect(action: 'index')
         } else {
             redirect(action: 'index')
             flash.message = "Refresh synonymy cache is already in progress"

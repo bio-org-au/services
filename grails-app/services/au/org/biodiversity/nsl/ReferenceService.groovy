@@ -18,6 +18,7 @@ package au.org.biodiversity.nsl
 
 import grails.gorm.transactions.Transactional
 import org.springframework.transaction.TransactionStatus
+import groovy.sql.Sql
 
 import java.sql.Timestamp
 
@@ -27,6 +28,7 @@ class ReferenceService implements AsyncHelper {
     def linkService
     def nameService
     def configService
+    def sessionFactory
 
     private List<Long> seen = []
 
@@ -530,6 +532,7 @@ class ReferenceService implements AsyncHelper {
             log.info "seen note, skipping $note"
             return
         }
+        
         seen.add(note.id)
 
         Author unknownAuthor = Author.findByName('-')
@@ -537,7 +540,6 @@ class ReferenceService implements AsyncHelper {
 
         author.references.each { Reference reference ->
             String citationHtml = generateReferenceCitation(reference, unknownAuthor, editor)
-
             if (reference.citationHtml != citationHtml) {
                 reference.citationHtml = citationHtml
                 reference.citation = NameConstructionService.stripMarkUp(citationHtml)
@@ -549,6 +551,28 @@ class ReferenceService implements AsyncHelper {
                 reference.discard()
             }
         }
+    }
+
+    @Transactional
+    def updateSynonymyOnTreeForAuthor(Long id) {
+        log.debug "Updating synonymy on the tree for author_id (${id})"
+        Sql sql = getSql();
+        def query = "select fn_errata_author_change($id);"
+        sql.execute(query)
+        log.debug "Finished updating tree synonymy of author: (${id})"
+    }
+
+    @Transactional
+    def updateSynonymyOnTreeForReference(Long id) {
+        log.debug "Updating synonymy on the tree for reference_id (${id})"
+        Sql sql = getSql();
+        def query = "select fn_errata_ref_change($id);"
+        sql.execute(query)
+        log.debug "Finished updating tree synonymy of reference: (${id})"
+    }
+
+    private Sql getSql() {
+        return new Sql(sessionFactory.currentSession.connection())
     }
 
 }

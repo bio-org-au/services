@@ -7,7 +7,7 @@ class RecheckSynonymyJob {
     def treeService
 
     static triggers = {
-        //update at 6:30AM every day
+        //update at 5:53 PM every day
         cron name: 'updateSynonymCache', startDelay: 10000, cronExpression: '0 53 17 * * ?'
     }
 

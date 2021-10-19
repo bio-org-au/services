@@ -619,4 +619,11 @@ where child.namePath not like (child.parent.namePath||'/%')''').first() as Integ
         return Sql.newInstance(dataSource)
     }
 
+    def updateSynonymyOnTreeForName(Long id) {
+        log.debug("Updating Synonymy for name (${id}) on the tree")
+        Sql sql = getSql()
+        def query = "select fn_errata_name_change(${id});"
+        sql.execute(query)
+        log.debug("Updated synonymy of name (${id}) on the tree")
+    }
 }

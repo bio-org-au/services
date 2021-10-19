@@ -496,6 +496,9 @@ where lower(n.nameElement) like :query and n.instances.size > 0 and n.nameType.c
      */
     Map checked(params, String set) {
         Map checked = [:]
+        if (params[set] instanceof String) {
+            return checked
+        }
         params[set].each { k, v ->
             if (v == 'on') {
                 checked << [(k): v]

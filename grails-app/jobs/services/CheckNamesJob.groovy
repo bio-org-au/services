@@ -26,14 +26,17 @@ class CheckNamesJob {
     def nameService
     def referenceService
     def instanceService
-    def concurrent = false
-    def sessionRequired = true
+    static concurrent = false
+    static sessionRequired = true
 
     static triggers = {
         simple repeatInterval: 5000l // execute job once in 5 seconds
     }
 
     def execute() {
+        def author_id
+        def reference_id
+        def name_id
         Name.withTransaction {
             List<Notification> notifications = Notification.list(max: 5000, sort: 'id')
             notifications.each { Notification note ->
@@ -43,6 +46,7 @@ class CheckNamesJob {
                             log.debug "Name $note.objectId updated"
                             Name name = Name.get(note.objectId)
                             if (name) {
+                                name_id = name.id
                                 nameService.nameUpdated(name, note)
                             } else {
                                 log.debug "Name $note.objectId  doesn't exist "
@@ -62,8 +66,9 @@ class CheckNamesJob {
                             break
                         case 'author updated':
                             log.debug "Author $note.objectId updated"
-                            Author author = Author.get(note.objectId)
+                            Author author = Author.findById(note.objectId)
                             if (author) {
+                                author_id = author.id
                                 nameService.authorUpdated(author, note)
                                 referenceService.authorUpdated(author, note)
                             } else {
@@ -78,6 +83,7 @@ class CheckNamesJob {
                             log.debug "Reference $note.objectId updated"
                             Reference reference = Reference.get(note.objectId)
                             if (reference) {
+                                reference_id = reference.id
                                 referenceService.checkReferenceChanges(reference)
                             } else {
                                 log.debug "Reference $note.objectId doesn't exist"
@@ -117,5 +123,13 @@ class CheckNamesJob {
                 }
             }
         }
+        if (author_id)
+            referenceService.updateSynonymyOnTreeForAuthor(author_id)
+
+        if (reference_id)
+            referenceService.updateSynonymyOnTreeForReference(reference_id)
+
+        if (name_id)
+            nameService.updateSynonymyOnTreeForName(name_id)
     }
 }
