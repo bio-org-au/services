@@ -131,7 +131,7 @@ class TreeController extends BaseApiController {
     }
 
     private checkSynRespond(ResultObject resultObject, TreeVersion treeVersion, Boolean embed) {
-        log.debug "checkSynRespond: result status is ${resultObject.status} $resultObject"
+        log.debug "checkSynRespond: result status is ${resultObject?.status} - action: ${resultObject?.action} count: ${resultObject?.payload?.count}"
         if (embed) {
             //noinspection GroovyAssignabilityCheck
             log.debug "checkSynRespond: Rendering checkSynContent for treeVersion: $treeVersion"

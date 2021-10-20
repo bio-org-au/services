@@ -129,7 +129,7 @@ class CheckNamesJob {
         if (reference_id)
             referenceService.updateSynonymyOnTreeForReference(reference_id)
 
-        if (name_id)
-            nameService.updateSynonymyOnTreeForName(name_id)
+//        if (name_id)
+//            nameService.updateSynonymyOnTreeForName(name_id)
     }
 }
