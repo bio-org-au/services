@@ -13,6 +13,8 @@
 :numbered:
 
 == v 1.0234
+* Add index action to search controller
+* Added afd shard assets and styles
 * NSL-3831: First draft tree synonymy auto-update functionality for author and reference
 * NSL-3845: Fix ability to delete comments and distribution from services
 * Fix concurrancy issues with grails jobs

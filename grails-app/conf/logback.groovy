@@ -40,7 +40,7 @@ appender("dailyFileAppender", RollingFileAppender) {
 
 
 def targetDir = BuildSettings.TARGET_DIR
-println ("ENV is ${Environment.getCurrent()}")
+// println ("ENV is ${Environment.getCurrent()}")
 if (Environment.isDevelopmentMode() && targetDir != null) {
     root(ERROR, ['STDOUT'])
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
@@ -48,7 +48,7 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
 }
 
 if (Environment.getCurrent() == Environment.PRODUCTION && targetDir != null) {
-    root(ERROR, ['dailyFileAppender'])
+    // root(ERROR, ['dailyFileAppender'], false)
     logger("au.org.biodiversity", DEBUG, ['dailyFileAppender'], false)
     logger("services3", DEBUG, ['dailyFileAppender'], false)
 }
