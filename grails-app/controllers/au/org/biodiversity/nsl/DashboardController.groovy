@@ -106,7 +106,7 @@ class DashboardController {
             Timestamp to
             if (fromInts?.size() == 3 && toInts?.size() == 3) {
                 GregorianCalendar fromCal = new GregorianCalendar(fromInts[2], fromInts[1] - 1, fromInts[0])
-                GregorianCalendar toCal = new GregorianCalendar(toInts[2], toInts[1] - 1, toInts[0])
+                GregorianCalendar toCal = new GregorianCalendar(toInts[2], toInts[1] - 1, toInts[0] + 1)
                 from = new Timestamp(fromCal.time.time)
                 to = new Timestamp(toCal.time.time)
             } else {
@@ -115,12 +115,14 @@ class DashboardController {
                 flash.message = "No period set, using last 7 days."
             }
 
-            List rows = userName ? auditService.list(userName, from, to) : []
+            List rows = userName ? auditService.list(userName, from, to, params?.filterBy) : auditService.list('', from, to, params?.filterBy)
             Map stats = auditService.report(from, to)
-            log.debug stats.toString()
+            // log.debug stats.toString()
+            // log.debug "rows: $rows"
             [auditRows: rows, query: params, stats: stats]
         } else {
-            [auditRows: null, query: [:]]
+            flash.message = "Nothing to show."
+            [auditRows: null, query: [:]]            
         }
     }
 }

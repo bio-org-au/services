@@ -18,7 +18,7 @@ appender('STDOUT', ConsoleAppender) {
                         '%clr(%5p) ' + // Log level
                         '%clr([%4.5t]){green} ' + // Thread
                         '%clr(%-15.20logger{39}){cyan} %clr(:){faint} ' + // Logger
-                        '%m%n%wex' // Message
+                        '%msg %ex{1}%nopex%n' // Message
     }
 }
 
@@ -31,7 +31,7 @@ appender("dailyFileAppender", RollingFileAppender) {
                         '%clr(%5p) ' + // Log level
                         '%clr([%4.5t]){green} ' + // Thread
                         '%clr(%-15.20logger{39}){cyan} %clr(:){faint} ' + // Logger
-                        '%m%n%wex' // Message
+                        '%msg %ex{1}%nopex%n' // Message
     }
     rollingPolicy(TimeBasedRollingPolicy) {
         FileNamePattern = "${(System.getProperty('catalina.base') ?: (System.getProperty('user.home') ?: 'target'))}/logs/services-%d{yyyy-MM-dd}.zip"
@@ -48,7 +48,7 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
 }
 
 if (Environment.getCurrent() == Environment.PRODUCTION && targetDir != null) {
-    // root(ERROR, ['dailyFileAppender'], false)
+    root(ERROR, ['dailyFileAppender'])
     logger("au.org.biodiversity", DEBUG, ['dailyFileAppender'], false)
     logger("services3", DEBUG, ['dailyFileAppender'], false)
 }

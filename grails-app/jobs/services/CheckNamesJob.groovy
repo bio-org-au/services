@@ -34,9 +34,9 @@ class CheckNamesJob {
     }
 
     def execute() {
-        def author_id
-        def reference_id
-        def name_id
+        List authorIds = []
+        List referenceIds = []
+        List nameIds = []
         Name.withTransaction {
             List<Notification> notifications = Notification.list(max: 5000, sort: 'id')
             notifications.each { Notification note ->
@@ -46,7 +46,9 @@ class CheckNamesJob {
                             log.debug "Name $note.objectId updated"
                             Name name = Name.get(note.objectId)
                             if (name) {
-                                name_id = name.id
+                                if (!(name.id in nameIds)) {
+                                    nameIds << name.id
+                                }
                                 nameService.nameUpdated(name, note)
                             } else {
                                 log.debug "Name $note.objectId  doesn't exist "
@@ -68,7 +70,9 @@ class CheckNamesJob {
                             log.debug "Author $note.objectId updated"
                             Author author = Author.findById(note.objectId)
                             if (author) {
-                                author_id = author.id
+                                if (!(author.id in authorIds)) {
+                                    authorIds << author.id
+                                }
                                 nameService.authorUpdated(author, note)
                                 referenceService.authorUpdated(author, note)
                             } else {
@@ -83,7 +87,9 @@ class CheckNamesJob {
                             log.debug "Reference $note.objectId updated"
                             Reference reference = Reference.get(note.objectId)
                             if (reference) {
-                                reference_id = reference.id
+                                if (!(reference.id in referenceIds)) {
+                                    referenceIds << reference.id
+                                }
                                 referenceService.checkReferenceChanges(reference)
                             } else {
                                 log.debug "Reference $note.objectId doesn't exist"
@@ -118,18 +124,35 @@ class CheckNamesJob {
                             //probably caused by previous error. This note will be deleted
                             log.error "unhandled notification $note.message:$note.objectId"
                     }
-                    note.delete()
                     tx.flush()
-                }
+                    note.delete()
+                }                
             }
         }
-        if (author_id)
-            referenceService.updateSynonymyOnTreeForAuthor(author_id)
+        TreeElement.withTransaction {
+            // Update Synonymy on the tree for an author update
+            def processedIds = []
+            for (def authorId in authorIds) {
+                referenceService.updateSynonymyOnTreeForAuthor(authorId)
+                processedIds << authorId
+            }
+            (authorIds - processedIds)
 
-        if (reference_id)
-            referenceService.updateSynonymyOnTreeForReference(reference_id)
-
-//        if (name_id)
-//            nameService.updateSynonymyOnTreeForName(name_id)
+            // Update Synonymy on the tree for an reference update
+            processedIds = []
+            for (def referenceId in referenceIds) {
+                referenceService.updateSynonymyOnTreeForReference(referenceId)
+                processedIds << referenceId
+            }
+            (referenceIds - processedIds)
+                
+            // Update Synonymy on the tree for an name update
+            processedIds = []
+            for (def nameId in nameIds) {
+                nameService.updateSynonymyOnTreeForName(nameId)
+                processedIds << nameId
+            }
+            (nameIds - processedIds)
+        }
     }
 }

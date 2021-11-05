@@ -1425,11 +1425,7 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     /**
-     * Updates the tree_path field for TreeVersionElement directly in the database when the
-     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
-     * reference or author was updated, synonomy accepted and tree published.
-     *
-     * This is a stop gap measure.
+     * Updates cache synonymy_html for all instances in the tree
      */
     def refreshSynonymHtmlCache() {
         Sql sql = getSql()
@@ -1443,10 +1439,54 @@ INSERT INTO tree_version_element (tree_version_id,
         log.debug "refreshSynonymHtmlCache: Completed Refreshing synonymy cache"
     }
 
+    /**
+     * Updates the tree_path field for TreeVersionElement directly in the database when the
+     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
+     * reference or author was updated, synonomy accepted and tree published.
+     *
+     * @param nameId integer
+     */
+    def updateTreeElementsForName(Long nameId) {
+        Sql sql = getSql()
+        sql.execute('select fn_errata_name_change_update_te(' + nameId + ');')
+        log.debug "updateTreeElementsForName: Completed Updating TEs for $nameId"
+    }
+
+    /**
+     * Updates the tree_path field for TreeVersionElement directly in the database when the
+     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
+     * reference or author was updated, synonomy accepted and tree published.
+     *
+     * @param nameId integer
+     */
+    def updateTreeElementsForAuthor(Long authorId) {
+        Sql sql = getSql()
+        sql.execute('select fn_errata_author_change(' + authorId + ');')
+        log.debug "updateTreeElementsForAuthor: Completed Updating TEs for $authorId"
+    }
+
+    /**
+     * Updates the tree_path field for TreeVersionElement directly in the database when the
+     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
+     * reference or author was updated, synonomy accepted and tree published.
+     *
+     * @param nameId integer
+     */
+    def updateTreeElementsForReference(Long referenceId) {
+        Sql sql = getSql()
+        sql.execute('select fn_errata_ref_change(' + referenceId + ');')
+        log.debug "updateTreeElementsForReference: Completed Updating TEs for $referenceId"
+    }
+
+    /**
+     * Checks the status a query about to be run so it isn't run multiple times
+     *
+     * @param string to filter the query by
+     */
     def checkQueryStatus(String filter) {
         Sql sql = getSql()
         List<Map> rows = sql.rows("select query from pg_stat_activity " +
-                "where state = 'active' and query ilike '%"+filter+"%';")
+                "where state = 'active' and query ilike '%" + filter + "%';")
         rows.size()
     }
 
@@ -2148,7 +2188,7 @@ and tve.element_link not in ($excludedLinks)
             String failMessage = "Couldn't fetch $uri"
             restCallService.json('get', uri,
                     { Map data ->
-                        log.debug "Fetched $uri. Response: $data"
+                        log.debug "Fetched $uri. Response: ${data.status}"
                         result.data = data.payload
                     },
                     { Map data, List errors ->

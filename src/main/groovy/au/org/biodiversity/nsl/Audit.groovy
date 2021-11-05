@@ -16,9 +16,11 @@ class Audit {
     final long eventId
     final String table
     final String action
+    final String sessionUserName
     final Map rowData
     final Map changedFields
     final Timestamp actionTimeStamp
+    final String updatedAtTimestamp
     final Object auditedObj
     final Class auditedClass
 
@@ -29,8 +31,10 @@ class Audit {
         this.eventId = row.event_id
         this.actionTimeStamp = row.action_tstamp_tx
         this.table = row.table_name
+        this.sessionUserName = row.session_user_name
         this.action = row.action
         this.rowData = JSON.parse((String) row.rd) as Map
+        this.updatedAtTimestamp = this.rowData?.updated_at
         if (row.cf) {
             this.changedFields = JSON.parse((String) row.cf) as Map
         } else {
@@ -166,5 +170,4 @@ class Audit {
         }
         return elements.join('')
     }
-
 }

@@ -559,7 +559,6 @@ class ReferenceService implements AsyncHelper {
         Sql sql = getSql();
         def query = "select fn_errata_author_change($id);"
         sql.execute(query)
-        log.debug "Finished updating tree synonymy of author: (${id})"
     }
 
     @Transactional
@@ -568,7 +567,6 @@ class ReferenceService implements AsyncHelper {
         Sql sql = getSql();
         def query = "select fn_errata_ref_change($id);"
         sql.execute(query)
-        log.debug "Finished updating tree synonymy of reference: (${id})"
     }
 
     private Sql getSql() {

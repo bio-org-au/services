@@ -194,6 +194,69 @@ class AdminController {
     }
 
     @RequiresRoles('admin')
+    updateTreeElementsForName() {
+        def nameId = params?.nameId
+        nameId = nameId.isLong() ? nameId.toLong() : 0
+        if (nameId) {
+            if (treeService.checkQueryStatus('fn_errata_name_change_update_te') < 2) {
+                flash.message = "Updating Tree Elements For Name $nameId"
+                redirect(action: 'index')
+                treeService.updateTreeElementsForName(nameId)
+            } else {
+                redirect(action: 'index')
+                flash.message = "Updating Tree Elements For Name is already in progress"
+                log.debug "updateTreeElementsForName: Updating Tree Elements For Name is already in progress"
+            }
+        } else {
+            log.debug "updateTreeElementsForName: nameId value was Invalid $nameId"
+            flash.message = "Error: 'nameId' value '$nameId' was Invalid."
+            redirect(action: 'index')
+        }
+    }
+
+    @RequiresRoles('admin')
+    updateTreeElementsForAuthor() {
+        def authorId = params?.authorId
+        authorId = authorId.isLong() ? authorId.toLong() : 0
+        if (authorId) {
+            if (treeService.checkQueryStatus('fn_errata_author_change') < 2) {
+                flash.message = "Updating Tree Elements For Name $authorId"
+                redirect(action: 'index')
+                treeService.updateTreeElementsForAuthor(authorId)
+            } else {
+                redirect(action: 'index')
+                flash.message = "Updating Tree Elements For Name is already in progress"
+                log.debug "updateTreeElementsForAuthor: Updating Tree Elements For Name is already in progress"
+            }
+        } else {
+            log.debug "updateTreeElementsForAuthor: authorId value was Invalid $authorId"
+            flash.message = "Error: 'authorId' value '$authorId' was Invalid."
+            redirect(action: 'index')
+        }
+    }
+
+    @RequiresRoles('admin')
+    updateTreeElementsForReference() {
+        def referenceId = params?.referenceId
+        referenceId = referenceId.isLong() ? referenceId.toLong() : 0
+        if (referenceId) {
+            if (treeService.checkQueryStatus('fn_errata_author_change') < 2) {
+                flash.message = "Updating Tree Elements For Name $referenceId"
+                redirect(action: 'index')
+                treeService.updateTreeElementsForReference(referenceId)
+            } else {
+                redirect(action: 'index')
+                flash.message = "Updating Tree Elements For Name is already in progress"
+                log.debug "updateTreeElementsForReference: Updating Tree Elements For Name is already in progress"
+            }
+        } else {
+            log.debug "updateTreeElementsForReference: referenceId value was Invalid $referenceId"
+            flash.message = "Error: 'referenceId' value '$referenceId' was Invalid."
+            redirect(action: 'index')
+        }
+    }
+
+    @RequiresRoles('admin')
     updateInvalidTreePaths() {
         treeService.updateInvalidTreePaths()
         redirect(action: 'index')

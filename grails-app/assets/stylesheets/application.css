@@ -457,6 +457,44 @@ hybrid::after {
     visibility: visible;
 }
 
+/* Audit screen tr line height hover style */
+div[class^="height-nsl"] {
+    max-height: 3em;
+    overflow: hidden;
+    transition-delay: 5s;
+}
+
+/* Audit screen tr line height hover style */
+div[class^="height-nsl"]:hover {
+    max-height: 100%;
+    transition-delay: 1s;
+}
+
+/* Audit screen tr styles */
+tr[class^="editor-web"] {
+    background-color: #fcf7ff;
+}
+
+/* Audit screen header 1 styles */
+.stats-h1 {
+    background-color: #EEEEEE;
+}
+
+/* Audit screen header 2 styles */
+.stats-h2 {
+    background-color:ivory;
+}
+
+/* Audit screen Search button margin top to align it*/
+.audit-search {
+    margin-top: 1.5em;
+    padding-left: 3em;
+    padding-right: 3em;
+}
+
+.padded {
+    padding: 0.2em 0 0.2em 0;
+}
 
 table.audit-report th {
     text-align: center;
@@ -509,6 +547,6 @@ div.debug {
     margin-top: 20px;
 }
 
-.btn,.btn-light {
+.btn-light {
     margin-bottom: 1em;
 }

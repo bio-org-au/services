@@ -10,8 +10,8 @@ class CleanUpJob {
     def instanceService
     def treeService
 
-    def concurrent = false
-    def sessionRequired = true
+    static concurrent = false
+    static sessionRequired = true
 
     static triggers = {
         //6 AM every day
