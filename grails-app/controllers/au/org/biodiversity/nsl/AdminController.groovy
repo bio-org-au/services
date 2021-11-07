@@ -172,7 +172,6 @@ class AdminController {
     @RequiresRoles('admin')
     refreshViews() {
         log.debug "Refreshing views."
-        String namespaceName = configService.nameSpace.name.toLowerCase()
         flatViewService.refreshTaxonView()
         flatViewService.refreshNameView()
         log.debug "Refreshed views."
@@ -181,10 +180,10 @@ class AdminController {
 
 
     @RequiresRoles('admin')
-    runSynonomyUpdateOnInstances() {
+    runSynonymyUpdateOnInstances() {
         if (treeService.checkQueryStatus('synonyms_as_html') < 2) {
             treeService.refreshSynonymHtmlCache()
-            flash.message = "Updating Cached Synonomy on instances"
+            flash.message = "Updating Cached Synonymy on instances"
             redirect(action: 'index')
         } else {
             redirect(action: 'index')
@@ -204,8 +203,8 @@ class AdminController {
                 treeService.updateTreeElementsForName(nameId)
             } else {
                 redirect(action: 'index')
-                flash.message = "Updating Tree Elements For Name is already in progress"
-                log.debug "updateTreeElementsForName: Updating Tree Elements For Name is already in progress"
+                flash.message = "Updating Tree Elements For Name '$nameId' is already in progress"
+                log.debug "updateTreeElementsForName: Updating Tree Elements For Name '$nameId' is already in progress"
             }
         } else {
             log.debug "updateTreeElementsForName: nameId value was Invalid $nameId"
@@ -220,13 +219,13 @@ class AdminController {
         authorId = authorId.isLong() ? authorId.toLong() : 0
         if (authorId) {
             if (treeService.checkQueryStatus('fn_errata_author_change') < 2) {
-                flash.message = "Updating Tree Elements For Name $authorId"
+                flash.message = "Updating Tree Elements For Author $authorId"
                 redirect(action: 'index')
                 treeService.updateTreeElementsForAuthor(authorId)
             } else {
                 redirect(action: 'index')
-                flash.message = "Updating Tree Elements For Name is already in progress"
-                log.debug "updateTreeElementsForAuthor: Updating Tree Elements For Name is already in progress"
+                flash.message = "Updating Tree Elements For Author $authorId is already in progress"
+                log.debug "updateTreeElementsForAuthor: Updating Tree Elements For Author $authorId is already in progress"
             }
         } else {
             log.debug "updateTreeElementsForAuthor: authorId value was Invalid $authorId"
@@ -241,13 +240,13 @@ class AdminController {
         referenceId = referenceId.isLong() ? referenceId.toLong() : 0
         if (referenceId) {
             if (treeService.checkQueryStatus('fn_errata_author_change') < 2) {
-                flash.message = "Updating Tree Elements For Name $referenceId"
+                flash.message = "Updating Tree Elements For Author $referenceId"
                 redirect(action: 'index')
                 treeService.updateTreeElementsForReference(referenceId)
             } else {
                 redirect(action: 'index')
-                flash.message = "Updating Tree Elements For Name is already in progress"
-                log.debug "updateTreeElementsForReference: Updating Tree Elements For Name is already in progress"
+                flash.message = "Updating Tree Elements For Reference $referenceId is already in progress"
+                log.debug "updateTreeElementsForReference: Updating Tree Elements For Reference $referenceId is already in progress"
             }
         } else {
             log.debug "updateTreeElementsForReference: referenceId value was Invalid $referenceId"

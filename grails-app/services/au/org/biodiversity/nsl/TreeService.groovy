@@ -1426,6 +1426,8 @@ INSERT INTO tree_version_element (tree_version_id,
 
     /**
      * Updates cache synonymy_html for all instances in the tree
+     * 2021 11 07: Updated script to add timestamp and updated_by
+     * fields as well so audit report is accurate
      */
     def refreshSynonymHtmlCache() {
         Sql sql = getSql()
@@ -1433,16 +1435,20 @@ INSERT INTO tree_version_element (tree_version_id,
         sql.executeUpdate('''
         update instance
         set
-        cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>')
+            cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>'),
+            updated_by = 'SynonymyUpdateJob',
+            updated_at = now()
         where
-        id in (select distinct instance_id from tree_element);''')
-        log.debug "refreshSynonymHtmlCache: Completed Refreshing synonymy cache"
+            id in (select distinct instance_id from tree_element)
+        and
+             cached_synonymy_html <> coalesce(synonyms_as_html(id), '<synonyms></synonyms>');''')
+        log.debug "refreshSynonymHtmlCache: Changed ${sql.updateCount} instances' synonymy cache"
     }
 
     /**
      * Updates the tree_path field for TreeVersionElement directly in the database when the
      * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
-     * reference or author was updated, synonomy accepted and tree published.
+     * reference or author was updated, synonymy accepted and tree published.
      *
      * @param nameId integer
      */
@@ -1455,7 +1461,7 @@ INSERT INTO tree_version_element (tree_version_id,
     /**
      * Updates the tree_path field for TreeVersionElement directly in the database when the
      * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
-     * reference or author was updated, synonomy accepted and tree published.
+     * reference or author was updated, synonymy accepted and tree published.
      *
      * @param nameId integer
      */
@@ -1468,7 +1474,7 @@ INSERT INTO tree_version_element (tree_version_id,
     /**
      * Updates the tree_path field for TreeVersionElement directly in the database when the
      * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
-     * reference or author was updated, synonomy accepted and tree published.
+     * reference or author was updated, synonymy accepted and tree published.
      *
      * @param nameId integer
      */

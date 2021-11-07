@@ -119,7 +119,7 @@ class TreeController extends BaseApiController {
 
     def synonymyOrderingInfo(Instance instance) {
         ResultObject results = requireTarget(instance, "No instance supplied.")
-        log.debug "synonymyOrderingInfo: Getting Synonomy ordering info"
+        log.debug "synonymyOrderingInfo: Getting Synonymy ordering info"
         handleResults(results, { synOrderRespond(results) }) {
             results.payload = treeReportService.getSynonymOrderingInfo(instance)
         }

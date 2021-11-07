@@ -12,12 +12,19 @@
 :links:
 :numbered:
 
+== v1.0235
+* NSL-3831: Fixed issues in last version of synonymy changes
+* Changes to audit reporting
+* Added more admin functions
+* Changes 1753 job to update only outdated instances
+* Fix concurrency issues with cleanUp job
+
 == v 1.0234
 * Add index action to search controller
 * Added afd shard assets and styles
 * NSL-3831: First draft tree synonymy auto-update functionality for author and reference
 * NSL-3845: Fix ability to delete comments and distribution from services
-* Fix concurrancy issues with grails jobs
+* Fix concurrency issues with grails jobs
 * Changes to Search endpoint to avoid logs from filling up (WIP)
 
 == v 1.0233

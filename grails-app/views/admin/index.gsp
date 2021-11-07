@@ -213,11 +213,11 @@
               Replace XICs in Instance Notes
             </a>
           </li>
-          <%-- Run Synonomy Update On Instances --%>
+          <%-- Run Synonymy Update On Instances --%>
           <li>
             <a class=""
-               href="${g.createLink(controller: "admin", action: "runSynonomyUpdateOnInstances")}">
-              Run Synonomy Update On Instances
+               href="${g.createLink(controller: "admin", action: "runSynonymyUpdateOnInstances")}">
+              Run Synonymy Update On Instances
             </a> <span class="text text-muted">(Browser Hangs - But Navigate Away)</span>
           </li>
           <%-- update Tree Elements For Name --%>
