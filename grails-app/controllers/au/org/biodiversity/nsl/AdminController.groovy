@@ -193,6 +193,18 @@ class AdminController {
     }
 
     @RequiresRoles('admin')
+    getInvalidTaxonLinkCount() {
+        if (treeService.checkQueryStatus('autaxon') < 2) {
+            def count = treeService.getInvalidTaxonLinkCount()
+            flash.message = "Invalid Count of Tree taxon_link: ${count}"
+            redirect(action: 'index')
+        } else {
+            redirect(action: 'index')
+            flash.message = "Already in progress 'Invalid Count of Tree taxon_link entries'"
+        }
+    }
+
+    @RequiresRoles('admin')
     updateTreeElementsForName() {
         def nameId = params?.nameId
         nameId = nameId.isLong() ? nameId.toLong() : 0

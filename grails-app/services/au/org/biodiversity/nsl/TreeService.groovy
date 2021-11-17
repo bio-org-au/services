@@ -1049,7 +1049,7 @@ INSERT INTO tree_version_element (tree_version_id,
             parents.each { TreeVersionElement element ->
                 if (!isUniqueTaxon(element)) {
                     element.taxonId = nextSequenceId(sql)
-                    element.taxonLink = linkService.addTaxonIdentifier(element) - hostPart
+                    element.taxonLink = "/" + linkService.addTaxonIdentifier(element) - hostPart
                     element.save()
                 }
             }
@@ -2386,5 +2386,12 @@ and not exists (select 1 from tree_element_distribution_entries tede where tede.
             te.save()
             log.debug "Updated $te, added ${te.distributionEntries.size()} dist entries."
         }
+    }
+
+    def getInvalidTaxonLinkCount() {
+        Sql sql = getSql()
+        def row = sql.firstRow("select count(taxon_link) from tree_version_element where taxon_link like 'taxon%'")
+        log.debug "Invalid taxon_link count is: ${row.count}"
+        row.count
     }
 }
