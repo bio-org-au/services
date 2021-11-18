@@ -492,6 +492,25 @@ tr[class^="editor-web"] {
     padding-right: 3em;
 }
 
+/*Audit screen styles for synonymy diff to place one element per line*/
+div[class^="height-"] div.diffBefore > synonyms > mis,
+div[class^="height-"] div.diffBefore > synonyms > mis::after,
+div[class^="height-"] div.diffBefore > synonyms > nom,
+div[class^="height-"] div.diffBefore > synonyms > nom::after,
+div[class^="height-"] div.diffBefore > synonyms > tax,
+div[class^="height-"] div.diffBefore > synonyms > tax::after,
+div[class^="height-"] div.diffAfter > synonyms > mis,
+div[class^="height-"] div.diffAfter > synonyms > mis::after,
+div[class^="height-"] div.diffAfter > synonyms > nom,
+div[class^="height-"] div.diffAfter > synonyms > nom::after,
+div[class^="height-"] div.diffAfter > synonyms > tax,
+div[class^="height-"] div.diffAfter > synonyms > tax::after {
+    line-height: 1.6;
+    content: "\A";
+    white-space: pre;
+}
+
+/* Apply padding top and bottom to an element */
 .padded {
     padding: 0.2em 0 0.2em 0;
 }
