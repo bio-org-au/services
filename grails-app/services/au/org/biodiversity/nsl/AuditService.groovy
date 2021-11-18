@@ -13,6 +13,7 @@ class AuditService implements WithSql {
 
     List<Audit> list(String userName, Timestamp from, Timestamp to, String filter) {
         String tableName
+        String sessionUser = '%'
         userName = userName ?: '%'
         if (filter == 'all') {
             tableName = '%'
@@ -21,16 +22,18 @@ class AuditService implements WithSql {
         } else {
             return []
         }
-        println "tableName: $tableName"
         List rows = []
         withSql { Sql sql ->
             sql.eachRow("""
-SELECT event_id, action_tstamp_tx, session_user_name, table_name, action, hstore_to_json(row_data) AS rd, hstore_to_json(changed_fields) AS cf FROM audit.logged_actions 
+SELECT event_id, action_tstamp_tx, session_user_name, table_name, action, 
+  hstore_to_json(row_data) AS rd, hstore_to_json(changed_fields) AS cf 
+FROM audit.logged_actions 
 WHERE action_tstamp_tx > :from 
  AND action_tstamp_tx < :to 
  AND table_name ILIKE :tableName
+ AND  session_user_name ILIKE :sessionUser
  AND (changed_fields -> 'updated_by' LIKE :user OR (row_data -> 'updated_by' LIKE :user AND changed_fields -> 'updated_by' IS NULL))
- ORDER BY event_id DESC LIMIT 500""", [from: from, to: to, user: userName, tableName: tableName]) { GroovyResultSet row ->
+ ORDER BY event_id DESC LIMIT 500""", [from: from, to: to, user: userName, tableName: tableName, sessionUser: sessionUser]) { GroovyResultSet row ->
                 // log.debug(row.toString())
                 rows.add(new Audit(row))
             }

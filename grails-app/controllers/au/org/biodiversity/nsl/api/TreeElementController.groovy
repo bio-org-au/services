@@ -231,7 +231,7 @@ class TreeElementController extends BaseApiController {
     def updateSynonymyByInstance() {
         List<Long> instanceIds = paramIdList(params.instances)
 
-        log.debug instanceIds.toString()
+        log.debug "updateSynonymyByInstance: Instance IDs: ${instanceIds.toString()}"
         ResultObject results = require('instances': instanceIds)
 
         handleResults(results) {

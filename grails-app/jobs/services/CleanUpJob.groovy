@@ -21,10 +21,10 @@ class CleanUpJob {
     def execute() {
         Name.withTransaction {
             println "Running cleanup."
-            authorService.autoDeduplicate('cleanUpJob')
             referenceService.deduplicateMarked('cleanUpJob')
             instanceService.updateMissingUris()
             nameService.updateMissingUris()
+            authorService.autoDeduplicate('cleanUpJob')
             treeService.refreshDisplayHtml()
         }
     }
