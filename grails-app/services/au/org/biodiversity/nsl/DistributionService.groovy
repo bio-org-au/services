@@ -72,13 +72,11 @@ class DistributionService {
         Set<DistEntry> oldEntries = element.distributionEntries.collect{it.distEntry} ?: new HashSet<>()
         List<DistEntry> newEntryList = deconstructDistributionString(dist, ignoreErrors)
         Set<DistEntry> newEntries = new HashSet<>(newEntryList)
-//        boolean modified = false
 
         oldEntries.minus(newEntries).each { DistEntry entry ->
             TreeElementDistEntry ent = element.distributionEntries.find {it.distEntry == entry }
             element.removeFromDistributionEntries(ent)
             ent.delete()
-//            modified = true
         }
         newEntries.minus(oldEntries).each { DistEntry entry ->
             TreeElementDistEntry ent = new TreeElementDistEntry(
@@ -87,15 +85,6 @@ class DistributionService {
             )
             ent.save()
             element.addToDistributionEntries(ent)
-//            modified = true
         }
-//        if (modified) {
-//            // From the documentation: "isDirty() does not currently check collection associations, but it does check all other persistent properties and associations."
-//            // I have no idea why the save(flush) is needed to force a save
-//            element.save(flush: true)
-//            element.markDirty()
-//            element.save(flush: true)
-//            element.markDirty()
-//        }
     }
 }
