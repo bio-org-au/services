@@ -1199,6 +1199,8 @@ INSERT INTO tree_version_element (tree_version_id,
                         compareProfileMapValues(profile, te.profile)
             }
         }
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString)
 
         if (foundElement) {
             if (treeVersionElement.treeElement.id == foundElement.id) {
@@ -1212,7 +1214,7 @@ INSERT INTO tree_version_element (tree_version_id,
         //if this is not a draft only element clone it
         if (treeVersionElement.treeElement.treeVersionElements.size() > 1) {
             log.debug "No matching element, creating a new one."
-            TreeElement copiedElement = copyTreeElement(treeVersionElement.treeElement, userName)
+            TreeElement copiedElement = copyTreeElement(treeVersionElement, userName)
             treeVersionElement = changeElement(treeVersionElement, copiedElement, userName)
             treeVersionElement.save(flush: true)
             log.debug "Created. ${treeVersionElement.treeElement}."
@@ -1221,8 +1223,7 @@ INSERT INTO tree_version_element (tree_version_id,
             log.debug "Editing draft element ${treeVersionElement.treeElement}."
         }
 
-        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString)
+
 
         Timestamp now = new Timestamp(System.currentTimeMillis())
 
@@ -1314,7 +1315,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         //if this is not a draft only element clone it
         if (treeVersionElement.treeElement.treeVersionElements.size() > 1) {
-            TreeElement copiedElement = copyTreeElement(treeVersionElement.treeElement, userName)
+            TreeElement copiedElement = copyTreeElement(treeVersionElement, userName)
             treeVersionElement = changeElement(treeVersionElement, copiedElement, userName)
             //don't update taxonId above as the taxon hasn't changed
         } else {
@@ -1369,6 +1370,10 @@ INSERT INTO tree_version_element (tree_version_id,
             treeVersionElement = changeElement(treeVersionElement, updatedElement, userName)
             // don't update taxonId above as the instance hasn't changed, and other taxon changes will have already
             // updated the taxon id
+            Map profile = updatedElement.profile
+            String distKey = distributionKey(treeVersionElement)
+            String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+            distributionService.reconstructDistribution(updatedElement, distString)
         } else {
             treeVersionElement.treeElement.synonyms = taxonData.synonyms.asMap()
             treeVersionElement.treeElement.synonymsHtml = taxonData.synonymsHtml
@@ -1710,7 +1715,8 @@ and regex(namePath, :newPath) = true
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
-    private TreeElement copyTreeElement(TreeElement source, String userName) {
+    private TreeElement copyTreeElement(TreeVersionElement tve, String userName) {
+        TreeElement source = tve.treeElement
         TreeElement treeElement = new TreeElement(instanceId: source.instanceId,
                 nameId: source.nameId,
                 excluded: source.excluded,
@@ -1727,11 +1733,15 @@ and regex(namePath, :newPath) = true
                 instanceLink: source.instanceLink,
                 updatedBy: userName,
                 updatedAt: new Timestamp(System.currentTimeMillis()))
-        treeElement.save()
+        Map profile = treeElement.profile
+        String distKey = distributionKey(tve)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+        distributionService.reconstructDistribution(treeElement, distString)
         // setting these references here because of a bug? setting in the map above where the parentElement
         // changes to this new element.
         treeElement.previousElement = source
-        treeElement.save(flush: true)
+        treeElement.save()
+//        treeElement.save(flush: true)
         return treeElement
     }
 
