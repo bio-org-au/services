@@ -288,6 +288,12 @@
               Update Tree Version Element Display
             </a> <span class="text text-muted">(Browser Hangs - But Navigate Away)</span>
           </li>
+          <li>
+            <a class=""
+               href="${g.createLink(controller: "admin", action: "getInvalidTaxonLinkCount")}">
+              Check Invalid <strong>taxon_link</strong> count
+            </a>
+          </li>
         </ul>
       </div>
     </div>
