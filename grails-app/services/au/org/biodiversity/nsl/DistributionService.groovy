@@ -69,6 +69,10 @@ class DistributionService {
 //    }
 
     void reconstructDistribution(TreeElement element, String dist, Boolean ignoreErrors = false) {
+        TreeElement.withTransaction {
+            // TreeElementDistEntry with its compound key, doesn't really work without the id being assigned
+            element.save()
+        }
         Set<DistEntry> oldEntries = element.distributionEntries.collect{it.distEntry} ?: new HashSet<>()
         List<DistEntry> newEntryList = deconstructDistributionString(dist, ignoreErrors)
         Set<DistEntry> newEntries = new HashSet<>(newEntryList)
