@@ -80,7 +80,7 @@ class DistributionService {
         oldEntries.minus(newEntries).each { DistEntry entry ->
             TreeElementDistEntry ent = element.distributionEntries.find {it.distEntry == entry }
             element.removeFromDistributionEntries(ent)
-            ent.delete()
+//            ent.delete()
         }
         newEntries.minus(oldEntries).each { DistEntry entry ->
             TreeElementDistEntry ent = new TreeElementDistEntry(
