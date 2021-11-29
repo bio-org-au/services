@@ -2,6 +2,8 @@ package au.org.biodiversity.nsl
 
 import grails.gorm.transactions.Transactional
 
+import java.sql.Timestamp
+
 @Transactional
 class DistributionService {
 
@@ -68,24 +70,21 @@ class DistributionService {
 //        }
 //    }
 
-    void reconstructDistribution(TreeElement element, String dist, Boolean ignoreErrors = false) {
-        TreeElement.withTransaction {
-            // TreeElementDistEntry with its compound key, doesn't really work without the id being assigned
-            element.save()
-        }
+    void reconstructDistribution(TreeElement element, String dist, String userName, Boolean ignoreErrors = false) {
         Set<DistEntry> oldEntries = element.distributionEntries.collect{it.distEntry} ?: new HashSet<>()
         List<DistEntry> newEntryList = deconstructDistributionString(dist, ignoreErrors)
         Set<DistEntry> newEntries = new HashSet<>(newEntryList)
-
         oldEntries.minus(newEntries).each { DistEntry entry ->
             TreeElementDistEntry ent = element.distributionEntries.find {it.distEntry == entry }
             element.removeFromDistributionEntries(ent)
-//            ent.delete()
+            ent.delete()
         }
         newEntries.minus(oldEntries).each { DistEntry entry ->
             TreeElementDistEntry ent = new TreeElementDistEntry(
                     treeElement: element,
-                    distEntry: entry
+                    distEntry: entry,
+                    updatedAt: new Timestamp(System.currentTimeMillis()),
+                    updatedBy: userName
             )
             ent.save()
             element.addToDistributionEntries(ent)
