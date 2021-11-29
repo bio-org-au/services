@@ -1170,8 +1170,9 @@ INSERT INTO tree_version_element (tree_version_id,
         // Get disitKey from DB
         String distKey = distributionKey(treeVersionElement)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
         if (treeVersionElement.treeElement.profile == profile) {
+            // defensive update... shouldn't be necessary if everything is in sync, and will do nothing then
+            distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
             return treeVersionElement // data is equal, do nothing
         }
 
@@ -1209,6 +1210,7 @@ INSERT INTO tree_version_element (tree_version_id,
                 return treeVersionElement
             }
             log.debug "Reusing $foundElement"
+            // defensive update... shouldn't be necessary if everything is in sync, and will do nothing then
             distributionService.reconstructDistribution(foundElement, distString, userName)
             return changeElement(treeVersionElement, foundElement, userName)
         }
@@ -1224,8 +1226,7 @@ INSERT INTO tree_version_element (tree_version_id,
         } else {
             log.debug "Editing draft element ${treeVersionElement.treeElement}."
         }
-
-
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
 
         Timestamp now = new Timestamp(System.currentTimeMillis())
 
