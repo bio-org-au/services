@@ -882,7 +882,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         String distKey = distributionKey(parentElement)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString)
+        distributionService.reconstructDistribution(treeElement, distString, userName)
 
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, parentElement, nextSequenceId(), null, userName)
         updateParentTaxonId(parentElement)
@@ -922,7 +922,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         String distKey = distributionKey(treeVersion)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString)
+        distributionService.reconstructDistribution(treeElement, distString, userName)
 
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, null, treeVersion, nextSequenceId(), null, userName)
 
@@ -969,7 +969,7 @@ INSERT INTO tree_version_element (tree_version_id,
         log.debug "replaceTaxon: treeElement is ${treeElement}"
         String distKey = distributionKey(currentTve)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString)
+        distributionService.reconstructDistribution(treeElement, distString, userName)
 
         TreeVersionElement replacementTve = saveTreeVersionElement(treeElement, parentTve, nextSequenceId(), null, userName)
         log.debug "replaceTaxon: replacementTve is ${replacementTve}"
@@ -1166,7 +1166,13 @@ INSERT INTO tree_version_element (tree_version_id,
 
         log.debug "Stored Pdata: ${treeVersionElement.treeElement.profile.toString()}"
         log.debug "Passed Pdata: ${profile.toString()}"
+
+        // Get disitKey from DB
+        String distKey = distributionKey(treeVersionElement)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
         if (treeVersionElement.treeElement.profile == profile) {
+            // defensive update... shouldn't be necessary if everything is in sync, and will do nothing then
+            distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
             return treeVersionElement // data is equal, do nothing
         }
 
@@ -1174,8 +1180,6 @@ INSERT INTO tree_version_element (tree_version_id,
         // Build the comparator map for the treeElement
         Map elementComparators = comparators(treeVersionElement.treeElement)
 
-        // Get disitKey from DB
-        String distKey = distributionKey(treeVersionElement)
 
         // If excluded and has profile data, throw badargs exception
         excludedValidation(elementComparators.excluded, profile, distKey)
@@ -1199,15 +1203,16 @@ INSERT INTO tree_version_element (tree_version_id,
                         compareProfileMapValues(profile, te.profile)
             }
         }
-        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString)
 
         if (foundElement) {
             if (treeVersionElement.treeElement.id == foundElement.id) {
                 log.debug "Same Tree element $foundElement as before - nothing to do?"
+                distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
                 return treeVersionElement
             }
             log.debug "Reusing $foundElement"
+            // defensive update... shouldn't be necessary if everything is in sync, and will do nothing then
+            distributionService.reconstructDistribution(foundElement, distString, userName)
             return changeElement(treeVersionElement, foundElement, userName)
         }
 
@@ -1222,8 +1227,7 @@ INSERT INTO tree_version_element (tree_version_id,
         } else {
             log.debug "Editing draft element ${treeVersionElement.treeElement}."
         }
-
-
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
 
         Timestamp now = new Timestamp(System.currentTimeMillis())
 
@@ -1252,7 +1256,7 @@ INSERT INTO tree_version_element (tree_version_id,
         excludedValidation(treeVersionElement.treeElement.excluded, distribution)
         String distKey = distributionKey(treeVersionElement)
         //this will throw an exception if the distribution string is bad.
-        distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution)
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution, userName)
         //re-order the distribution string correctly
         distribution = distributionService.constructDistributionString(treeVersionElement.treeElement)
         treeVersionElement.treeElement.save(flush: true)
@@ -1373,7 +1377,7 @@ INSERT INTO tree_version_element (tree_version_id,
             Map profile = updatedElement.profile
             String distKey = distributionKey(treeVersionElement)
             String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-            distributionService.reconstructDistribution(updatedElement, distString)
+            distributionService.reconstructDistribution(updatedElement, distString, userName)
         } else {
             treeVersionElement.treeElement.synonyms = taxonData.synonyms.asMap()
             treeVersionElement.treeElement.synonymsHtml = taxonData.synonymsHtml
@@ -1736,12 +1740,11 @@ and regex(namePath, :newPath) = true
         Map profile = treeElement.profile
         String distKey = distributionKey(tve)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString)
         // setting these references here because of a bug? setting in the map above where the parentElement
         // changes to this new element.
         treeElement.previousElement = source
         treeElement.save()
-//        treeElement.save(flush: true)
+        distributionService.reconstructDistribution(treeElement, distString, userName)
         return treeElement
     }
 
@@ -2392,8 +2395,8 @@ where te.profile -> 'APC Dist.' is not null
 and not exists (select 1 from tree_element_distribution_entries tede where tede.tree_element_id = te.id);
 ''') { row ->
             TreeElement te = TreeElement.get(row.id)
-            distributionService.reconstructDistribution(te, te.profile."APC Dist.".value, true)
             te.save()
+            distributionService.reconstructDistribution(te, te.profile."APC Dist.".value, te.updatedBy, true)
             log.debug "Updated $te, added ${te.distributionEntries.size()} dist entries."
         }
     }
