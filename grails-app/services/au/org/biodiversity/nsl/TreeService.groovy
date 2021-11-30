@@ -1170,8 +1170,9 @@ INSERT INTO tree_version_element (tree_version_id,
         // Get disitKey from DB
         String distKey = distributionKey(treeVersionElement)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
         if (treeVersionElement.treeElement.profile == profile) {
+            // defensive update... shouldn't be necessary if everything is in sync, and will do nothing then
+            distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
             return treeVersionElement // data is equal, do nothing
         }
 
@@ -1206,9 +1207,11 @@ INSERT INTO tree_version_element (tree_version_id,
         if (foundElement) {
             if (treeVersionElement.treeElement.id == foundElement.id) {
                 log.debug "Same Tree element $foundElement as before - nothing to do?"
+                distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
                 return treeVersionElement
             }
             log.debug "Reusing $foundElement"
+            // defensive update... shouldn't be necessary if everything is in sync, and will do nothing then
             distributionService.reconstructDistribution(foundElement, distString, userName)
             return changeElement(treeVersionElement, foundElement, userName)
         }
@@ -1224,8 +1227,7 @@ INSERT INTO tree_version_element (tree_version_id,
         } else {
             log.debug "Editing draft element ${treeVersionElement.treeElement}."
         }
-
-
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
 
         Timestamp now = new Timestamp(System.currentTimeMillis())
 
@@ -1738,12 +1740,11 @@ and regex(namePath, :newPath) = true
         Map profile = treeElement.profile
         String distKey = distributionKey(tve)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString, userName)
         // setting these references here because of a bug? setting in the map above where the parentElement
         // changes to this new element.
         treeElement.previousElement = source
         treeElement.save()
-//        treeElement.save(flush: true)
+        distributionService.reconstructDistribution(treeElement, distString, userName)
         return treeElement
     }
 
@@ -2394,8 +2395,8 @@ where te.profile -> 'APC Dist.' is not null
 and not exists (select 1 from tree_element_distribution_entries tede where tede.tree_element_id = te.id);
 ''') { row ->
             TreeElement te = TreeElement.get(row.id)
-            distributionService.reconstructDistribution(te, te.profile."APC Dist.".value, te.updatedBy, true)
             te.save()
+            distributionService.reconstructDistribution(te, te.profile."APC Dist.".value, te.updatedBy, true)
             log.debug "Updated $te, added ${te.distributionEntries.size()} dist entries."
         }
     }
