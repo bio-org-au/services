@@ -1281,11 +1281,18 @@ INSERT INTO tree_version_element (tree_version_id,
             return treeVersionElement
         }
 
-        ProfileValue profileValue = new ProfileValue(value, userName, profile[key] as Map, reason)
+        Map previousValue = [:]
+        if(profile?.containsKey(key)) {
+            previousValue.putAll(profile[key] as Map)
+        }
 
-        treeVersionElement.treeElement.profile[key] = profileValue.toMap()
+        ProfileValue profileValue = new ProfileValue(value, userName, profile[key] as Map, reason)
+        Map finalProfileValue = profile.findAll { it.key != key }
+        finalProfileValue.put(key, profileValue.toMap())
+        log.debug("oldProfileValue is: $profile")
+        log.debug("updatedProfileValue is: $finalProfileValue")
+        treeVersionElement.treeElement.profile = finalProfileValue
         treeVersionElement.treeElement.save()
-        log.debug treeVersionElement.treeElement.profile.toString()
         return treeVersionElement
     }
 
