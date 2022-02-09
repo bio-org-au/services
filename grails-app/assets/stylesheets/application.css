@@ -457,6 +457,11 @@ hybrid::after {
     visibility: visible;
 }
 
+hybrid[title="intergrade"]::after {
+    content: '-';
+    margin-right: 0;
+}
+
 /* Audit screen tr line height hover style */
 div[class^="height-nsl"] {
     max-height: 3em;

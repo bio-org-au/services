@@ -132,11 +132,11 @@ class SearchService {
         String countQuery = "select count(distinct n) as count, n.nameRank.name as rank, n.nameRank.sortOrder $fromClause $whereClause group by n.nameRank.name, n.nameRank.sortOrder order by n.nameRank.sortOrder"
         String query = "select distinct(n), n.sortName, n.nameRank.sortOrder $fromClause $whereClause order by n.namePath"
 
-        log.debug query
-        log.debug queryParams.toString()
+        log.debug "search query: ${query}"
+        log.debug "Total Query params: ${queryParams.size()} :: Details: ${queryParams.toString()}"
         Long start = System.currentTimeMillis()
         List<List> counter = (Name.executeQuery(countQuery, queryParams, [max: max])) as List<List>
-        log.debug "count query took ${System.currentTimeMillis() - start}ms"
+        log.debug "count query took ${System.currentTimeMillis() - start}ms - Details: ${counter}"
         Integer total = 0
         Map count = [:]
         counter.each { c ->

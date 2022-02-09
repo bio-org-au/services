@@ -94,6 +94,8 @@ class LinkService {
             }
         } catch (RestCallException e) {
             log.error "Error $e.message adding link for $target"
+        } catch (Exception e) {
+            log.error "Error $e.message adding link for $target"
         }
         return newLink
     }
