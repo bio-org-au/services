@@ -18,6 +18,8 @@ info:
 spring:
   main:
     banner-mode: "off"
+    allow-bean-definition-overriding: true  # Workaround for some grails 5 tomcat deploy issue
+    allow-circular-references: true  # Workaround for some grails 5 tomcat deploy issue
   groovy:
     template:
       check-template-location: false
