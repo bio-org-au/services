@@ -2,7 +2,7 @@ package au.org.biodiversity.nsl
 
 import groovy.sql.GroovyResultSet
 import groovy.sql.GroovyRowResult
-import org.postgresql.jdbc.PgResultSet
+//import org.postgresql.jdbc.PgResultSet
 import groovy.sql.Sql
 
 import java.sql.Timestamp
