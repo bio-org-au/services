@@ -25,6 +25,6 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
         } else {
             println "External config could not be found, checked ${configBase.absolutePath}"
         }
-        log.warn "${grailsApplication.config.dataSource.url}"
+        log.warn "database url: ${grailsApplication.config.dataSource.url}"
     }
 }
