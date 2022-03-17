@@ -33,7 +33,7 @@ updates.dir = "${userHome}/.nsl/updates"
 dataSource {
     username = "nsl"
     password = "nsl"
-    url = "jdbc:postgresql://localhost:5432/somedb"
+    url = "jdbc:postgresql://mylocalhost:5432/somedb"
 
     pooled = true
     jmxExport = true
