@@ -28,6 +28,8 @@ import groovy.sql.Sql
 import org.slf4j.LoggerFactory
 
 import javax.sql.DataSource
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * This is a helper service for abstracting, accessing and managing configuration of the services.
@@ -276,6 +278,9 @@ class ConfigService {
 
     Sql getSqlForNSLDB() {
         String dbUrl = grailsApplication.config.dataSource.url
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
+        println "database url2: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
+
         String username = grailsApplication.config.dataSource.username
         String password = grailsApplication.config.dataSource.password
         String driverClassName = grailsApplication.config.dataSource.driverClassName
