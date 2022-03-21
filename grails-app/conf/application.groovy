@@ -31,10 +31,10 @@ services {
 updates.dir = "${userHome}/.nsl/updates"
 
 dataSource {
-    username = "nsl"
-    password = "nsl"
-    url = "jdbc:postgresql://mylocalhost:5432/somedb"
-//    jndiName = 'java:comp/env/jdbc/nsl'
+//    username = "nsl"
+//    password = "nsl"
+//    url = "jdbc:postgresql://mylocalhost:5432/somedb"
+    jndiName = 'java:comp/env/jdbc/nsl'
 
     pooled = true
     jmxExport = true
