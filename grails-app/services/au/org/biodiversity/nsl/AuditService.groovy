@@ -17,7 +17,7 @@ class AuditService implements WithSql {
         userName = userName ?: '%'
         if (filter == 'all') {
             tableName = '%'
-        } else if (['name', 'author', 'reference', 'instance'].contains(filter)) {
+        } else if (['name', 'author', 'reference', 'instance', 'tree_element'].contains(filter)) {
             tableName = filter
         } else {
             return []
@@ -49,7 +49,7 @@ WHERE action_tstamp_tx > :from
      * @param things (optional list of things to get totals on)
      * @return
      */
-    Map report(Timestamp from, Timestamp to, List<String> things = ['name', 'author', 'reference', 'instance']) {
+    Map report(Timestamp from, Timestamp to, List<String> things = ['name', 'author', 'reference', 'instance', 'tree_element']) {
         Map userReport = [:]
         withSql { Sql sql ->
             sql.withTransaction {

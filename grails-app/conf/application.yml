@@ -1,4 +1,4 @@
-server.contextPath: /nsl/services
+#server.contextPath: /nsl/services
 ---
 grails:
   profile: web
@@ -112,8 +112,8 @@ grails:
 
 environments:
   development:
-    serverURL: 'http://localhost:8083/services'
+    serverURL: 'http://localhost:8097'
     server:
-      port: 8083
+      port: 8097
   production:
     serverURL: 'http://localhost:8080/services'

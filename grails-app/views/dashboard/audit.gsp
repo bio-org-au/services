@@ -34,13 +34,8 @@
 
         <div class="col-md-2">
           <label for="filterBy">Show only
-          <select name="filterBy" id="filter-by" type="text" name="filterBy" class="form-control filterBy" value="${query.filterBy}">
-            <option value="all">All</option>
-            <option value="name">Names</option>
-            <option value="instance">Instances</option>
-            <option value="reference">References</option>
-            <option value="author">Authors</option>
-          </select>
+          <g:set var="fopts" value="[all: 'All', name: 'Names', instance: 'Instances', reference: 'References', author: 'Authors', tree_element: 'Tree Elements']"/>
+          <g:select name="filterBy" from="${fopts}" optionKey="key" optionValue="value" id="filter-by" type="text" class="form-control filterBy" value="${query.filterBy}"/>
           </label>
         </div>
         <div class="col-md-2">
@@ -115,9 +110,27 @@
       <g:each in="${auditRows}" var="row">
         <g:if test="${!row.isUpdateBeforeDelete()}">
           <tr class="editor-${row.sessionUserName}">
-            <td>${row.when()}</td>
-            <td><b>${row.updatedBy()}</b></td>
             <td>${[U: 'Updated', I: 'Created', D: 'Deleted'].get(row.action)}</td>
+            <td>
+              <div class="height-${row.sessionUserName}">
+                <g:each in="${row.fieldDiffs()}" var="diff">
+                  <div style="overflow: hidden;width: 100%;">
+                    <div style="float: left;width:20%;"><b>${diff.fieldName.replaceAll('_id', '').replaceAll('_', ' ')}</b></div>
+
+                    <div class="diffBefore" style="float: left;width: 40%;">
+                      <st:diffValue value="${diff.before}"/>
+                    </div>
+                    <g:if test="${row.action != 'D'}">
+                      <div class="diffAfter" style="float: left;width:40%;">
+                        <st:diffValue value="${diff.after}"/>
+                      </div>
+                    </g:if>
+                  </div>
+                </g:each>
+              </div>
+            </td>
+            <td><b>${row.updatedBy()}</b></td>
+            <td>${row.when()}</td>
             <td>
               <div class="height-${row.sessionUserName}">
                 <g:if test="${row.auditedObj}">
@@ -126,24 +139,6 @@
                 <g:else>
                   ${"$row.table $row.rowData.id ${row.action != 'D' ? '(deleted?)' : ''}"}
                 </g:else>
-              </div>
-            </td>
-            <td>
-              <div class="height-${row.sessionUserName}">
-                <g:each in="${row.fieldDiffs()}" var="diff">
-                  <div>
-                    <div><b>${diff.fieldName.replaceAll('_id', '').replaceAll('_', ' ')}</b></div>
-
-                    <div class="diffBefore">
-                      <st:diffValue value="${diff.before}"/>
-                    </div>
-                    <g:if test="${row.action != 'D'}">
-                      <div class="diffAfter">
-                        <st:diffValue value="${diff.after}"/>
-                      </div>
-                    </g:if>
-                  </div>
-                </g:each>
               </div>
             </td>
           </tr>

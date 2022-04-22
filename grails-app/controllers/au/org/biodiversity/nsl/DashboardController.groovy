@@ -96,6 +96,63 @@ class DashboardController {
         return null
     }
 
+    def fieldDefinitions = [
+            name: [
+                    fullName: [],
+                    nameType: [],
+                    nameRank: [],
+                    nameStatus: [],
+                    orthVar: [ label: 'orth var'],
+                    changedCombination: [label: 'new comb'],
+                    validRecord: [label: 'valid rec'],
+                    parent: [label: 'parent'],
+                    secondParent: [label: 'parent2'],
+                    family: ['family'],
+            ],
+            instance: [
+                    name: [],
+                    verbatimNameString: [label: 'verbatim name'],
+                    citedBy: [label: 'cited by'],
+                    cites: [label: 'cites'],
+                    instanceType: [],
+                    nomenclaturalStatus: [],
+                    pageQualifier: [],
+                    parent: [],
+                    reference: [],
+                    validRecord: [label: 'valid rec'],
+                    bhlUrl: [label: 'BHL'],
+                    draft: [label: 'draft']
+            ],
+            reference: [
+                    citation: [label: 'citation'],
+                    publicationDate: [],
+                    doi: [],
+                    isbn: [],
+                    issn: [],
+                    language: [], // xxx
+                    notes: [],
+                    published: [label: 'published'],
+                    publishedLocation: [label: 'published location'],
+                    publisher: [label: 'publisher'],
+                    refType: [label: 'reference type'], // xxx
+                    bhlUrl: [label: 'BHL'],
+                    tl2: [label: 'TL2'],
+                    validRecord: [label: 'valid rec'],
+                    year: [label: 'year'],
+            ],
+            author: [
+                    abbrev: [label: 'abbreviation'],
+                    name: [label: 'name'],
+                    fullName: [label: 'full name'],
+                    ipniId: [label: 'IPNI id'],
+                    notes: [label: 'notes'],
+                    validRecord: [label: 'valid rec']
+            ],
+            tree_element: [
+                    profile: [ type: 'json', json_fields: ['APC Dist.', 'APC Comment']]
+            ]
+    ]
+
     @RequiresRoles('QA')
     audit(String userName, String fromStr, String toStr) {
         if (params.search) {

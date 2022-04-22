@@ -1,5 +1,5 @@
 
-grails.serverURL = "http://biodiversity.local:8080/nsl/services"
+grails.serverURL = "http://biodiversity.local:8097"
 
 shard {
     system.message.file = "/etc/nsl/broadcast.txt"
@@ -16,8 +16,8 @@ services {
     }
 
     link {
-        mapperURL = "http://biodiversity.local:7070"
-        internalMapperURL = 'http://biodiversity.local:7070'
+        mapperURL = "http://appstst1-ibis.cloud.biodiversity.org.au:8083/nsl/mapper"
+        internalMapperURL = 'http://appstst1-ibis.cloud.biodiversity.org.au:8083/nsl/mapper'
         editor = "http://biodiversity.local:3000/nsl/editor"
     }
 
@@ -37,16 +37,16 @@ security {
     shiro {
         realm {
             ldap {
-                server.urls = 'ldap://biodiversity.local:10389'
+                server.urls = 'ldap://appstst1-ibis.cloud.biodiversity.org.au:10389'
                 userName.attribute = 'uid'
 
                 search {
-                    base = 'ou=users,o=shards'
+                    base = 'ou=users,dc=nsl,dc=bio,dc=org,dc=au'
                     user = 'uid=admin,ou=system'
                     pass = 'secret'
 
                     group {
-                        name = "ou=groups,ou=vasc,o=shards"
+                        name = 'ou=groups,dc=nsl,dc=bio,dc=org,dc=au'
                         member {
                             element = 'uniqueMember'
                             prefix = 'uid='
@@ -67,8 +67,9 @@ security {
 
 dataSource {
     username = 'nsl'
-    password = 'nsl'
-    url = "jdbc:postgresql://localhost:5432/nsl"
+    password = 'pvq0;yv!t4s3=lld602!'
+//    url = "jdbc:postgresql://localhost:5432/nsl"
+    url = "jdbc:postgresql://pgsql-test1-ibis.cloud.biodiversity.org.au:5432/apni"
 }
 
 api.auth = [

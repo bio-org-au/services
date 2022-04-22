@@ -133,6 +133,7 @@ class Audit {
 
     private Object getTheAuditedObject() {
         if (action != 'D') {
+            println("${rowData.id}")
             auditedClass.get(rowData.id as Long)
         } else {
             return null

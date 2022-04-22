@@ -1742,6 +1742,8 @@ and regex(namePath, :newPath) = true
                 sourceElementLink: source.sourceElementLink,
                 nameLink: source.nameLink,
                 instanceLink: source.instanceLink,
+                createdBy: userName,
+                createdAt: new Timestamp(System.currentTimeMillis()),
                 updatedBy: userName,
                 updatedAt: new Timestamp(System.currentTimeMillis()))
         Map profile = treeElement.profile
@@ -1779,6 +1781,8 @@ and regex(namePath, :newPath) = true
     static TreeElement makeTreeElementFromTaxonData(TaxonData taxonData, TreeElement previousElement, String userName) {
         TreeElement element = new TreeElement(taxonData.asMap())
         element.previousElement = previousElement
+        element.createdBy = userName
+        element.createdAt = new Timestamp(System.currentTimeMillis())
         element.updatedBy = userName
         element.updatedAt = new Timestamp(System.currentTimeMillis())
         element.sourceElementLink = null
