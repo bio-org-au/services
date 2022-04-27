@@ -3,6 +3,7 @@ package au.org.biodiversity.nsl
 import grails.converters.JSON
 import grails.util.GrailsClassUtils
 import groovy.sql.GroovyResultSet
+import org.grails.web.json.JSONException
 
 import java.sql.Timestamp
 
@@ -111,16 +112,54 @@ class Audit {
         return diff
     }
 
+    List<Diff> jsonSubDiffs(String tableName, String prefix, Map olds, Map news) {
+        List<Diff> res = new ArrayList<>()
+        Set keys = new HashSet<>()
+        if (olds) {
+            keys += olds.keySet()
+        }
+        if (news) {
+            keys += news.keySet()
+        }
+        for (String it in keys) {
+            Object o = olds instanceof Map && olds.containsKey(it) ? olds.get(it) : null
+            Object n = news instanceof Map && news.containsKey(it) ? news.get(it) : null
+            if (o instanceof Map || n instanceof Map) {
+                res.addAll(jsonSubDiffs(tableName, prefix + '.' + it.replaceAll('\\.', ''), o as Map, n as Map))
+            } else {
+                if (o != n) {
+                    res.add(new Diff(tableName, prefix + '.' + it.replaceAll('\\.', ''), o, n))
+                }
+            }
+        }
+        return res
+    }
+
+    List<Diff> jsonDiffs(String tableName, String prefix, Object olds, Object news) {
+        try {
+            Map oldm = JSON.parse(olds) as Map
+            Map newm = JSON.parse(news) as Map
+            return jsonSubDiffs(tableName, prefix, oldm, newm)
+        } catch (JSONException) {
+            return null
+        }
+    }
+
     List<Diff> fieldDiffs() {
         List<Diff> diff = []
         if (auditedObj) {
             getRelevantChangedFields().each { String key ->
-                diff << new Diff(key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                List<Diff> d = jsonDiffs(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                if (d) {
+                    diff.addAll(d)
+                } else {
+                    diff << new Diff(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                }
             }
         } else {
             getRelevantRowData().each { String key ->
                 if (rowData[key]) {
-                    diff << new Diff(key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                    diff << new Diff(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
                 }
             }
         }
@@ -133,7 +172,6 @@ class Audit {
 
     private Object getTheAuditedObject() {
         if (action != 'D') {
-            println("${rowData.id}")
             auditedClass.get(rowData.id as Long)
         } else {
             return null

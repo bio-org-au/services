@@ -271,7 +271,11 @@ class ServiceTagLib {
     }
 
     private static String toCamelCase(String text) {
-        return text.toLowerCase().replaceAll("(_)([A-Za-z0-9])", { String[] it -> it[2].toUpperCase() })
+        return text.replaceAll( "(_)([A-Za-z0-9])", { Object[] it -> it[2].toUpperCase() } )
+    }
+
+    private static String toCamelCase2(String text) {
+        return toCamelCase(text).capitalize()
     }
 
     def primaryInstance = { attrs, body ->
@@ -380,10 +384,96 @@ class ServiceTagLib {
         out << str[index + 1..-1]
     }
 
+    static fieldDefinitions = [
+            Name: [
+                    fullName: [:],
+                    nameType: [:],
+                    nameRank: [:],
+                    nameStatus: [:],
+                    orthVar: [ label: 'orth var'],
+                    changedCombination: [label: 'new comb'],
+                    validRecord: [label: 'valid rec'],
+                    parent: [label: 'parent'],
+                    secondParent: [label: 'parent2'],
+                    family: ['family'],
+            ],
+            Instance: [
+                    name: [:],
+                    verbatimNameString: [label: 'verbatim name'],
+                    citedBy: [label: 'cited by'],
+                    cites: [label: 'cites'],
+                    instanceType: [:],
+                    nomenclaturalStatus: [:],
+                    pageQualifier: [:],
+                    parent: [:],
+                    reference: [:],
+                    validRecord: [label: 'valid rec'],
+                    bhlUrl: [label: 'BHL'],
+                    draft: [label: 'draft']
+            ],
+            Reference: [
+                    citation: [label: 'citation'],
+                    publicationDate: [:],
+                    doi: [:],
+                    isbn: [:],
+                    issn: [:],
+                    language: [:], // xxx
+                    notes: [:],
+                    published: [label: 'published'],
+                    publishedLocation: [label: 'published location'],
+                    publisher: [label: 'publisher'],
+                    refType: [label: 'reference type'], // xxx
+                    bhlUrl: [label: 'BHL'],
+                    tl2: [label: 'TL2'],
+                    validRecord: [label: 'valid rec'],
+                    year: [label: 'year'],
+            ],
+            Author: [
+                    abbrev: [label: 'abbreviation'],
+                    name: [label: 'name'],
+                    fullName: [label: 'full name'],
+                    ipniId: [label: 'IPNI id'],
+                    notes: [label: 'notes'],
+                    validRecord: [label: 'valid rec']
+            ],
+            TreeElement: [
+//                    profile: [ type: 'json', json_fields: ['APC Dist.', 'APC Comment']]
+'profile.APC Dist.value': [label: 'APC Dist'],
+'profile.APC Comment.value': [label: 'APC Comment']
+            ]
+    ]
+
+    static List<Diff> sortDiffs(String table, List<Diff> diffs) {
+        return diffs
+//        List<Diff> rtn = new ArrayList()
+//        def fields = fieldDefinitions[toCamelCase2(table)]
+//        for (String k in fields?.keySet()) {
+//            Diff d = diffs.find {it.fieldName == k}
+//            if (d) {
+//                rtn.add(d)
+//            }
+//        }
+//        return rtn
+    }
+
+    static boolean shouldDisplay(List<Diff> diffs) {
+        diffs.find { shouldDisplay(it.tableName, it.fieldName) }
+    }
+
+    static boolean shouldDisplay(String table, String field) {
+        return fieldDefinitions[toCamelCase2(table)]?.get(toCamelCase(field)) != null
+    }
+
+    def diffLabel = {attrs ->
+        String table = toCamelCase2(attrs.table)
+        String field = toCamelCase(attrs.field)
+        out << fieldDefinitions[table]?.get(field)?.get('label')+'X' ?: "$table.$field"
+    }
+
     def diffValue = { attrs ->
         def val = attrs.value
         if (val) {
-            switch (val.class.simpleName) {
+            switch (val.class?.simpleName) {
                 case 'Name':
                     Name name = (Name) val
                     String link = linkService.getPreferredLinkForObject(name) + '/api/apni-format'

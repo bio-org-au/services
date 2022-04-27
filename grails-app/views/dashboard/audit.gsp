@@ -2,7 +2,7 @@
   User: pmcneil
   Date: 15/09/14
 --%>
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page import="services.ServiceTagLib" contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
   <meta name="layout" content="main">
@@ -108,15 +108,19 @@
     </h2>
     <table class="table">
       <g:each in="${auditRows}" var="row">
+        <g:set var="diffs" value="${row.fieldDiffs()}"/>
+        <g:if test="${ServiceTagLib.shouldDisplay(diffs)}">
         <g:if test="${!row.isUpdateBeforeDelete()}">
           <tr class="editor-${row.sessionUserName}">
             <td>${[U: 'Updated', I: 'Created', D: 'Deleted'].get(row.action)}</td>
             <td>
               <div class="height-${row.sessionUserName}">
-                <g:each in="${row.fieldDiffs()}" var="diff">
-                  <div style="overflow: hidden;width: 100%;">
-                    <div style="float: left;width:20%;"><b>${diff.fieldName.replaceAll('_id', '').replaceAll('_', ' ')}</b></div>
+                <g:each in="${ServiceTagLib.sortDiffs(row.table, diffs)}" var="diff">
+                  <g:if test="${ServiceTagLib.shouldDisplay(row.table, diff.fieldName)}">
 
+                  <div style="overflow: hidden;width: 100%;">
+%{--                    <div style="float: left;width:20%;"><b>${diff.fieldName.replaceAll('_id', '').replaceAll('_', ' ')}</b></div>--}%
+                    <div style="float: left;width:20%;"><b title="${diff.fieldName}"><st:diffLabel table="${row.table}" field="${diff.fieldName}"/>&nbsp;</b></div>
                     <div class="diffBefore" style="float: left;width: 40%;">
                       <st:diffValue value="${diff.before}"/>
                     </div>
@@ -126,6 +130,7 @@
                       </div>
                     </g:if>
                   </div>
+                  </g:if>
                 </g:each>
               </div>
             </td>
@@ -143,6 +148,10 @@
             </td>
           </tr>
         </g:if>
+        </g:if>
+%{--        <g:else>--}%
+%{--          <tr><td colspan="3"> D: ${diffs[0]} :D</td></tr>--}%
+%{--        </g:else>--}%
       </g:each>
     </table>
   </g:elseif>
