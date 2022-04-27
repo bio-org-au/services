@@ -467,7 +467,7 @@ class ServiceTagLib {
     def diffLabel = {attrs ->
         String table = toCamelCase2(attrs.table)
         String field = toCamelCase(attrs.field)
-        out << fieldDefinitions[table]?.get(field)?.get('label')+'X' ?: "$table.$field"
+        out << fieldDefinitions[table]?.get(field)?.get('label') ?: "$table.$field"
     }
 
     def diffValue = { attrs ->
