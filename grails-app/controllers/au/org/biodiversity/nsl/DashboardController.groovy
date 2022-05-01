@@ -96,34 +96,60 @@ class DashboardController {
         return null
     }
 
+    static Map values(String fromStr, String toStr) {
+        List<Integer> fromInts = fromStr ? fromStr.split('/').collect { it.toInteger() } : null
+        List<Integer> toInts = toStr ? toStr.split('/').collect { it.toInteger() } : null
+        Timestamp from
+        Timestamp to
+        String msg
+        if (!(toInts?.size() == 3 || fromInts?.size() == 3)) {
+            msg = "No period set, using last 7 days."
+        }
+        if (fromInts?.size() == 3) {
+            GregorianCalendar fromCal = new GregorianCalendar(fromInts[2], fromInts[1] - 1, fromInts[0])
+            from = new Timestamp(fromCal.time.time)
+        } else {
+            from = new Timestamp(System.currentTimeMillis() - WEEK_MS)
+        }
+        if (toInts?.size() == 3) {
+            GregorianCalendar toCal = new GregorianCalendar(toInts[2], toInts[1] - 1, toInts[0] + 1)
+            to = new Timestamp(toCal.time.time)
+        } else {
+            to = new Timestamp(System.currentTimeMillis())
+        }
+        return [from: from, to: to, msg: msg]
+    }
 
     @RequiresRoles('QA')
     audit(String userName, String fromStr, String toStr) {
-        if (params.search) {
-
-            List<Integer> fromInts = fromStr ? fromStr.split('/').collect { it.toInteger() } : null
-            List<Integer> toInts = toStr ? toStr.split('/').collect { it.toInteger() } : null
-            Timestamp from
-            Timestamp to
-            if (fromInts?.size() == 3 && toInts?.size() == 3) {
-                GregorianCalendar fromCal = new GregorianCalendar(fromInts[2], fromInts[1] - 1, fromInts[0])
-                GregorianCalendar toCal = new GregorianCalendar(toInts[2], toInts[1] - 1, toInts[0] + 1)
-                from = new Timestamp(fromCal.time.time)
-                to = new Timestamp(toCal.time.time)
-            } else {
-                from = new Timestamp(System.currentTimeMillis() - WEEK_MS)
-                to = new Timestamp(System.currentTimeMillis())
-                flash.message = "No period set, using last 7 days."
+        if (params._action_audit) {
+            def vals = values(fromStr, toStr)
+            if (vals.msg) {
+                flash.message = vals.msg
             }
-
-            List rows = userName ? auditService.list(userName, from, to, params?.filterBy) : auditService.list('', from, to, params?.filterBy)
-            Map stats = auditService.report(from, to)
-            // log.debug stats.toString()
+            List rows = userName ? auditService.list(userName, vals.from, vals.to, params?.filterBy) : auditService.list('', vals.from, vals.to, params?.filterBy)
             // log.debug "rows: $rows"
-            [auditRows: rows, query: params, stats: stats]
+            [auditRows: rows, query: params]
         } else {
             flash.message = "Nothing to show."
             [auditRows: null, query: [:]]            
+        }
+    }
+
+    @RequiresRoles('QA')
+    stats(String userName, String fromStr, String toStr) {
+        if (params._action_stats) {
+            def vals = values(fromStr, toStr)
+            if (vals.msg) {
+                flash.message = vals.msg
+            }
+            Map stats = auditService.report(vals.from, vals.to)
+            // log.debug stats.toString()
+            // log.debug "rows: $rows"
+            [query: params, stats: stats]
+        } else {
+            flash.message = "Nothing to show."
+            [auditRows: null, query: [:]]
         }
     }
 }
