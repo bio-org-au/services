@@ -386,60 +386,95 @@ class ServiceTagLib {
 
     static fieldDefinitions = [
             Name: [
+                    author: [:],
+                    baseAuthor: [:],
+                    duplicateOf: [:],
+                    exAuthor: [:],
+                    exBaseAuthor: [:],
                     fullName: [:],
                     nameType: [:],
                     nameRank: [:],
                     nameStatus: [:],
                     orthVar: [ label: 'orth var'],
-                    changedCombination: [label: 'new comb'],
-                    validRecord: [label: 'valid rec'],
                     parent: [label: 'parent'],
+                    sanctioningAuthor: [:],
                     secondParent: [label: 'parent2'],
+                    validRecord: [label: 'valid rec'],
+                    verbatimRank: [:],
                     family: ['family'],
+                    changedCombination: [label: 'new comb'],
+                    publishedYear: [],
             ],
             Instance: [
-                    name: [:],
-                    verbatimNameString: [label: 'verbatim name'],
+                    bhlUrl: [label: 'BHL'],
                     citedBy: [label: 'cited by'],
                     cites: [label: 'cites'],
+                    draft: [label: 'draft'],
                     instanceType: [:],
+                    name: [:],
+                    namespace: [:],
                     nomenclaturalStatus: [:],
+                    page: [:],
                     pageQualifier: [:],
                     parent: [:],
                     reference: [:],
+                    sourceId: [:],
+                    sourceIdString: [:],
+                    verbatimNameString: [label: 'verbatim name'],
                     validRecord: [label: 'valid rec'],
-                    bhlUrl: [label: 'BHL'],
-                    draft: [label: 'draft']
+                    uri: [:]
             ],
             Reference: [
+                    abbrevTitle: [:],
+                    author: [:],
+                    bhlUrl: [label: 'BHL'],
                     citation: [label: 'citation'],
+                    displayTitle: [:],
                     publicationDate: [:],
                     doi: [:],
+                    duplicateOf: [:],
+                    edition: [:],
                     isbn: [:],
                     issn: [:],
                     language: [:], // xxx
                     notes: [:],
+                    pages: [:],
+                    parent: [:],
+                    publicationDate: [:],
                     published: [label: 'published'],
                     publishedLocation: [label: 'published location'],
                     publisher: [label: 'publisher'],
-                    refType: [label: 'reference type'], // xxx
-                    bhlUrl: [label: 'BHL'],
+                    refAuthorRole: [:],
+                    refType: [label: 'reference type'],
+                    sourceId: [:],
+                    sourceIdString: [:],
+                    title: [:],
                     tl2: [label: 'TL2'],
                     validRecord: [label: 'valid rec'],
+                    verbatimAuthor: [:],
+                    verbatimCitation: [:],
+                    verbatimReference: [:],
+                    volume: [:],
                     year: [label: 'year'],
+                    uri: [:],
+                    isoPublicationDate: [:]
             ],
             Author: [
                     abbrev: [label: 'abbreviation'],
+                    dateRange: [:],
+                    duplicateOf: [:],
                     name: [label: 'name'],
                     fullName: [label: 'full name'],
                     ipniId: [label: 'IPNI id'],
                     notes: [label: 'notes'],
-                    validRecord: [label: 'valid rec']
+                    sourceId: [:],
+                    sourceIdString: [:],
+                    validRecord: [label: 'valid rec'],
+                    uri: [:]
             ],
             TreeElement: [
-//                    profile: [ type: 'json', json_fields: ['APC Dist.', 'APC Comment']]
-'profile.APC Dist.value': [label: 'APC Dist'],
-'profile.APC Comment.value': [label: 'APC Comment']
+                    'profile.APC Dist.value': [label: 'APC Dist'],
+                    'profile.APC Comment.value': [label: 'APC Comment']
             ]
     ]
 
