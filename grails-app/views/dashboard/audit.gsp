@@ -40,14 +40,14 @@
     <table class="table">
       <g:each in="${auditRows}" var="row">
         <g:set var="diffs" value="${row.fieldDiffs()}"/>
-        <g:if test="${ServiceTagLib.shouldDisplay(diffs)}">
+        <g:if test="${ServiceTagLib.shouldDisplayRow(row, diffs)}">
         <g:if test="${!row.isUpdateBeforeDelete()}">
           <tr class="editor-${row.sessionUserName}">
             <td>${[U: 'Updated', I: 'Created', D: 'Deleted'].get(row.action)}</td>
             <td>
               <div class="height-${row.sessionUserName}">
                 <g:each in="${ServiceTagLib.sortDiffs(row.table, diffs)}" var="diff">
-                  <g:if test="${ServiceTagLib.shouldDisplay(row.table, diff.fieldName)}">
+                  <g:if test="${ServiceTagLib.shouldDisplay(diff)}">
 
                   <div style="overflow: hidden;width: 100%;">
 %{--                    <div style="float: left;width:20%;"><b>${diff.fieldName.replaceAll('_id', '').replaceAll('_', ' ')}</b></div>--}%

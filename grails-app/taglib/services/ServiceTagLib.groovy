@@ -491,12 +491,13 @@ class ServiceTagLib {
 //        return rtn
     }
 
-    static boolean shouldDisplay(List<Diff> diffs) {
-        diffs.find { shouldDisplay(it.tableName, it.fieldName) }
+    static boolean shouldDisplayRow(Audit row, List<Diff> diffs) {
+//    static boolean shouldDisplayRow(def row, def diffs) {
+        row.action != 'U' || diffs.find { shouldDisplay(it) }
     }
 
-    static boolean shouldDisplay(String table, String field) {
-        return fieldDefinitions[toCamelCase2(table)]?.get(toCamelCase(field)) != null
+    static boolean shouldDisplay(Diff diff) {
+        return fieldDefinitions[toCamelCase2(diff.tableName)]?.get(toCamelCase(diff.fieldName)) != null
     }
 
     def diffLabel = {attrs ->
