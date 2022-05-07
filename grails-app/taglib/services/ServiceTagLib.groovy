@@ -533,7 +533,7 @@ class ServiceTagLib {
                     String link = linkService.getPreferredLinkForObject(instance)
                     out << "<div class='title'><a href='$link' target='audit'>Instance ($instance.id)</a></div>"
                     out << "<ul><li>${instance.instanceType.name}</li>"
-                    out << "<li>${instance.name.fullNameHtml}</li>"
+                    out << "<li>${instance.name?.fullNameHtml}</li>"
                     out << "<li>${instance.reference.citationHtml}</li></ul>"
                     break
                 case 'InstanceNote':
@@ -543,11 +543,13 @@ class ServiceTagLib {
                     out << "<div><b>${note.instanceNoteKey.name}:</b></div>"
                     out << "<div>${note.value}</div>"
                     Instance instance = note.instance
-                    String instLink = linkService.getPreferredLinkForObject(instance)
-                    out << "<div><a href='$instLink'>Instance ($instance.id)</a></div>"
-                    out << "<ul><li>${instance.instanceType.name}</li>"
-                    out << "<li>${instance.name.fullNameHtml}</li>"
-                    out << "<li>${instance.reference.citationHtml}</li></ul>"
+                    if (instance) {
+                        String instLink = linkService.getPreferredLinkForObject(instance)
+                        out << "<div><a href='$instLink'>Instance ($instance.id)</a></div>"
+                        out << "<ul><li>${instance.instanceType.name}</li>"
+                        out << "<li>${instance.name.fullNameHtml}</li>"
+                        out << "<li>${instance.reference.citationHtml}</li></ul>"
+                    }
                     break
                 case 'Comment':
                     Comment comment = (Comment) val
