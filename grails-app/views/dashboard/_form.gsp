@@ -20,7 +20,7 @@
 
             <div class="col-md-2">
                 <label for="filterBy">Show only
-                <g:set var="fopts" value="[all: 'All', name: 'Names', instance: 'Instances', reference: 'References', author: 'Authors', tree_element: 'Tree Elements', comment: 'Comments']"/>
+                <g:set var="fopts" value="[all: 'All', name: 'Names', instance: 'Instances', instance_note: 'Instance Notes', reference: 'References', author: 'Authors', tree_element: 'Tree Elements', comment: 'Comments']"/>
                 <g:select name="filterBy" from="${fopts}" optionKey="key" optionValue="value" id="filter-by" type="text" class="form-control filterBy" value="${query.filterBy}"/>
                 </label>
             </div>

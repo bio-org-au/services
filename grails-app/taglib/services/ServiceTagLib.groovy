@@ -475,6 +475,20 @@ class ServiceTagLib {
             TreeElement: [
                     'profile.APC Dist.value': [label: 'APC Dist'],
                     'profile.APC Comment.value': [label: 'APC Comment']
+            ],
+            Comment: [
+                    author: [:],
+                    instance: [:],
+                    name: [:],
+                    reference: [:],
+                    text: [:]
+            ],
+            InstanceNote: [
+                    instance: [:],
+                    instanceNoteKey: [:],
+                    sourceId: [:],
+                    sourceIdString: [:],
+                    value: [:]
             ]
     ]
 
