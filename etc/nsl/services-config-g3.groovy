@@ -46,7 +46,7 @@ security {
                     pass = 'secret'
 
                     group {
-                        name = 'ou=groups,dc=nsl,dc=bio,dc=org,dc=au'
+                        name = 'ou=groups,dc=apni,dc=nsl,dc=bio,dc=org,dc=au'
                         member {
                             element = 'uniqueMember'
                             prefix = 'uid='
