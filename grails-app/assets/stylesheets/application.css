@@ -465,7 +465,7 @@ hybrid[title="intergrade"]::after {
 /* Audit screen tr line height hover style */
 div[class^="height-nsl"] {
     max-height: 3em;
-    overflow: hidden;
+    /*overflow: hidden;*/
     transition-delay: 5s;
 }
 

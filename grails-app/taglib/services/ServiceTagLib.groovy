@@ -278,6 +278,10 @@ class ServiceTagLib {
         return toCamelCase(text).capitalize()
     }
 
+    private static String snakeToLabel(String text) {
+        text.replaceAll('_', ' ').split(' ').collect{ it.capitalize() }.join(' ')
+    }
+
     def primaryInstance = { attrs, body ->
         Name name = attrs.name
         String var = attrs.var ?: 'primaryInstance'
@@ -474,7 +478,8 @@ class ServiceTagLib {
             ],
             TreeElement: [
                     'profile.APC Dist.value': [label: 'APC Dist'],
-                    'profile.APC Comment.value': [label: 'APC Comment']
+                    'profile.APC Comment.value': [label: 'APC Comment'],
+                    'dist': []
             ],
             Comment: [
                     author: [:],
@@ -516,8 +521,8 @@ class ServiceTagLib {
 
     def diffLabel = {attrs ->
         String table = toCamelCase2(attrs.table)
-        String field = toCamelCase(attrs.field)
-        out << fieldDefinitions[table]?.get(field)?.get('label') ?: "$table.$field"
+        String field = snakeToLabel(attrs.field)
+        out << (fieldDefinitions[table]?.get(field)?.get('label') ?: "$field")
     }
 
     def diffValue = { attrs ->

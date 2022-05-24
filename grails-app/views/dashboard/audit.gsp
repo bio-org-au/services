@@ -46,6 +46,16 @@
             <td>${[U: 'Updated', I: 'Created', D: 'Deleted'].get(row.action)}</td>
             <td>
               <div class="height-${row.sessionUserName}">
+                <g:if test="${row.auditedObj}">
+                  <st:diffValue value="${row.auditedObj}"/>
+                </g:if>
+                <g:else>
+                  ${"$row.table $row.rowData.id ${row.action != 'D' ? '(deleted?)' : ''}"}
+                </g:else>
+              </div>
+            </td>
+            <td>
+              <div class="height-${row.sessionUserName}">
                 <g:each in="${ServiceTagLib.sortDiffs(row.table, diffs)}" var="diff">
                   <g:if test="${ServiceTagLib.shouldDisplay(diff)}">
 
@@ -67,16 +77,6 @@
             </td>
             <td><b>${row.updatedBy()}</b></td>
             <td>${row.when()}</td>
-            <td>
-              <div class="height-${row.sessionUserName}">
-                <g:if test="${row.auditedObj}">
-                  <st:diffValue value="${row.auditedObj}"/>
-                </g:if>
-                <g:else>
-                  ${"$row.table $row.rowData.id ${row.action != 'D' ? '(deleted?)' : ''}"}
-                </g:else>
-              </div>
-            </td>
           </tr>
         </g:if>
         </g:if>
