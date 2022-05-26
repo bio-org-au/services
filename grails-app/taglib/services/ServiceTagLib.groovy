@@ -477,9 +477,10 @@ class ServiceTagLib {
                     uri: [:]
             ],
             TreeElement: [
-                    'profile.APC Dist.value': [label: 'APC Dist'],
-                    'profile.APC Comment.value': [label: 'APC Comment'],
-                    'dist': []
+//                    'profile.APC Dist.value': [label: 'APC Dist'],
+//                    'profile.APC Comment.value': [label: 'APC Comment'],
+                    'distribution': [],
+                    'comments': []
             ],
             Comment: [
                     author: [:],
