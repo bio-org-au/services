@@ -480,7 +480,7 @@ class ServiceTagLib {
 //                    'profile.APC Dist.value': [label: 'APC Dist'],
 //                    'profile.APC Comment.value': [label: 'APC Comment'],
                     'distribution': [],
-                    'comments': []
+                    'comment': []
             ],
             Comment: [
                     author: [:],
