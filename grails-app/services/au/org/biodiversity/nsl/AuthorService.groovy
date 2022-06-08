@@ -35,9 +35,11 @@ class AuthorService implements AsyncHelper {
                 session.flush()
                 session.clear()
             }
-            Author.withSession { session ->
-                List<String> namesWithDuplicates = Author.executeQuery('select distinct(a.name) from Author a where exists (select 1 from Author a2 where a2.id <> a.id and a2.name = a.name)') as List<String>
-                namesWithDuplicates.each { String name ->
+            List<String> namesWithDuplicates = Author.executeQuery('select distinct(a.name) from Author a where exists (select 1 from Author a2 where a2.id <> a.id and a2.name = a.name)') as List<String>
+            namesWithDuplicates.each { String name ->
+                Author.withSession { session ->
+                    //  Updating author references can touch the same Name twice. Therefore, we want to
+                    // start with a fresh session each time otherwise we could get hibernate lock version errors
                     List<Author> authors = Author.findAllByName(name)
                     if (authors) {
                         Map abbrevs = authors.groupBy { it.abbrev }
@@ -57,6 +59,8 @@ class AuthorService implements AsyncHelper {
                             }
                         }
                     }
+                    session.flush()
+                    session.clear()
                 }
             }
         }
