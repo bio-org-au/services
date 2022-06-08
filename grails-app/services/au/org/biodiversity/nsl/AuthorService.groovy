@@ -26,30 +26,35 @@ class AuthorService implements AsyncHelper {
 
     void autoDeduplicate(String user) {
         doAsync('Auto deduplicate authors') {
-            List<Author> authorsMarkedAsDuplicates = Author.findAllByDuplicateOfIsNotNull()
-            log.debug "duplicate authors: $authorsMarkedAsDuplicates"
-            authorsMarkedAsDuplicates.each { Author author ->
-                dedup(author, author.duplicateOf, user)
+            Author.withSession { session ->
+                List<Author> authorsMarkedAsDuplicates = Author.findAllByDuplicateOfIsNotNull()
+                log.debug "duplicate authors: $authorsMarkedAsDuplicates"
+                authorsMarkedAsDuplicates.each { Author author ->
+                    dedup(author, author.duplicateOf, user)
+                }
+                session.flush()
+                session.clear()
             }
-
-            List<String> namesWithDuplicates = Author.executeQuery('select distinct(a.name) from Author a where exists (select 1 from Author a2 where a2.id <> a.id and a2.name = a.name)') as List<String>
-            namesWithDuplicates.each { String name ->
-                List<Author> authors = Author.findAllByName(name)
-                if (authors) {
-                    Map abbrevs = authors.groupBy { it.abbrev }
-                    if (abbrevs.size() > 2) {
-                        log.debug "more than two abbrevs for $name: ${abbrevs.keySet()}"
-                    } else {
-                        abbrevs.remove(null)
-                        Author targetAuthor
-                        if (abbrevs.size() == 0) {
-                            targetAuthor = authors.min { it.id }
-                            deduplicateAuthors(authors, targetAuthor, user)
-                        } else if (abbrevs.size() == 1) {
-                            targetAuthor = abbrevs.values().first().min { it.id }
-                            deduplicateAuthors(authors, targetAuthor, user)
+            Author.withSession { session ->
+                List<String> namesWithDuplicates = Author.executeQuery('select distinct(a.name) from Author a where exists (select 1 from Author a2 where a2.id <> a.id and a2.name = a.name)') as List<String>
+                namesWithDuplicates.each { String name ->
+                    List<Author> authors = Author.findAllByName(name)
+                    if (authors) {
+                        Map abbrevs = authors.groupBy { it.abbrev }
+                        if (abbrevs.size() > 2) {
+                            log.debug "more than two abbrevs for $name: ${abbrevs.keySet()}"
                         } else {
-                            log.debug "more than one remaining abbrev for $name: $abbrevs"
+                            abbrevs.remove(null)
+                            Author targetAuthor
+                            if (abbrevs.size() == 0) {
+                                targetAuthor = authors.min { it.id }
+                                deduplicateAuthors(authors, targetAuthor, user)
+                            } else if (abbrevs.size() == 1) {
+                                targetAuthor = abbrevs.values().first().min { it.id }
+                                deduplicateAuthors(authors, targetAuthor, user)
+                            } else {
+                                log.debug "more than one remaining abbrev for $name: $abbrevs"
+                            }
                         }
                     }
                 }
@@ -175,6 +180,7 @@ class AuthorService implements AsyncHelper {
             comment.updatedBy = user
             comment.save()
         }
+        duplicate.save()
         log.debug "setting duplicates for $duplicate to $target"
         Author.findAllByDuplicateOf(duplicate)*.duplicateOf = target
         duplicate.duplicateOf = target
@@ -184,5 +190,6 @@ class AuthorService implements AsyncHelper {
         duplicate.updatedAt = now
         duplicate.updatedBy = user
         duplicate.save()
+        log.debug "have set duplicates for $duplicate to $target"
     }
 }
