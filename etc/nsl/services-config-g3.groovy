@@ -16,9 +16,12 @@ services {
     }
 
     link {
-        mapperURL = "http://biodiversity.local:7070"
-        internalMapperURL = 'http://biodiversity.local:7070'
+        mapperURL = "http://appstst1-ibis.cloud.biodiversity.org.au:8083/nsl/mapper"
+        internalMapperURL = 'http://appstst1-ibis.cloud.biodiversity.org.au:8083/nsl/mapper'
         editor = "http://biodiversity.local:3000/nsl/editor"
+//        mapperURL = "http://biodiversity.local:7070"
+//        internalMapperURL = 'http://biodiversity.local:7070'
+//        editor = "http://biodiversity.local:3000/nsl/editor"
     }
 
     photoService {
@@ -37,16 +40,19 @@ security {
     shiro {
         realm {
             ldap {
-                server.urls = 'ldap://biodiversity.local:10389'
+                server.urls = 'ldap://appstst1-ibis.cloud.biodiversity.org.au:10389'
+//                server.urls = 'ldap://biodiversity.local:10389'
                 userName.attribute = 'uid'
 
                 search {
-                    base = 'ou=users,o=shards'
+                    base = 'ou=users,dc=nsl,dc=bio,dc=org,dc=au'
+//                    base = 'ou=users,o=shards'
                     user = 'uid=admin,ou=system'
                     pass = 'secret'
 
                     group {
-                        name = "ou=groups,ou=vasc,o=shards"
+                        name = 'ou=groups,dc=algae,dc=nsl,dc=bio,dc=org,dc=au'
+//                        name = "ou=groups,ou=vasc,o=shards"
                         member {
                             element = 'uniqueMember'
                             prefix = 'uid='
@@ -64,6 +70,33 @@ security {
         }
     }
 }
+
+//security {
+//    shiro {
+//        realm {
+//            ldap {
+//                server.urls = 'ldap://172.31.128.116:389'
+//                username.attribute = 'samAccountName'
+//
+//                search {
+//                    base = 'ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
+//                    user = 'cn=NSL Admin,ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
+//                    pass = 'Somelongstring789+'
+//
+//                    group {
+//                        name = 'ou=groups,cn=apni,cn=test,dc=nsl,dc=bio,dc=org,dc=au'
+//                        member {
+//                            element = 'uniqueMember'
+//                            prefix = 'uid='
+//                            postfix = ''
+//                        }
+//                    }
+//                }
+//
+//            }
+//        }
+//    }
+//}
 
 dataSource {
     username = 'nsl'
