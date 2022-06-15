@@ -42,7 +42,7 @@ services {
 //                search {
 //                    base = 'ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
 //                    user = 'cn=NSL Admin,ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
-//                    pass = 'Somelongstring789+'
+//                    pass = 'askgreg'
 //
 //                    group {
 //                        name = 'ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
