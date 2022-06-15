@@ -1,5 +1,4 @@
 
-grails.serverURL = "http://biodiversity.local:8080/nsl/services"
 
 shard {
     system.message.file = "/etc/nsl/broadcast.txt"
@@ -33,20 +32,48 @@ services {
 //scriptAddOns = "Nothing to see here..."
 }
 
+//security {
+//    shiro {
+//        realm {
+//            ldap {
+//                server.urls = 'ldap://172.31.128.116:389'
+//                username.attribute = 'samAccountName'
+//
+//                search {
+//                    base = 'ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
+//                    user = 'cn=NSL Admin,ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
+//                    pass = 'Somelongstring789+'
+//
+//                    group {
+//                        name = 'ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
+//                        member {
+//                            element = 'samAccountName'
+//                            memberAttribute = 'memberof'
+//                            groupPattern = 'CN=([^,]*),OU=apni,OU=test,OU=nsl'
+//                            prefix = ''
+//                            postfix = ''
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
 security {
     shiro {
         realm {
             ldap {
-                server.urls = 'ldap://biodiversity.local:10389'
+                server.urls = 'ldap://appstst1-ibis.cloud.biodiversity.org.au:10389'
                 userName.attribute = 'uid'
 
                 search {
-                    base = 'ou=users,o=shards'
+                    base = 'ou=users,dc=nsl,dc=bio,dc=org,dc=au'
                     user = 'uid=admin,ou=system'
                     pass = 'secret'
 
                     group {
-                        name = "ou=groups,ou=vasc,o=shards"
+                        name = 'ou=groups,dc=apni,dc=nsl,dc=bio,dc=org,dc=au'
                         member {
                             element = 'uniqueMember'
                             prefix = 'uid='
@@ -67,8 +94,10 @@ security {
 
 dataSource {
     username = 'nsl'
-    password = 'nsl'
-    url = "jdbc:postgresql://localhost:5432/nsl"
+//    password = 'nsl'
+    password = "pvq0;yv!t4s3=lld602!"
+//    url = "jdbc:postgresql://localhost:5432/nsl"
+    url = "jdbc:postgresql://pgsql-test1-ibis.cloud.biodiversity.org.au:5432/apni"
 }
 
 api.auth = [
