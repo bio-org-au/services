@@ -15,7 +15,7 @@ class LdapRealm implements GrailsShiroRealm, SimplifiedRealm {
     static authTokenClass = UsernamePasswordToken
 
     def grailsApplication
-    private LdapServer theLdapServer
+    private ActiveDirectoryServer theLdapServer
 
     LdapRealm() {
         setTokenClass(UsernamePasswordToken)
@@ -102,7 +102,8 @@ class LdapRealm implements GrailsShiroRealm, SimplifiedRealm {
     }
 
     private setupServer() {
-        theLdapServer = new LdapServer()
+//        theLdapServer = new LdapServer()
+        theLdapServer = new ActiveDirectoryServer()
         ldapServer.searchBase = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.base', String, '')
         ldapServer.usernameAttribute = grailsApplication.config.getProperty('security.shiro.realm.ldap.username.attribute', String, "uid")
         ldapServer.searchUser = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.user', String, "")
@@ -118,5 +119,7 @@ class LdapRealm implements GrailsShiroRealm, SimplifiedRealm {
         ldapServer.permSubCn = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.permission.commonName', String, 'cn=permissions')
         ldapServer.permMemberElement = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.permission.member.element', String, 'uniqueMember')
         ldapServer.permMemberPrefix = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.permission.member.prefix', String, 'uid=')
+        ldapServer.memberAttribute = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.group.member.memberAttribute', String, 'cn')
+        ldapServer.groupPattern = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.group.member.groupPattern', String, '(.*)')
     }
 }
