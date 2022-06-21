@@ -19,6 +19,7 @@ class ActiveDirectoryServer extends LdapServer {
     String memberAttribute = 'cn'
     String groupPattern = '(.*)'
     SearchControls searchCtls = new SearchControls();
+    Hashtable env = new Hashtable()
 
     List<String> roles(String userName) {
         List<String> roles = []
@@ -44,11 +45,21 @@ class ActiveDirectoryServer extends LdapServer {
         return roles
     }
 
+    protected void getBaseLDAPEnvironment(String user, String password) {
+        env[Context.INITIAL_CONTEXT_FACTORY] = "com.sun.jndi.ldap.LdapCtxFactory"
+        env[Context.REFERRAL] = 'follow'
+        if (user) {
+            // Non-anonymous access for the search.
+            env[Context.SECURITY_AUTHENTICATION] = "simple"
+            env[Context.SECURITY_PRINCIPAL] = user
+            env[Context.SECURITY_CREDENTIALS] = password
+        }
+    }
+
     protected InitialDirContext getLDAPContext2(String user, String password, String ldapUrl) {
         // Set up the configuration for the LDAP search we are about to do.
-        Hashtable env = getBaseLDAPEnvironment(user, password)
+        getBaseLDAPEnvironment(user, password)
         env[Context.PROVIDER_URL] = ldapUrl
-        env[Context.REFERRAL] = 'follow'
         return new InitialDirContext(env)
     }
 
