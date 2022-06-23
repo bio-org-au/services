@@ -105,6 +105,7 @@ endpoints:
 
 environments:
   development:
+    editorUrl: 'https://test.biodiversity.org.au/nsl/editor'
     grails:
       serverURL: 'http://localhost:8097'
     server:
@@ -121,5 +122,6 @@ environments:
       username: nsl
       password: changeme
   production:
+    editorUrl: 'https://biodiversity.org.au/nsl/editor'
     grails:
       serverURL: 'http://localhost:8080/services'

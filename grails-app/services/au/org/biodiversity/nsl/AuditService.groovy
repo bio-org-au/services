@@ -55,7 +55,9 @@ WHERE action_tstamp_tx > :from
             sql.withTransaction {
                 things.each { String thing ->
                     //created
-                    String query = "select count(t) as count, t.created_by as uname from $thing t where created_at > :from and created_at < :to group by created_by"
+                    String query = (thing == 'tree_element'
+                            ? "select count(t) as count, t.updated_by as uname from $thing t where updated_at > :from and updated_at < :to group by updated_by"
+                            : "select count(t) as count, t.created_by as uname from $thing t where created_at > :from and created_at < :to group by created_by")
                     sql.eachRow(query, [from: from, to: to]) { GroovyResultSet row ->
                         // log.debug row.toString()
                         userReport.get(row.uname, defaultUserThingReport(things)).get(thing).created = row.count

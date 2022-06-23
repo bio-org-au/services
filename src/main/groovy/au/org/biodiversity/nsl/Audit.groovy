@@ -53,6 +53,18 @@ class Audit {
         this.auditedClass = Class.forName(clsName)
         this.domainClass = Holders.grailsApplication.domainClasses.find { it.fullName == clsName }
         this.auditedObj = getTheAuditedObject()
+        if (this.auditedObj instanceof Instance) {
+            (this.auditedObj as Instance).instanceType  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as Instance).name  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as Instance).reference  // load into memory to avoid LazyInitializationException
+        }
+        if (this.auditedObj instanceof InstanceNote) {
+            (this.auditedObj as InstanceNote).instanceNoteKey  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as InstanceNote).instance  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as InstanceNote).instance?.instanceType  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as InstanceNote).instance?.name  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as InstanceNote).instance?.reference  // load into memory to avoid LazyInitializationException
+        }
     }
 
     String toString() {
