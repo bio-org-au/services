@@ -158,7 +158,7 @@ class ConfigService {
     }
 
     String getPhotoSearch(String name) {
-        def search = configOrThrow('services.photoService.search')
+        def search = configOrThrow('services.photoService.search', Closure)
         if (search && search instanceof Closure) {
             return search(name)
         }
@@ -212,7 +212,7 @@ class ConfigService {
     }
 
     Map getMapperCredentials() {
-        configOrThrow('services.mapper') as Map
+        configOrThrow('services.mapper', Map)
     }
 
     String getSystemMessageFilename() {
@@ -232,17 +232,18 @@ class ConfigService {
      * it throws and exception saying the config is missing.
      * @param path
      */
-    private def configOrThrow(String path) {
-        def rtn = grailsApplication.config.getProperty(path)
-        if (!rtn) {
-            rtn = grailsApplication.config.getProperty(path, java.util.Map)
-        }
+    private def configOrThrow(String path, Class<?> targetType = String) {
+        def rtn = grailsApplication.config.getProperty(path, targetType)
+//        if (!rtn) {
+//            rtn = grailsApplication.config.getProperty(path, java.util.Map)
+//        }
         if (rtn) {
             return rtn
         } else {
             throw new Exception("Config error. Config option $path not found, please set it in '.nsl/services-config.groovy'.")
         }
     }
+
 
     String printAppConfig() {
         grailsApplication.config.flatten().toString()
