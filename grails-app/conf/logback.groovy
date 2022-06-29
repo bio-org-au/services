@@ -47,6 +47,12 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
     logger("services3", DEBUG, ['STDOUT'], false)
 }
 
+if (Environment.getCurrent() == Environment.TEST && targetDir != null) {
+    root(ERROR, ['dailyFileAppender'])
+    logger("au.org.biodiversity", DEBUG, ['dailyFileAppender'], false)
+    logger("services3", DEBUG, ['dailyFileAppender'], false)
+}
+
 if (Environment.getCurrent() == Environment.PRODUCTION && targetDir != null) {
     root(ERROR, ['dailyFileAppender'])
     logger("au.org.biodiversity", DEBUG, ['dailyFileAppender'], false)
