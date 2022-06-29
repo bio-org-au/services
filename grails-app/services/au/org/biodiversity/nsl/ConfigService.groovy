@@ -234,6 +234,9 @@ class ConfigService {
      */
     private def configOrThrow(String path) {
         def rtn = grailsApplication.config.getProperty(path)
+        if (!rtn) {
+            rtn = grailsApplication.config.getProperty(path, java.util.Map)
+        }
         if (rtn) {
             return rtn
         } else {
