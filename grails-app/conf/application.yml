@@ -121,7 +121,11 @@ environments:
       driverClassName: org.postgresql.Driver
       username: nsl
       password: changeme
+  test:
+    editorUrl: 'https://test.biodiversity.org.au/nsl/editor'
+    grails:
+      serverURL: 'https://test.biodiversity.org.au/nsl/services'
   production:
     editorUrl: 'https://biodiversity.org.au/nsl/editor'
     grails:
-      serverURL: 'http://localhost:8080/services'
+      serverURL: 'https://biodiversity.org.au/nsl/services'
