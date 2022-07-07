@@ -526,7 +526,7 @@ class ServiceTagLib {
                             "</div>"
                     out << "<ul><li>${instance.instanceType.name}</li>"
                     out << "<li>${instance.name?.fullNameHtml}</li>"
-                    out << "<li>${instance.reference.citationHtml}</li></ul>"
+                    out << "<li>${instance.reference?.citationHtml}</li></ul>"
                     break
                 case 'InstanceNote':
                     InstanceNote note = (InstanceNote) val
