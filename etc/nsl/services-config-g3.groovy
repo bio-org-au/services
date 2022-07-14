@@ -1,5 +1,4 @@
 
-grails.serverURL = "http://biodiversity.local:8080/nsl/services"
 
 shard {
     system.message.file = "/etc/nsl/broadcast.txt"
@@ -40,29 +39,24 @@ security {
     shiro {
         realm {
             ldap {
-                server.urls = 'ldap://appstst1-ibis.cloud.biodiversity.org.au:10389'
-//                server.urls = 'ldap://biodiversity.local:10389'
-                userName.attribute = 'uid'
+                server.urls = 'ldap://172.31.128.116:389'
+                username.attribute = 'sAMAccountName'
 
                 search {
-                    base = 'ou=users,dc=nsl,dc=bio,dc=org,dc=au'
-//                    base = 'ou=users,o=shards'
-                    user = 'uid=admin,ou=system'
-                    pass = 'secret'
+                    base = 'dc=cloud,dc=biodiversity,dc=org,dc=au'
+//                    base = 'ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
+//                    base = 'cn=Users,dc=cloud,dc=biodiversity,dc=org,dc=au'
+                    user = 'cn=NSL Admin,ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
+                    pass = 'askgreg'
 
                     group {
-                        name = 'ou=groups,dc=algae,dc=nsl,dc=bio,dc=org,dc=au'
-//                        name = "ou=groups,ou=vasc,o=shards"
+                        name = 'dc=cloud,dc=biodiversity,dc=org,dc=au'
                         member {
-                            element = 'uniqueMember'
-                            prefix = 'uid='
-                        }
-                    }
-                    permission {
-                        commonName = 'cn=permission'
-                        member {
-                            element = 'uniqueMember'
-                            prefix = 'uid='
+                            element = 'sAMAccountName'
+                            memberAttribute = 'memberof'
+                            groupPattern = 'CN=([^,]*),OU=apni,OU=test,OU=nsl'
+                            prefix = ''
+                            postfix = ''
                         }
                     }
                 }
@@ -75,24 +69,29 @@ security {
 //    shiro {
 //        realm {
 //            ldap {
-//                server.urls = 'ldap://172.31.128.116:389'
-//                username.attribute = 'samAccountName'
+//                server.urls = 'ldap://appstst1-ibis.cloud.biodiversity.org.au:10389'
+//                userName.attribute = 'uid'
 //
 //                search {
-//                    base = 'ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
-//                    user = 'cn=NSL Admin,ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
-//                    pass = 'Somelongstring789+'
+//                    base = 'ou=users,dc=nsl,dc=bio,dc=org,dc=au'
+//                    user = 'uid=admin,ou=system'
+//                    pass = 'secret'
 //
 //                    group {
-//                        name = 'ou=groups,cn=apni,cn=test,dc=nsl,dc=bio,dc=org,dc=au'
+//                        name = 'ou=groups,dc=apni,dc=nsl,dc=bio,dc=org,dc=au'
 //                        member {
 //                            element = 'uniqueMember'
 //                            prefix = 'uid='
-//                            postfix = ''
+//                        }
+//                    }
+//                    permission {
+//                        commonName = 'cn=permission'
+//                        member {
+//                            element = 'uniqueMember'
+//                            prefix = 'uid='
 //                        }
 //                    }
 //                }
-//
 //            }
 //        }
 //    }
@@ -100,8 +99,10 @@ security {
 
 dataSource {
     username = 'nsl'
-    password = 'nsl'
-    url = "jdbc:postgresql://localhost:5432/nsl"
+//    password = 'nsl'
+    password = "pvq0;yv!t4s3=lld602!"
+//    url = "jdbc:postgresql://localhost:5432/nsl"
+    url = "jdbc:postgresql://pgsql-test1-ibis.cloud.biodiversity.org.au:5432/apni"
 }
 
 api.auth = [
