@@ -498,7 +498,7 @@ class ServiceTagLib {
                     Name name = (Name) val
                     String link = linkService.getPreferredLinkForObject(name) + '/api/apni-format'
                     out << "<div class='title'><a href='$link' target='audit'>Name ($name.id)</a> " <<
-                            "<a href='$editor/search?query_string=id%3A+$name.id&query_target=names' target='edit'><img src='$top/edit.gif' alt='edit'/></a>" <<
+                            "<a href='$editor/search?query_string=id%3A+$name.id&query_target=names' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
                             "</div>"
                     out << "<div>${name.fullNameHtml}</div>"
                     break
@@ -506,7 +506,7 @@ class ServiceTagLib {
                     Author author = (Author) val
                     String link = linkService.getPreferredLinkForObject(author)
                     out << "<div class='title'><a href='$link' target='audit'>Author ($author.id)</a> " <<
-                            "<a href='$editor/search?query_string=id%3A+$author.id&query_target=authors' target='edit'><img src='$top/edit.gif' alt='edit'/></a>" <<
+                            "<a href='$editor/search?query_string=id%3A+$author.id&query_target=authors' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
                             "</div>"
                     out << "<div>${author.name} (${author.abbrev})</div>"
                     break
@@ -514,7 +514,7 @@ class ServiceTagLib {
                     Reference reference = (Reference) val
                     String link = linkService.getPreferredLinkForObject(reference)
                     out << "<div class='title'><a href='$link' target='audit'>Reference ($reference.id)</a> " <<
-                            "<a href='$editor/search?query_string=id%3A+$reference.id&query_target=references' target='edit'><img src='$top/edit.gif' alt='edit'/></a>" <<
+                            "<a href='$editor/search?query_string=id%3A+$reference.id&query_target=references' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
                             "</div>"
                     out << "<div>${reference.citationHtml}</div>"
                     break
@@ -522,7 +522,7 @@ class ServiceTagLib {
                     Instance instance = (Instance) val
                     String link = linkService.getPreferredLinkForObject(instance)
                     out << "<div class='title'><a href='$link' target='audit'>Instance ($instance.id)</a> " <<
-                            "<a href='$editor/search?query_string=id%3A+$instance.id&query_target=instances' target='edit'><img src='$top/edit.gif' alt='edit'/></a>" <<
+                            "<a href='$editor/search?query_string=id%3A+$instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
                             "</div>"
                     out << "<ul><li>${instance.instanceType.name}</li>"
                     out << "<li>${instance.name?.fullNameHtml}</li>"
@@ -533,7 +533,7 @@ class ServiceTagLib {
                     String link = linkService.getPreferredLinkForObject(note)
                     out << "<div class='title'><a href='$link' target='audit'>Instance Note ($note.id)</a> "
                     if (note.instance) {
-                        "<a href='$editor/search?query_string=id%3A+$note.instance.id&query_target=instances' target='edit'><img src='$top/edit.gif' alt='edit'/></a>"
+                        "<a href='$editor/search?query_string=id%3A+$note.instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
                     }
                     out << "</div>"
                     out << "<div><b>${note.instanceNoteKey.name}:</b></div>"
@@ -551,16 +551,16 @@ class ServiceTagLib {
                     Comment comment = (Comment) val
                     out << "<div class='title'>Comment ($comment.id)"
                     if (comment.name) {
-                        out << "<a href='$editor/search?query_string=id%3A+$comment.name.id&query_target=names' target='edit'><img src='$top/edit.gif' alt='edit'/></a>"
+                        out << "<a href='$editor/search?query_string=id%3A+$comment.name.id&query_target=names' target='edit'><i class=\"fa fa-edit\"></i></a>"
                     }
                     if (comment.author) {
-                        out << "<a href='$editor/search?query_string=id%3A+$comment.author.id&query_target=authors' target='edit'><img src='$top/edit.gif' alt='edit'/></a>"
+                        out << "<a href='$editor/search?query_string=id%3A+$comment.author.id&query_target=authors' target='edit'><i class=\"fa fa-edit\"></i></a>"
                     }
                     if (comment.instance) {
-                        out << "<a href='$editor/search?query_string=id%3A+$comment.instance.id&query_target=instances' target='edit'><img src='$top/edit.gif' alt='edit'/></a>"
+                        out << "<a href='$editor/search?query_string=id%3A+$comment.instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
                     }
                     if (comment.reference) {
-                        out << "<a href='$editor/search?query_string=id%3A+$comment.reference.id&query_target=references' target='edit'><img src='$top/edit.gif' alt='edit'/></a>"
+                        out << "<a href='$editor/search?query_string=id%3A+$comment.reference.id&query_target=references' target='edit'><i class=\"fa fa-edit\"></i></a>"
                     }
                     out << "</div>"
                     out << "<div>${comment.text}</div>"
@@ -599,7 +599,17 @@ class ServiceTagLib {
                     InstanceType instanceType = (InstanceType) val
                     out << instanceType.name
                     break
-
+                case 'TreeElement':
+                    TreeElement treeElement = (TreeElement) val
+                    Instance instance = (Instance) treeElement.instance
+                    String link = linkService.getPreferredLinkForObject(instance)
+                    out << "<div class='title'>TreeElement ($treeElement.id) of <a href='$link' target='audit'>Instance ($instance.id)</a> " <<
+                            "<a href='$editor/search?query_string=id%3A+$instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
+                            "</div>"
+                    out << "<ul><li>${instance.instanceType.name}</li>"
+                    out << "<li>${instance.name?.fullNameHtml}</li>"
+                    out << "<li>${instance.reference?.citationHtml}</li></ul>"
+                    break
                 default:
                     out << val ? val.toString() : '-'
             }
