@@ -18,6 +18,8 @@ info:
 spring:
   main:
     banner-mode: "off"
+#    allow-bean-definition-overriding: true  # Workaround for some grails 5 tomcat deploy issue
+#    allow-circular-references: true  # Workaround for some grails 5 tomcat deploy issue
   groovy:
     template:
       check-template-location: false
@@ -31,7 +33,6 @@ endpoints:
 
 ---
 grails:
-  serverURL: 'http://localhost:8080/services'
   mime:
     disable:
       accept:
@@ -108,3 +109,11 @@ hibernate:
 grails:
   gorm:
     failOnError: true
+
+environments:
+  development:
+    serverURL: 'http://localhost:8083/services'
+    server:
+      port: 8083
+  production:
+    serverURL: 'http://localhost:8080/services'
