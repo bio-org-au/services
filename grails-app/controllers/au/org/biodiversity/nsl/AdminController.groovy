@@ -172,7 +172,6 @@ class AdminController {
     @RequiresRoles('admin')
     refreshViews() {
         log.debug "Refreshing views."
-        String namespaceName = configService.nameSpace.name.toLowerCase()
         flatViewService.refreshTaxonView()
         flatViewService.refreshNameView()
         log.debug "Refreshed views."
@@ -181,15 +180,90 @@ class AdminController {
 
 
     @RequiresRoles('admin')
-    runSynonomyUpdateOnInstances() {
+    runSynonymyUpdateOnInstances() {
         if (treeService.checkQueryStatus('synonyms_as_html') < 2) {
             treeService.refreshSynonymHtmlCache()
-            flash.message = "Updating Cached Synonomy on instances"
+            flash.message = "Updating Cached Synonymy on instances"
             redirect(action: 'index')
         } else {
             redirect(action: 'index')
             flash.message = "Refresh synonymy cache is already in progress"
             log.debug "refreshSynonymHtmlCache: Refresh synonymy cache already is in progress"
+        }
+    }
+
+    @RequiresRoles('admin')
+    getInvalidTaxonLinkCount() {
+        if (treeService.checkQueryStatus('autaxon') < 2) {
+            def count = treeService.getInvalidTaxonLinkCount()
+            flash.message = "Invalid Count of Tree taxon_link: ${count}"
+            redirect(action: 'index')
+        } else {
+            redirect(action: 'index')
+            flash.message = "Already in progress 'Invalid Count of Tree taxon_link entries'"
+        }
+    }
+
+    @RequiresRoles('admin')
+    updateTreeElementsForName() {
+        def nameId = params?.nameId
+        nameId = nameId.isLong() ? nameId.toLong() : 0
+        if (nameId) {
+            if (treeService.checkQueryStatus('fn_errata_name_change_update_te') < 2) {
+                flash.message = "Updating Tree Elements For Name $nameId"
+                redirect(action: 'index')
+                treeService.updateTreeElementsForName(nameId)
+            } else {
+                redirect(action: 'index')
+                flash.message = "Updating Tree Elements For Name '$nameId' is already in progress"
+                log.debug "updateTreeElementsForName: Updating Tree Elements For Name '$nameId' is already in progress"
+            }
+        } else {
+            log.debug "updateTreeElementsForName: nameId value was Invalid $nameId"
+            flash.message = "Error: 'nameId' value '$nameId' was Invalid."
+            redirect(action: 'index')
+        }
+    }
+
+    @RequiresRoles('admin')
+    updateTreeElementsForAuthor() {
+        def authorId = params?.authorId
+        authorId = authorId.isLong() ? authorId.toLong() : 0
+        if (authorId) {
+            if (treeService.checkQueryStatus('fn_errata_author_change') < 2) {
+                flash.message = "Updating Tree Elements For Author $authorId"
+                redirect(action: 'index')
+                treeService.updateTreeElementsForAuthor(authorId)
+            } else {
+                redirect(action: 'index')
+                flash.message = "Updating Tree Elements For Author $authorId is already in progress"
+                log.debug "updateTreeElementsForAuthor: Updating Tree Elements For Author $authorId is already in progress"
+            }
+        } else {
+            log.debug "updateTreeElementsForAuthor: authorId value was Invalid $authorId"
+            flash.message = "Error: 'authorId' value '$authorId' was Invalid."
+            redirect(action: 'index')
+        }
+    }
+
+    @RequiresRoles('admin')
+    updateTreeElementsForReference() {
+        def referenceId = params?.referenceId
+        referenceId = referenceId.isLong() ? referenceId.toLong() : 0
+        if (referenceId) {
+            if (treeService.checkQueryStatus('fn_errata_author_change') < 2) {
+                flash.message = "Updating Tree Elements For Author $referenceId"
+                redirect(action: 'index')
+                treeService.updateTreeElementsForReference(referenceId)
+            } else {
+                redirect(action: 'index')
+                flash.message = "Updating Tree Elements For Reference $referenceId is already in progress"
+                log.debug "updateTreeElementsForReference: Updating Tree Elements For Reference $referenceId is already in progress"
+            }
+        } else {
+            log.debug "updateTreeElementsForReference: referenceId value was Invalid $referenceId"
+            flash.message = "Error: 'referenceId' value '$referenceId' was Invalid."
+            redirect(action: 'index')
         }
     }
 

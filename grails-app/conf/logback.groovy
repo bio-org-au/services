@@ -18,7 +18,7 @@ appender('STDOUT', ConsoleAppender) {
                         '%clr(%5p) ' + // Log level
                         '%clr([%4.5t]){green} ' + // Thread
                         '%clr(%-15.20logger{39}){cyan} %clr(:){faint} ' + // Logger
-                        '%m%n%wex' // Message
+                        '%msg %ex{1}%nopex%n' // Message
     }
 }
 
@@ -31,7 +31,7 @@ appender("dailyFileAppender", RollingFileAppender) {
                         '%clr(%5p) ' + // Log level
                         '%clr([%4.5t]){green} ' + // Thread
                         '%clr(%-15.20logger{39}){cyan} %clr(:){faint} ' + // Logger
-                        '%m%n%wex' // Message
+                        '%msg %ex{1}%nopex%n' // Message
     }
     rollingPolicy(TimeBasedRollingPolicy) {
         FileNamePattern = "${(System.getProperty('catalina.base') ?: (System.getProperty('user.home') ?: 'target'))}/logs/services-%d{yyyy-MM-dd}.zip"
@@ -40,7 +40,7 @@ appender("dailyFileAppender", RollingFileAppender) {
 
 
 def targetDir = BuildSettings.TARGET_DIR
-println ("ENV is ${Environment.getCurrent()}")
+// println ("ENV is ${Environment.getCurrent()}")
 if (Environment.isDevelopmentMode() && targetDir != null) {
     root(ERROR, ['STDOUT'])
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)

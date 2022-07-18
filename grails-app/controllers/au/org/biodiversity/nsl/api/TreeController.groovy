@@ -119,7 +119,7 @@ class TreeController extends BaseApiController {
 
     def synonymyOrderingInfo(Instance instance) {
         ResultObject results = requireTarget(instance, "No instance supplied.")
-        log.debug "synonymyOrderingInfo: Getting Synonomy ordering info"
+        log.debug "synonymyOrderingInfo: Getting Synonymy ordering info"
         handleResults(results, { synOrderRespond(results) }) {
             results.payload = treeReportService.getSynonymOrderingInfo(instance)
         }
@@ -131,7 +131,7 @@ class TreeController extends BaseApiController {
     }
 
     private checkSynRespond(ResultObject resultObject, TreeVersion treeVersion, Boolean embed) {
-        log.debug "checkSynRespond: result status is ${resultObject.status} $resultObject"
+        log.debug "checkSynRespond: result status is ${resultObject?.status} - action: ${resultObject?.action} count: ${resultObject?.payload?.count}"
         if (embed) {
             //noinspection GroovyAssignabilityCheck
             log.debug "checkSynRespond: Rendering checkSynContent for treeVersion: $treeVersion"

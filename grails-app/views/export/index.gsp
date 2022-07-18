@@ -28,8 +28,8 @@
   </ul>
   <h5>What do these exports mean?</h5>
   <div class="text-muted">Read more about these exports
-  <a href="https://ibis-cloud.atlassian.net/wiki/spaces/NSL/pages/1636381/Data+Extracts+-+Darwin+Core"
-                                   title="Read more about these exports"
+  <a href="https://ibis-cloud.atlassian.net/wiki/spaces/NP/pages/1154383889/Data+Extracts+-+Darwin+Core"
+                                   title="Read NSL Data Extracts Darwin Core Documentation"
                                    target="_blank"><strong>here</strong></a>
   </div>
 </div>

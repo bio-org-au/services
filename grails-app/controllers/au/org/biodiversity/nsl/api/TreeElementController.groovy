@@ -142,6 +142,7 @@ class TreeElementController extends BaseApiController {
             String userName = treeService.authorizeTreeOperation(treeVersionElement.treeVersion.tree)
             Map profile = (data.profile.size() > 0 ? data.profile as Map : null)
             results.payload = treeService.editProfile(treeVersionElement, profile, userName)
+            log.debug(results.payload.toString())
         }
     }
 
@@ -230,7 +231,7 @@ class TreeElementController extends BaseApiController {
     def updateSynonymyByInstance() {
         List<Long> instanceIds = paramIdList(params.instances)
 
-        log.debug instanceIds.toString()
+        log.debug "updateSynonymyByInstance: Instance IDs: ${instanceIds.toString()}"
         ResultObject results = require('instances': instanceIds)
 
         handleResults(results) {

@@ -2,6 +2,8 @@ package au.org.biodiversity.nsl
 
 import grails.gorm.transactions.Transactional
 
+import java.sql.Timestamp
+
 @Transactional
 class DistributionService {
 
@@ -10,7 +12,7 @@ class DistributionService {
      * @param element
      */
     String constructDistributionString(TreeElement element) {
-        element.distributionEntries.sort { it.sortOrder }.collect { it.display }.join(', ')
+        element.distributionEntries.collect {it.distEntry }.sort { it.sortOrder }.collect { it.display }.join(', ')
     }
 
     /**
@@ -21,7 +23,7 @@ class DistributionService {
      */
     List<DistEntry> deconstructDistributionString(String dist, Boolean ignoreErrors = false) {
         List<DistEntry> entries = []
-        dist.split(',').collect { it.trim() }.each { String desc ->
+        dist.split(',').collect { it.trim() }.findAll{it}.each { String desc ->
             DistEntry entry = DistEntry.findByDisplay(desc)
             if (entry == null) {
                 if (ignoreErrors) {
@@ -39,30 +41,53 @@ class DistributionService {
         return entries
     }
 
-    TreeElement removeDistributionEntries(TreeElement element) {
-        if (element.distributionEntries) {
-            List<DistEntry> entries = new LinkedList<DistEntry>(element.distributionEntries)
-            entries.each { DistEntry entry ->
-                element.removeFromDistributionEntries(entry)
-                // From the documentation: "isDirty() does not currently check collection associations, but it does check all other persistent properties and associations."
-                // I have no idea why the save(flush) is needed to force a save
-                element.save(flush: true)
-                element.markDirty()
-            }
-        }
-        return element
-    }
+//    boolean removeDistributionEntries(TreeElement element) {
+//        boolean rtn = false
+//        if (element.distributionEntries) {
+//            List<DistEntry> entries = new LinkedList<DistEntry>(element.distributionEntries)
+//            entries.each { DistEntry entry ->
+//                element.removeFromDistributionEntries(entry)
+//                rtn = true
+//                // From the documentation: "isDirty() does not currently check collection associations, but it does check all other persistent properties and associations."
+//                // I have no idea why the save(flush) is needed to force a save
+////                element.save(flush: true)
+////                element.markDirty()
+//            }
+//        }
+//        return rtn
+//    }
+//
+//    void reconstructDistribution(TreeElement element, String dist, Boolean ignoreErrors = false) {
+//        removeDistributionEntries(element)
+//        if (dist) {
+//            deconstructDistributionString(dist, ignoreErrors).each { DistEntry entry ->
+//                element.addToDistributionEntries(entry)
+//                // From the documentation: "isDirty() does not currently check collection associations, but it does check all other persistent properties and associations."
+//                // I have no idea why the save(flush) is needed to force a save
+//                element.save(flush: true)
+//                element.markDirty()
+//            }
+//        }
+//    }
 
-    void reconstructDistribution(TreeElement element, String dist, Boolean ignoreErrors = false) {
-        removeDistributionEntries(element)
-        if (dist) {
-            deconstructDistributionString(dist, ignoreErrors).each { DistEntry entry ->
-                element.addToDistributionEntries(entry)
-                // From the documentation: "isDirty() does not currently check collection associations, but it does check all other persistent properties and associations."
-                // I have no idea why the save(flush) is needed to force a save
-                element.save(flush: true)
-                element.markDirty()
-            }
+    void reconstructDistribution(TreeElement element, String dist, String userName, Boolean ignoreErrors = false) {
+        Set<DistEntry> oldEntries = element.distributionEntries.collect{it.distEntry} ?: new HashSet<>()
+        List<DistEntry> newEntryList = deconstructDistributionString(dist, ignoreErrors)
+        Set<DistEntry> newEntries = new HashSet<>(newEntryList)
+        oldEntries.minus(newEntries).each { DistEntry entry ->
+            TreeElementDistEntry ent = element.distributionEntries.find {it.distEntry == entry }
+            element.removeFromDistributionEntries(ent)
+            ent.delete()
+        }
+        newEntries.minus(oldEntries).each { DistEntry entry ->
+            TreeElementDistEntry ent = new TreeElementDistEntry(
+                    treeElement: element,
+                    distEntry: entry,
+                    updatedAt: new Timestamp(System.currentTimeMillis()),
+                    updatedBy: userName
+            )
+            ent.save()
+            element.addToDistributionEntries(ent)
         }
     }
 }

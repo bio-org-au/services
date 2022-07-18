@@ -555,20 +555,18 @@ class ReferenceService implements AsyncHelper {
 
     @Transactional
     def updateSynonymyOnTreeForAuthor(Long id) {
-        log.debug "Updating synonymy on the tree for author_id (${id})"
         Sql sql = getSql();
         def query = "select fn_errata_author_change($id);"
         sql.execute(query)
-        log.debug "Finished updating tree synonymy of author: (${id})"
+        log.debug "Updated synonymy on the tree for author_id (${id})"
     }
 
     @Transactional
     def updateSynonymyOnTreeForReference(Long id) {
-        log.debug "Updating synonymy on the tree for reference_id (${id})"
         Sql sql = getSql();
         def query = "select fn_errata_ref_change($id);"
         sql.execute(query)
-        log.debug "Finished updating tree synonymy of reference: (${id})"
+        log.debug "Updated synonymy on the tree for reference_id (${id})"
     }
 
     private Sql getSql() {

@@ -206,21 +206,47 @@
 
       <div>
         <ul>
+        <%-- Replace XICs in Instance Notes --%>
           <li>
             <a class=""
                href="${g.createLink(controller: "admin", action: "replaceInstanceNoteXics")}">
               Replace XICs in Instance Notes
             </a>
           </li>
+          <%-- Run Synonymy Update On Instances --%>
           <li>
             <a class=""
-               href="${g.createLink(controller: "admin", action: "runSynonomyUpdateOnInstances")}">
-              Update Cached Synonomy on instances
+               href="${g.createLink(controller: "admin", action: "runSynonymyUpdateOnInstances")}">
+              Run Synonymy Update On Instances
             </a> <span class="text text-muted">(Browser Hangs - But Navigate Away)</span>
+          </li>
+          <%-- update Tree Elements For Name --%>
+          <li class="padded">
+            <g:form action="updateTreeElementsForName">
+                Update Tree Synonymy For  NameID: <input name="nameId" type="number" />
+                <g:actionSubmit class="btn btn-success btn-sm" value="Start Update" action="updateTreeElementsForName"/>
+            </g:form>
+          </li>
+          <%-- update Tree Elements For Author, his refs and name --%>
+          <li class="padded">
+            <g:form action="updateTreeElementsForAuthor">
+              Update Tree Synonymy For AuthorID: <input name="authorId" type="number" />
+              <g:actionSubmit class="btn btn-success btn-sm" value="Start Update" action="updateTreeElementsForAuthor"/>
+              (Takes longer)
+            </g:form>
+          </li>
+          <%-- update Tree Elements For a Reference and names that use that reference --%>
+          <li class="padded">
+            <g:form action="updateTreeElementsForReference">
+              Update Tree Synonymy For RefereID: <input name="referenceId" type="number" />
+              <g:actionSubmit class="btn btn-success btn-sm" value="Start Update" action="updateTreeElementsForReference"/>
+            </g:form>
           </li>
         </ul>
       </div>
     </div>
+
+    
 
     <div role="tabpanel" class="tab-pane fade show" id="views">
 
@@ -261,6 +287,12 @@
                href="${g.createLink(controller: "admin", action: "refreshDisplayHtml")}">
               Update Tree Version Element Display
             </a> <span class="text text-muted">(Browser Hangs - But Navigate Away)</span>
+          </li>
+          <li>
+            <a class=""
+               href="${g.createLink(controller: "admin", action: "getInvalidTaxonLinkCount")}">
+              Check Invalid <strong>taxon_link</strong> count
+            </a>
           </li>
         </ul>
       </div>

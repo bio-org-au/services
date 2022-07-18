@@ -882,7 +882,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         String distKey = distributionKey(parentElement)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString)
+        distributionService.reconstructDistribution(treeElement, distString, userName)
 
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, parentElement, nextSequenceId(), null, userName)
         updateParentTaxonId(parentElement)
@@ -922,7 +922,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         String distKey = distributionKey(treeVersion)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString)
+        distributionService.reconstructDistribution(treeElement, distString, userName)
 
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, null, treeVersion, nextSequenceId(), null, userName)
 
@@ -969,7 +969,7 @@ INSERT INTO tree_version_element (tree_version_id,
         log.debug "replaceTaxon: treeElement is ${treeElement}"
         String distKey = distributionKey(currentTve)
         String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString)
+        distributionService.reconstructDistribution(treeElement, distString, userName)
 
         TreeVersionElement replacementTve = saveTreeVersionElement(treeElement, parentTve, nextSequenceId(), null, userName)
         log.debug "replaceTaxon: replacementTve is ${replacementTve}"
@@ -1049,7 +1049,7 @@ INSERT INTO tree_version_element (tree_version_id,
             parents.each { TreeVersionElement element ->
                 if (!isUniqueTaxon(element)) {
                     element.taxonId = nextSequenceId(sql)
-                    element.taxonLink = linkService.addTaxonIdentifier(element) - hostPart
+                    element.taxonLink = "/" + linkService.addTaxonIdentifier(element) - hostPart
                     element.save()
                 }
             }
@@ -1166,7 +1166,13 @@ INSERT INTO tree_version_element (tree_version_id,
 
         log.debug "Stored Pdata: ${treeVersionElement.treeElement.profile.toString()}"
         log.debug "Passed Pdata: ${profile.toString()}"
+
+        // Get disitKey from DB
+        String distKey = distributionKey(treeVersionElement)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
         if (treeVersionElement.treeElement.profile == profile) {
+            // defensive update... shouldn't be necessary if everything is in sync, and will do nothing then
+            distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
             return treeVersionElement // data is equal, do nothing
         }
 
@@ -1174,8 +1180,6 @@ INSERT INTO tree_version_element (tree_version_id,
         // Build the comparator map for the treeElement
         Map elementComparators = comparators(treeVersionElement.treeElement)
 
-        // Get disitKey from DB
-        String distKey = distributionKey(treeVersionElement)
 
         // If excluded and has profile data, throw badargs exception
         excludedValidation(elementComparators.excluded, profile, distKey)
@@ -1203,16 +1207,19 @@ INSERT INTO tree_version_element (tree_version_id,
         if (foundElement) {
             if (treeVersionElement.treeElement.id == foundElement.id) {
                 log.debug "Same Tree element $foundElement as before - nothing to do?"
+                distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
                 return treeVersionElement
             }
             log.debug "Reusing $foundElement"
+            // defensive update... shouldn't be necessary if everything is in sync, and will do nothing then
+            distributionService.reconstructDistribution(foundElement, distString, userName)
             return changeElement(treeVersionElement, foundElement, userName)
         }
 
         //if this is not a draft only element clone it
         if (treeVersionElement.treeElement.treeVersionElements.size() > 1) {
             log.debug "No matching element, creating a new one."
-            TreeElement copiedElement = copyTreeElement(treeVersionElement.treeElement, userName)
+            TreeElement copiedElement = copyTreeElement(treeVersionElement, userName)
             treeVersionElement = changeElement(treeVersionElement, copiedElement, userName)
             treeVersionElement.save(flush: true)
             log.debug "Created. ${treeVersionElement.treeElement}."
@@ -1220,9 +1227,7 @@ INSERT INTO tree_version_element (tree_version_id,
         } else {
             log.debug "Editing draft element ${treeVersionElement.treeElement}."
         }
-
-        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString)
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
 
         Timestamp now = new Timestamp(System.currentTimeMillis())
 
@@ -1251,7 +1256,7 @@ INSERT INTO tree_version_element (tree_version_id,
         excludedValidation(treeVersionElement.treeElement.excluded, distribution)
         String distKey = distributionKey(treeVersionElement)
         //this will throw an exception if the distribution string is bad.
-        distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution)
+        distributionService.reconstructDistribution(treeVersionElement.treeElement, distribution, userName)
         //re-order the distribution string correctly
         distribution = distributionService.constructDistributionString(treeVersionElement.treeElement)
         treeVersionElement.treeElement.save(flush: true)
@@ -1276,11 +1281,18 @@ INSERT INTO tree_version_element (tree_version_id,
             return treeVersionElement
         }
 
-        ProfileValue profileValue = new ProfileValue(value, userName, profile[key] as Map, reason)
+        Map previousValue = [:]
+        if(profile?.containsKey(key)) {
+            previousValue.putAll(profile[key] as Map)
+        }
 
-        treeVersionElement.treeElement.profile[key] = profileValue.toMap()
+        ProfileValue profileValue = new ProfileValue(value, userName, profile[key] as Map, reason)
+        Map finalProfileValue = profile.findAll { it.key != key }
+        finalProfileValue.put(key, profileValue.toMap())
+        log.debug("oldProfileValue is: $profile")
+        log.debug("updatedProfileValue is: $finalProfileValue")
+        treeVersionElement.treeElement.profile = finalProfileValue
         treeVersionElement.treeElement.save()
-        log.debug treeVersionElement.treeElement.profile.toString()
         return treeVersionElement
     }
 
@@ -1314,7 +1326,7 @@ INSERT INTO tree_version_element (tree_version_id,
 
         //if this is not a draft only element clone it
         if (treeVersionElement.treeElement.treeVersionElements.size() > 1) {
-            TreeElement copiedElement = copyTreeElement(treeVersionElement.treeElement, userName)
+            TreeElement copiedElement = copyTreeElement(treeVersionElement, userName)
             treeVersionElement = changeElement(treeVersionElement, copiedElement, userName)
             //don't update taxonId above as the taxon hasn't changed
         } else {
@@ -1369,6 +1381,10 @@ INSERT INTO tree_version_element (tree_version_id,
             treeVersionElement = changeElement(treeVersionElement, updatedElement, userName)
             // don't update taxonId above as the instance hasn't changed, and other taxon changes will have already
             // updated the taxon id
+            Map profile = updatedElement.profile
+            String distKey = distributionKey(treeVersionElement)
+            String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+            distributionService.reconstructDistribution(updatedElement, distString, userName)
         } else {
             treeVersionElement.treeElement.synonyms = taxonData.synonyms.asMap()
             treeVersionElement.treeElement.synonymsHtml = taxonData.synonymsHtml
@@ -1425,11 +1441,9 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     /**
-     * Updates the tree_path field for TreeVersionElement directly in the database when the
-     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
-     * reference or author was updated, synonomy accepted and tree published.
-     *
-     * This is a stop gap measure.
+     * Updates cache synonymy_html for all instances in the tree
+     * 2021 11 07: Updated script to add timestamp and updated_by
+     * fields as well so audit report is accurate
      */
     def refreshSynonymHtmlCache() {
         Sql sql = getSql()
@@ -1437,16 +1451,64 @@ INSERT INTO tree_version_element (tree_version_id,
         sql.executeUpdate('''
         update instance
         set
-        cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>')
+            cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>'),
+            updated_by = 'SynonymyUpdateJob',
+            updated_at = now()
         where
-        id in (select distinct instance_id from tree_element);''')
-        log.debug "refreshSynonymHtmlCache: Completed Refreshing synonymy cache"
+            id in (select distinct instance_id from tree_element)
+        and
+             cached_synonymy_html <> coalesce(synonyms_as_html(id), '<synonyms></synonyms>');''')
+        log.debug "refreshSynonymHtmlCache: Changed ${sql.updateCount} instances' synonymy cache"
     }
 
+    /**
+     * Updates the tree_path field for TreeVersionElement directly in the database when the
+     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
+     * reference or author was updated, synonymy accepted and tree published.
+     *
+     * @param nameId integer
+     */
+    def updateTreeElementsForName(Long nameId) {
+        Sql sql = getSql()
+        sql.execute('select fn_errata_name_change_update_te(' + nameId + ');')
+        log.debug "updateTreeElementsForName: Completed Updating TEs for $nameId"
+    }
+
+    /**
+     * Updates the tree_path field for TreeVersionElement directly in the database when the
+     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
+     * reference or author was updated, synonymy accepted and tree published.
+     *
+     * @param nameId integer
+     */
+    def updateTreeElementsForAuthor(Long authorId) {
+        Sql sql = getSql()
+        sql.execute('select fn_errata_author_change(' + authorId + ');')
+        log.debug "updateTreeElementsForAuthor: Completed Updating TEs for $authorId"
+    }
+
+    /**
+     * Updates the tree_path field for TreeVersionElement directly in the database when the
+     * tree_path becomes invalid. This occurs when a tree is published. The taxa for whom a
+     * reference or author was updated, synonymy accepted and tree published.
+     *
+     * @param nameId integer
+     */
+    def updateTreeElementsForReference(Long referenceId) {
+        Sql sql = getSql()
+        sql.execute('select fn_errata_ref_change(' + referenceId + ');')
+        log.debug "updateTreeElementsForReference: Completed Updating TEs for $referenceId"
+    }
+
+    /**
+     * Checks the status a query about to be run so it isn't run multiple times
+     *
+     * @param string to filter the query by
+     */
     def checkQueryStatus(String filter) {
         Sql sql = getSql()
         List<Map> rows = sql.rows("select query from pg_stat_activity " +
-                "where state = 'active' and query ilike '%"+filter+"%';")
+                "where state = 'active' and query ilike '%" + filter + "%';")
         rows.size()
     }
 
@@ -1664,7 +1726,8 @@ and regex(namePath, :newPath) = true
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
-    private TreeElement copyTreeElement(TreeElement source, String userName) {
+    private TreeElement copyTreeElement(TreeVersionElement tve, String userName) {
+        TreeElement source = tve.treeElement
         TreeElement treeElement = new TreeElement(instanceId: source.instanceId,
                 nameId: source.nameId,
                 excluded: source.excluded,
@@ -1681,11 +1744,14 @@ and regex(namePath, :newPath) = true
                 instanceLink: source.instanceLink,
                 updatedBy: userName,
                 updatedAt: new Timestamp(System.currentTimeMillis()))
-        treeElement.save()
+        Map profile = treeElement.profile
+        String distKey = distributionKey(tve)
+        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
         // setting these references here because of a bug? setting in the map above where the parentElement
         // changes to this new element.
         treeElement.previousElement = source
-        treeElement.save(flush: true)
+        treeElement.save()
+        distributionService.reconstructDistribution(treeElement, distString, userName)
         return treeElement
     }
 
@@ -2148,7 +2214,7 @@ and tve.element_link not in ($excludedLinks)
             String failMessage = "Couldn't fetch $uri"
             restCallService.json('get', uri,
                     { Map data ->
-                        log.debug "Fetched $uri. Response: $data"
+                        log.debug "Fetched $uri. Response: ${data.status}"
                         result.data = data.payload
                     },
                     { Map data, List errors ->
@@ -2336,9 +2402,16 @@ where te.profile -> 'APC Dist.' is not null
 and not exists (select 1 from tree_element_distribution_entries tede where tede.tree_element_id = te.id);
 ''') { row ->
             TreeElement te = TreeElement.get(row.id)
-            distributionService.reconstructDistribution(te, te.profile."APC Dist.".value, true)
             te.save()
+            distributionService.reconstructDistribution(te, te.profile."APC Dist.".value, te.updatedBy, true)
             log.debug "Updated $te, added ${te.distributionEntries.size()} dist entries."
         }
+    }
+
+    def getInvalidTaxonLinkCount() {
+        Sql sql = getSql()
+        def row = sql.firstRow("select count(taxon_link) from tree_version_element where taxon_link like 'taxon%'")
+        log.debug "Invalid taxon_link count is: ${row.count}"
+        row.count
     }
 }

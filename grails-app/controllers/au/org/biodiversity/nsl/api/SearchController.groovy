@@ -29,6 +29,11 @@ class SearchController implements RequestUtil {
     FlatViewService flatViewService
     def maxResults = 100
 
+    def index() {
+        log.warn "SearchController: tree: ${params?.tree}"
+        redirect ([action: 'taxonomy', permanent: true])
+    }
+
     def product(String product) {
         log.debug "Search product $product"
         String prod = product.toLowerCase()

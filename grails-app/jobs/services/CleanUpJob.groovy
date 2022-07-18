@@ -10,8 +10,8 @@ class CleanUpJob {
     def instanceService
     def treeService
 
-    def concurrent = false
-    def sessionRequired = true
+    static concurrent = false
+    static sessionRequired = true
 
     static triggers = {
         //6 AM every day
@@ -21,10 +21,10 @@ class CleanUpJob {
     def execute() {
         Name.withTransaction {
             println "Running cleanup."
-            authorService.autoDeduplicate('cleanUpJob')
             referenceService.deduplicateMarked('cleanUpJob')
             instanceService.updateMissingUris()
             nameService.updateMissingUris()
+            authorService.autoDeduplicate('cleanUpJob')
             treeService.refreshDisplayHtml()
         }
     }

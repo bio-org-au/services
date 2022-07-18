@@ -457,6 +457,68 @@ hybrid::after {
     visibility: visible;
 }
 
+hybrid[title="intergrade"]::after {
+    content: '-';
+    margin-right: 0;
+}
+
+/* Audit screen tr line height hover style */
+div[class^="height-nsl"] {
+    max-height: 3em;
+    overflow: hidden;
+    transition-delay: 5s;
+}
+
+/* Audit screen tr line height hover style */
+div[class^="height-nsl"]:hover {
+    max-height: 100%;
+    transition-delay: 1s;
+}
+
+/* Audit screen tr styles */
+tr[class^="editor-web"] {
+    background-color: #fcf7ff;
+}
+
+/* Audit screen header 1 styles */
+.stats-h1 {
+    background-color: #EEEEEE;
+}
+
+/* Audit screen header 2 styles */
+.stats-h2 {
+    background-color:ivory;
+}
+
+/* Audit screen Search button margin top to align it*/
+.audit-search {
+    margin-top: 1.5em;
+    padding-left: 3em;
+    padding-right: 3em;
+}
+
+/*Audit screen styles for synonymy diff to place one element per line*/
+div[class^="height-"] div.diffBefore > synonyms > mis,
+div[class^="height-"] div.diffBefore > synonyms > mis::after,
+div[class^="height-"] div.diffBefore > synonyms > nom,
+div[class^="height-"] div.diffBefore > synonyms > nom::after,
+div[class^="height-"] div.diffBefore > synonyms > tax,
+div[class^="height-"] div.diffBefore > synonyms > tax::after,
+div[class^="height-"] div.diffAfter > synonyms > mis,
+div[class^="height-"] div.diffAfter > synonyms > mis::after,
+div[class^="height-"] div.diffAfter > synonyms > nom,
+div[class^="height-"] div.diffAfter > synonyms > nom::after,
+div[class^="height-"] div.diffAfter > synonyms > tax,
+div[class^="height-"] div.diffAfter > synonyms > tax::after {
+    line-height: 1.6;
+    content: "\A";
+    white-space: pre;
+}
+
+/* Apply padding top and bottom to an element */
+.padded {
+    padding: 0.2em 0 0.2em 0;
+}
 
 table.audit-report th {
     text-align: center;
@@ -509,6 +571,6 @@ div.debug {
     margin-top: 20px;
 }
 
-.btn,.btn-light {
+.btn-light {
     margin-bottom: 1em;
 }

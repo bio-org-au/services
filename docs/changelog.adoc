@@ -12,6 +12,21 @@
 :links:
 :numbered:
 
+== v1.0235
+* NSL-3831: Fixed issues in last version of synonymy changes
+* Changes to audit reporting
+* Added more admin functions
+* Changes 1753 job to update only outdated instances
+* Fix concurrency issues with cleanUp job
+
+== v 1.0234
+* Add index action to search controller
+* Added afd shard assets and styles
+* NSL-3831: First draft tree synonymy auto-update functionality for author and reference
+* NSL-3845: Fix ability to delete comments and distribution from services
+* Fix concurrency issues with grails jobs
+* Changes to Search endpoint to avoid logs from filling up (WIP)
+
 == v 1.0233
 * Fixed font awesome icons for protologue and images
 * Fixed classification in APC view to be a popup
@@ -19,6 +34,14 @@
 * NSL-3811: Services will now re-synchronize with mapper token
 * NSL-3827: Added a new button and collapsible search interface to name check results screen
 * NSL-3844: Fixed arrows in datepicker. Setup logging based on environment
+* Fix the classification to be a popup instead of displaying online; Need to fix new line characters
+* Fixed bugs in Tree saves
+* Added additional admin functions to run from services
+* Fix names and links on exports tabs
+* Add validations to run db functions from admin screen
+* Change read timeouts to work on cloud
+* NSL-3989: Fix Tree distribution entries not saving
+* NSL-4003: Optimize tree distribution
 
 == v 1.0232
 * NSL-3661 Fixed the broken tree and taxon URLs from editor to services
