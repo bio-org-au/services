@@ -522,8 +522,14 @@ class ServiceTagLib {
                     Instance instance = (Instance) val
                     String link = linkService.getPreferredLinkForObject(instance)
                     out << "<div class='title'><a href='$link' target='audit'>Instance ($instance.id)</a> " <<
-                            "<a href='$editor/search?query_string=id%3A+$instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
-                            "</div>"
+                            "<a href='$editor/search?query_string=id%3A+$instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                    if (instance.citedBy) {
+                        String link2 = linkService.getPreferredLinkForObject(instance.citedBy)
+                        out << " cited by <a href='$link2' target='audit'>Instance ($instance.citedBy.id)</a> " <<
+                                "<a href='$editor/search?query_string=id%3A+$instance.citedBy.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                        out << " ${instance.citedBy.name?.fullNameHtml}"
+                    }
+                    out << "</div>"
                     out << "<ul><li>${instance.instanceType.name}</li>"
                     out << "<li>${instance.name?.fullNameHtml}</li>"
                     out << "<li>${instance.reference?.citationHtml}</li></ul>"
