@@ -28,6 +28,8 @@ import groovy.sql.Sql
 import org.slf4j.LoggerFactory
 
 import javax.sql.DataSource
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * This is a helper service for abstracting, accessing and managing configuration of the services.
@@ -49,14 +51,14 @@ class ConfigService {
 
     private String nameSpaceName
     private Map shardConfig = null
-    private Map appConfigMap = null
-
-    private Map appConfig() {
-        if (!appConfigMap) {
-            appConfigMap = grailsApplication.config.flatten()
-        }
-        return appConfigMap
-    }
+//    private Map appConfigMap = null
+//
+//    private Map appConfig() {
+//        if (!appConfigMap) {
+//            appConfigMap = grailsApplication.config.flatten()
+//        }
+//        return appConfigMap
+//    }
 
     private String getShardConfigOrfail(String key) {
         if (shardConfig == null) {
@@ -156,7 +158,7 @@ class ConfigService {
     }
 
     String getPhotoSearch(String name) {
-        def search = configOrThrow('services.photoService.search')
+        def search = configOrThrow('services.photoService.search', Closure)
         if (search && search instanceof Closure) {
             return search(name)
         }
@@ -210,7 +212,7 @@ class ConfigService {
     }
 
     Map getMapperCredentials() {
-        configOrThrow('services.mapper') as Map
+        configOrThrow('services.mapper', Map)
     }
 
     String getSystemMessageFilename() {
@@ -230,16 +232,21 @@ class ConfigService {
      * it throws and exception saying the config is missing.
      * @param path
      */
-    private def configOrThrow(String path) {
-        if (appConfig() && appConfig().containsKey(path)) {
-            return appConfig().get(path)
+    private def configOrThrow(String path, Class<?> targetType = String) {
+        def rtn = grailsApplication.config.getProperty(path, targetType)
+//        if (!rtn) {
+//            rtn = grailsApplication.config.getProperty(path, java.util.Map)
+//        }
+        if (rtn) {
+            return rtn
         } else {
             throw new Exception("Config error. Config option $path not found, please set it in '.nsl/services-config.groovy'.")
         }
     }
 
+
     String printAppConfig() {
-        appConfig().toString()
+        grailsApplication.config.flatten().toString()
     }
 
     List<FileAppender> getLogFiles() {
@@ -275,11 +282,15 @@ class ConfigService {
     }
 
     Sql getSqlForNSLDB() {
-        String dbUrl = grailsApplication.config.dataSource.url
-        String username = grailsApplication.config.dataSource.username
-        String password = grailsApplication.config.dataSource.password
-        String driverClassName = grailsApplication.config.dataSource.driverClassName
-        Sql.newInstance(dbUrl, username, password, driverClassName)
+//        String dbUrl = grailsApplication.config.dataSource.url
+//        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
+//        println "database url2: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
+
+//        String username = grailsApplication.config.dataSource.username
+//        String password = grailsApplication.config.dataSource.password
+//        String driverClassName = grailsApplication.config.dataSource.driverClassName
+//        Sql.newInstance(dbUrl, username, password, driverClassName)
+        Sql.newInstance(dataSource)
     }
 
     String getWebUserName() {

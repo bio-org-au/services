@@ -271,7 +271,15 @@ class ServiceTagLib {
     }
 
     private static String toCamelCase(String text) {
-        return text.toLowerCase().replaceAll("(_)([A-Za-z0-9])", { String[] it -> it[2].toUpperCase() })
+        return text.replaceAll( "(_)([A-Za-z0-9])", { Object[] it -> it[2].toUpperCase() } )
+    }
+
+    private static String toCamelCase2(String text) {
+        return toCamelCase(text).capitalize()
+    }
+
+    private static String snakeToLabel(String text) {
+        text.replaceAll('_', ' ').split(' ').collect{ it.capitalize() }.join(' ')
     }
 
     def primaryInstance = { attrs, body ->
@@ -380,52 +388,187 @@ class ServiceTagLib {
         out << str[index + 1..-1]
     }
 
+    static fieldDefinitions = [
+            Name: [
+                    author: [:],
+                    baseAuthor: [:],
+                    duplicateOf: [:],
+                    exAuthor: [:],
+                    exBaseAuthor: [:],
+                    family: ['family'],
+                    fullName: [:],
+                    nameRank: [:],
+                    nameStatus: [:],
+                    nameType: [:],
+                    parent: [label: 'parent'],
+                    sanctioningAuthor: [:],
+                    secondParent: [label: 'parent2'],
+                    verbatimRank: [:],
+                    orthVar: [ label: 'orth var'],
+                    changedCombination: [label: 'new comb'],
+                    validRecord: [label: 'valid rec'],
+                    comment: [],
+                    publishedYear: []
+            ],
+            Instance: [
+                    bhlUrl: [label: 'BHL'],
+                    draft: [label: 'draft'],
+                    instanceType: [:],
+                    page: [:],
+                    parent: [:],
+                    reference: [:],
+                    verbatimNameString: [label: 'verbatim name'],
+                    citedBy: [label: 'cited by'],
+                    nomenclaturalStatus: [:],
+                    validRecord: [label: 'valid rec']
+            ],
+            Reference: [
+                    bhlUrl: [label: 'BHL'],
+                    citation: [label: 'citation'],
+                    doi: [:],
+                    isbn: [:],
+                    isoPublicationDate: [label: 'ISO publication date'],
+                    issn: [:],
+                    language: [:],
+                    notes: [:],
+                    published: [:],
+                    publishedLocation: [:],
+                    publisher: [:],
+                    refType: [label: 'reference type'],
+                    year: [label: 'year'],
+                    tl2: [label: 'TL2'],
+                    validRecord: [label: 'valid rec']
+            ],
+            Author: [
+                    abbrev: [label: 'abbreviation'],
+                    fullName: [label: 'full name'],
+                    name: [label: 'name'],
+                    notes: [label: 'notes'],
+                    ipniId: [label: 'IPNI id'],
+                    validRecord: [label: 'valid rec']
+            ],
+            TreeElement: [
+                    'comment': [],
+                    'distribution': []
+            ],
+            Comment: [
+                    text: [:]
+            ],
+            InstanceNote: [
+                    instanceNoteKey: [:],
+                    value: [:]
+            ]
+    ]
+
+    static List<Diff> sortDiffs(String table, List<Diff> diffs) {
+        return diffs
+//        List<Diff> rtn = new ArrayList()
+//        def fields = fieldDefinitions[toCamelCase2(table)]
+//        for (String k in fields?.keySet()) {
+//            Diff d = diffs.find {it.fieldName == k}
+//            if (d) {
+//                rtn.add(d)
+//            }
+//        }
+//        return rtn
+    }
+
+    static boolean shouldDisplayRow(Audit row, List<Diff> diffs) {
+//    static boolean shouldDisplayRow(def row, def diffs) {
+        row.action != 'U' || diffs.find { shouldDisplay(it) }
+    }
+
+    static boolean shouldDisplay(Diff diff) {
+        return fieldDefinitions[toCamelCase2(diff.tableName)]?.get(toCamelCase(diff.fieldName)) != null
+    }
+
+    def diffLabel = {attrs ->
+        String table = toCamelCase2(attrs.table)
+        String field = snakeToLabel(attrs.field)
+        out << (fieldDefinitions[table]?.get(field)?.get('label') ?: "$field")
+    }
+
     def diffValue = { attrs ->
         def val = attrs.value
+        String editor = grailsApplication.config.get('editorUrl')
+        String top = configService.serverUrl + '/assets'
         if (val) {
-            switch (val.class.simpleName) {
+            switch (val.class?.simpleName) {
                 case 'Name':
                     Name name = (Name) val
                     String link = linkService.getPreferredLinkForObject(name) + '/api/apni-format'
-                    out << "<div class='title'><a href='$link' target='audit'>Name ($name.id)</a></div>"
+                    out << "<div class='title'><a href='$link' target='audit'>Name ($name.id)</a> " <<
+                            "<a href='$editor/search?query_string=id%3A+$name.id&query_target=names' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
+                            "</div>"
                     out << "<div>${name.fullNameHtml}</div>"
                     break
                 case 'Author':
                     Author author = (Author) val
                     String link = linkService.getPreferredLinkForObject(author)
-                    out << "<div class='title'><a href='$link' target='audit'>Author ($author.id)</a></div>"
+                    out << "<div class='title'><a href='$link' target='audit'>Author ($author.id)</a> " <<
+                            "<a href='$editor/search?query_string=id%3A+$author.id&query_target=authors' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
+                            "</div>"
                     out << "<div>${author.name} (${author.abbrev})</div>"
                     break
                 case 'Reference':
                     Reference reference = (Reference) val
                     String link = linkService.getPreferredLinkForObject(reference)
-                    out << "<div class='title'><a href='$link' target='audit'>Reference ($reference.id)</a></div>"
+                    out << "<div class='title'><a href='$link' target='audit'>Reference ($reference.id)</a> " <<
+                            "<a href='$editor/search?query_string=id%3A+$reference.id&query_target=references' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
+                            "</div>"
                     out << "<div>${reference.citationHtml}</div>"
                     break
                 case 'Instance':
                     Instance instance = (Instance) val
                     String link = linkService.getPreferredLinkForObject(instance)
-                    out << "<div class='title'><a href='$link' target='audit'>Instance ($instance.id)</a></div>"
+                    out << "<div class='title'><a href='$link' target='audit'>Instance ($instance.id)</a> " <<
+                            "<a href='$editor/search?query_string=id%3A+$instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                    if (instance.citedBy) {
+                        String link2 = linkService.getPreferredLinkForObject(instance.citedBy)
+                        out << " cited by <a href='$link2' target='audit'>Instance ($instance.citedBy.id)</a> " <<
+                                "<a href='$editor/search?query_string=id%3A+$instance.citedBy.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                        out << " ${instance.citedBy.name?.fullNameHtml}"
+                    }
+                    out << "</div>"
                     out << "<ul><li>${instance.instanceType.name}</li>"
-                    out << "<li>${instance.name.fullNameHtml}</li>"
-                    out << "<li>${instance.reference.citationHtml}</li></ul>"
+                    out << "<li>${instance.name?.fullNameHtml}</li>"
+                    out << "<li>${instance.reference?.citationHtml}</li></ul>"
                     break
                 case 'InstanceNote':
                     InstanceNote note = (InstanceNote) val
                     String link = linkService.getPreferredLinkForObject(note)
-                    out << "<div class='title'><a href='$link' target='audit'>Instance Note ($note.id)</a></div>"
+                    out << "<div class='title'><a href='$link' target='audit'>Instance Note ($note.id)</a> "
+                    if (note.instance) {
+                        "<a href='$editor/search?query_string=id%3A+$note.instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                    }
+                    out << "</div>"
                     out << "<div><b>${note.instanceNoteKey.name}:</b></div>"
                     out << "<div>${note.value}</div>"
                     Instance instance = note.instance
-                    String instLink = linkService.getPreferredLinkForObject(instance)
-                    out << "<div><a href='$instLink'>Instance ($instance.id)</a></div>"
-                    out << "<ul><li>${instance.instanceType.name}</li>"
-                    out << "<li>${instance.name.fullNameHtml}</li>"
-                    out << "<li>${instance.reference.citationHtml}</li></ul>"
+                    if (instance) {
+                        String instLink = linkService.getPreferredLinkForObject(instance)
+                        out << "<div><a href='$instLink'>Instance ($instance.id)</a></div>"
+                        out << "<ul><li>${instance.instanceType.name}</li>"
+                        out << "<li>${instance.name.fullNameHtml}</li>"
+                        out << "<li>${instance.reference.citationHtml}</li></ul>"
+                    }
                     break
                 case 'Comment':
                     Comment comment = (Comment) val
-                    out << "<div class='title'>Comment ($comment.id)</div>"
+                    out << "<div class='title'>Comment ($comment.id)"
+                    if (comment.name) {
+                        out << "<a href='$editor/search?query_string=id%3A+$comment.name.id&query_target=names' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                    }
+                    if (comment.author) {
+                        out << "<a href='$editor/search?query_string=id%3A+$comment.author.id&query_target=authors' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                    }
+                    if (comment.instance) {
+                        out << "<a href='$editor/search?query_string=id%3A+$comment.instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                    }
+                    if (comment.reference) {
+                        out << "<a href='$editor/search?query_string=id%3A+$comment.reference.id&query_target=references' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                    }
+                    out << "</div>"
                     out << "<div>${comment.text}</div>"
                     out << "<div>on:</div>"
                     if (comment.name) {
@@ -462,7 +605,17 @@ class ServiceTagLib {
                     InstanceType instanceType = (InstanceType) val
                     out << instanceType.name
                     break
-
+                case 'TreeElement':
+                    TreeElement treeElement = (TreeElement) val
+                    Instance instance = (Instance) treeElement.instance
+                    String link = linkService.getPreferredLinkForObject(instance)
+                    out << "<div class='title'>TreeElement ($treeElement.id) of <a href='$link' target='audit'>Instance ($instance.id)</a> " <<
+                            "<a href='$editor/search?query_string=id%3A+$instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>" <<
+                            "</div>"
+                    out << "<ul><li>${instance.instanceType.name}</li>"
+                    out << "<li>${instance.name?.fullNameHtml}</li>"
+                    out << "<li>${instance.reference?.citationHtml}</li></ul>"
+                    break
                 default:
                     out << val ? val.toString() : '-'
             }

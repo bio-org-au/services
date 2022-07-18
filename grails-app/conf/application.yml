@@ -1,4 +1,3 @@
-server.contextPath: /nsl/services
 ---
 grails:
   profile: web
@@ -18,20 +17,13 @@ info:
 spring:
   main:
     banner-mode: "off"
+#    allow-bean-definition-overriding: true  # Workaround for some grails 5 tomcat deploy issue
+#    allow-circular-references: true  # Workaround for some grails 5 tomcat deploy issue
   groovy:
     template:
       check-template-location: false
-
-# Spring Actuator Endpoints are Disabled by Default
-endpoints:
-  enabled: false
-  jmx:
-    enabled: true
-    unique-names: true
-
 ---
 grails:
-  serverURL: 'http://localhost:8080/services'
   mime:
     disable:
       accept:
@@ -104,7 +96,36 @@ hibernate:
     use_second_level_cache: false
     use_query_cache: false
 
----
-grails:
-  gorm:
-    failOnError: true
+# Spring Actuator Endpoints are Disabled by Default
+endpoints:
+  enabled: false
+  jmx:
+    enabled: true
+    unique-names: true
+
+environments:
+  development:
+    editorUrl: 'https://test.biodiversity.org.au/nsl/editor'
+    grails:
+      serverURL: 'http://localhost:8097'
+    server:
+      port: 8097
+    dataSource:
+      #            dbCreate: create-drop
+      #            dbCreate: none
+      #            dbCreateDDL: create
+      #            dbCreate: create
+      dbCreate: update
+      url: jdbc:postgresql://pgsql-test1-ibis.cloud.biodiversity.org.au:5432/apni
+      #      url: jdbc:postgresql://localhost:5432/apni
+      driverClassName: org.postgresql.Driver
+      username: nsl
+      password: changeme
+  test:
+    editorUrl: 'https://test.biodiversity.org.au/nsl/editor'
+    grails:
+      serverURL: 'https://test.biodiversity.org.au/nsl/services'
+  production:
+    editorUrl: 'https://biodiversity.org.au/nsl/editor'
+    grails:
+      serverURL: 'https://biodiversity.org.au/nsl/services'

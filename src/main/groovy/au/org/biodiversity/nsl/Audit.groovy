@@ -1,10 +1,18 @@
 package au.org.biodiversity.nsl
 
 import grails.converters.JSON
+import grails.core.GrailsClass
+import grails.core.GrailsDomainClass
 import grails.util.GrailsClassUtils
+import grails.util.Holders
 import groovy.sql.GroovyResultSet
+import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.orm.hibernate.cfg.GrailsDomainBinder
+import org.grails.web.json.JSONException
 
 import java.sql.Timestamp
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * User: pmcneil
@@ -23,6 +31,7 @@ class Audit {
     final String updatedAtTimestamp
     final Object auditedObj
     final Class auditedClass
+    final GrailsClass domainClass
 
     private HashSet<String> relevantChangedFields
     private HashSet<String> relevantRowData
@@ -40,8 +49,22 @@ class Audit {
         } else {
             this.changedFields = [:]
         }
-        this.auditedClass = Class.forName('au.org.biodiversity.nsl.' + snakeToCamel(table).capitalize())
+        String clsName = 'au.org.biodiversity.nsl.' + snakeToCamel(table).capitalize()
+        this.auditedClass = Class.forName(clsName)
+        this.domainClass = Holders.grailsApplication.domainClasses.find { it.fullName == clsName }
         this.auditedObj = getTheAuditedObject()
+        if (this.auditedObj instanceof Instance) {
+            (this.auditedObj as Instance).instanceType  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as Instance).name  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as Instance).reference  // load into memory to avoid LazyInitializationException
+        }
+        if (this.auditedObj instanceof InstanceNote) {
+            (this.auditedObj as InstanceNote).instanceNoteKey  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as InstanceNote).instance  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as InstanceNote).instance?.instanceType  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as InstanceNote).instance?.name  // load into memory to avoid LazyInitializationException
+            (this.auditedObj as InstanceNote).instance?.reference  // load into memory to avoid LazyInitializationException
+        }
     }
 
     String toString() {
@@ -111,16 +134,54 @@ class Audit {
         return diff
     }
 
+    List<Diff> jsonSubDiffs(String tableName, String prefix, Map olds, Map news) {
+        List<Diff> res = new ArrayList<>()
+        Set keys = new HashSet<>()
+        if (olds) {
+            keys += olds.keySet()
+        }
+        if (news) {
+            keys += news.keySet()
+        }
+        for (String it in keys) {
+            Object o = olds instanceof Map && olds.containsKey(it) ? olds.get(it) : null
+            Object n = news instanceof Map && news.containsKey(it) ? news.get(it) : null
+            if (o instanceof Map || n instanceof Map) {
+                res.addAll(jsonSubDiffs(tableName, prefix + '.' + it.replaceAll('\\.', ''), o as Map, n as Map))
+            } else {
+                if (o != n) {
+                    res.add(new Diff(tableName, prefix + '.' + it.replaceAll('\\.', ''), o, n))
+                }
+            }
+        }
+        return res
+    }
+
+    List<Diff> jsonDiffs(String tableName, String prefix, Object olds, Object news) {
+        try {
+            Map oldm = JSON.parse(olds) as Map
+            Map newm = JSON.parse(news) as Map
+            return jsonSubDiffs(tableName, prefix, oldm, newm)
+        } catch (JSONException) {
+            return null
+        }
+    }
+
     List<Diff> fieldDiffs() {
         List<Diff> diff = []
         if (auditedObj) {
             getRelevantChangedFields().each { String key ->
-                diff << new Diff(key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                List<Diff> d = jsonDiffs(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                if (d) {
+                    diff.addAll(d)
+                } else {
+                    diff << new Diff(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                }
             }
         } else {
             getRelevantRowData().each { String key ->
                 if (rowData[key]) {
-                    diff << new Diff(key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                    diff << new Diff(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
                 }
             }
         }
@@ -132,8 +193,40 @@ class Audit {
     }
 
     private Object getTheAuditedObject() {
-        if (action != 'D') {
-            auditedClass.get(rowData.id as Long)
+        if (action == 'D') {
+            def session = Holders.grailsApplication.mainContext.sessionFactory.currentSession
+            def columns = GrailsDomainBinder.getMapping(auditedClass).columns.entrySet().findAll { it.value.column }.collectEntries { [(it.value.column): it.key]}
+            Object rtn = auditedClass.newInstance()
+            DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ssx')
+            rowData.each { Map.Entry<String,Object> it ->
+                if (it.value) {
+                    String oCol = columns[it.key] ?: snakeToCamel(it.key)
+                    def prop = domainClass.persistentProperties.find { it.persistentProperty.name == oCol }?.persistentProperty
+                    if (prop || oCol == 'id') {
+                        if (prop?.type == Timestamp) {
+                            String v = it.value.replaceAll('\\.[0-9]*', '')
+                            rtn.setProperty(oCol, Timestamp.valueOf(LocalDateTime.from(timestampFormatter.parse(v))))
+                        } else if (oCol == 'id' || prop?.type == Long) {
+                            rtn.setProperty(oCol, it.value as Long)
+                        } else if (prop?.type == Integer) {
+                            rtn.setProperty(oCol, it.value as Integer)
+                        } else if (prop?.type == Boolean) {
+                            rtn.setProperty(oCol, it.value == 'f' ? false : true)
+                        } else {
+                            rtn.setProperty(oCol, it.value)
+                        }
+                    } else if (it.key.endsWith('_id')) {
+                        def dCol = it.key.substring(0, it.key.length() - 3)
+                        oCol = columns[it.key] ?: snakeToCamel(dCol)
+                        prop = domainClass.persistentProperties.find { it.persistentProperty.name == oCol }?.persistentProperty
+                        def val = session.get(prop.type, it.value as Long)
+                        rtn.setProperty(oCol, val)
+                    }
+                }
+            }
+            return rtn
+        } else if (action != 'D') {
+            return auditedClass.get(rowData.id as Long)
         } else {
             return null
         }

@@ -1742,6 +1742,8 @@ and regex(namePath, :newPath) = true
                 sourceElementLink: source.sourceElementLink,
                 nameLink: source.nameLink,
                 instanceLink: source.instanceLink,
+                createdBy: userName,
+                createdAt: new Timestamp(System.currentTimeMillis()),
                 updatedBy: userName,
                 updatedAt: new Timestamp(System.currentTimeMillis()))
         Map profile = treeElement.profile

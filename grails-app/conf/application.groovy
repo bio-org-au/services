@@ -22,8 +22,8 @@ shard {
 services {
     mapper.apikey = 'not set'
     link {
-        mapperURL = 'http://localhost:7070/nsl-mapper'
-        internalMapperURL = 'http://localhost:7070/nsl-mapper'
+        mapperURL = 'http://appstst1-ibis.cloud.biodiversity.org.au:8083/nsl/mapper'
+        internalMapperURL = 'http://appstst1-ibis.cloud.biodiversity.org.au:8083/nsl/mapper'
         editor = 'https://biodiversity.org.au/test-nsl-editor'
     }
 }
@@ -33,11 +33,13 @@ updates.dir = "${userHome}/.nsl/updates"
 dataSource {
     username = "nsl"
     password = "nsl"
-    url = "jdbc:postgresql://localhost:5432/nsl"
+//    url = "jdbc:postgresql://mylocalhost:5432/somedb"
+    url = "jdbc:postgresql://pgsql-test1-ibis.cloud.biodiversity.org.au:5432/apni"
+//    jndiName = 'java:comp/env/jdbc/nsl'
 
     pooled = true
     jmxExport = true
-    driverClassName = "org.postgresql.Driver"
+//    driverClassName = "org.postgresql.Driver"
     dialect = "au.org.biodiversity.nsl.ExtendedPostgreSQLDialect"
     formatSql = false
     logSql = false
