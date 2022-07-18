@@ -19,6 +19,9 @@ package au.org.biodiversity.nsl
 import groovy.transform.CompileStatic
 import org.grails.plugins.codecs.HTMLCodec
 
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
 class NameConstructionService {
 
     NameConstructor icnNameConstructionService
@@ -44,6 +47,9 @@ class NameConstructionService {
         bits.findAll { it }.join(' ')
     }
 
+    static Pattern wordSplitterPattern = Pattern.compile(/(\S+)\s+(\S+)\s*(.*)/)
+    static Pattern wordSplitterPattern2 = Pattern.compile(/(\S+)\s+(.*)/)
+
     /**
      * Make the sortName from the passed in simple name and name object.
      * We pass in simple name because it may not have been set on the name yet for new names.
@@ -53,16 +59,44 @@ class NameConstructionService {
      * @param simpleName
      * @return sort name string
      */
-    @CompileStatic
     String makeSortName(Name name, String simpleName) {
-
-        String abbrev = name.nameRank.abbrev
-        String sortName = simpleName.toLowerCase()
-                                    .replaceAll(/^x /, '') //remove hybrid marks
-                                    .replaceAll(/ [x+-] /, ' ') //remove hybrid marks
-                                    .replaceAll(" $abbrev ", ' ') //remove rank abreviations
-                                    .replaceAll(/ MS$/, '') //remove manuscript
-        return sortName
+        String sortName = simpleName.toLowerCase() + ' '
+        if (sortName.matches(/.*\bcf\.\B.*/) || sortName.matches(/.*\baff\.\B.*/)) {
+            sortName = sortName.trim() + ' 0 ' // make it sort last
+        }
+        sortName = sortName
+                .replaceAll(/^x /, '') //remove hybrid marks
+                .replaceAll(/ [x+-] /, ' ') //remove hybrid marks
+                .replaceAll(/ MS$/, '') //remove manuscript
+                .replaceAll(/\s*\bcf\.\B\s*/,' ')
+                .replaceAll(/\s*\baff\.\B\s*/,' ')
+                .trim()
+        if (name.nameType.name != 'phrase name') {
+            String abbrev = name.nameRank.abbrev.toLowerCase().replaceAll(/([\]\.\[])/, /\\$1/)
+            sortName = sortName.replaceAll(/(\s+)${abbrev}(\s+|$)/, ' ') //remove rank abbreviations
+        }
+        if (name.verbatimRank) {
+            String abbrev = name.verbatimRank.toLowerCase().replaceAll(/([\]\.\[])/, /\\$1/)
+            sortName = sortName.replaceAll(/(\s+)${abbrev}(\s+|$)/, ' ') //remove rank abbreviations
+        }
+        NameRank subsp = NameRank.findByAbbrev('subsp.')
+        if (name.nameRank.parentRank && name.nameRank.sortOrder >= subsp.sortOrder) {
+            Matcher m = wordSplitterPattern.matcher(sortName)
+            if (m.matches()) {
+                String first = m.group(1)
+                String second = m.group(2)
+                String rest = m.group(3)
+                sortName = "$first ${String.format('%04d', name.nameRank.parentRank.sortOrder)} $second ${String.format('%04d', name.nameRank.sortOrder)} $rest"
+            }
+        } else if (name.nameRank.parentRank) {
+            Matcher m = wordSplitterPattern2.matcher(sortName)
+            if (m.matches()) {
+                String first = m.group(1)
+                String rest = m.group(2)
+                sortName = "$first ${String.format('%04d', name.nameRank.sortOrder)} $rest"
+            }
+        }
+        return sortName.trim()
     }
 
     @CompileStatic

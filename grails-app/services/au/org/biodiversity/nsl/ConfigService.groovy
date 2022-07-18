@@ -49,14 +49,14 @@ class ConfigService {
 
     private String nameSpaceName
     private Map shardConfig = null
-    private Map appConfigMap = null
+//    private Map appConfigMap = null
 
-    private Map appConfig() {
-        if (!appConfigMap) {
-            appConfigMap = grailsApplication.config.flatten()
-        }
-        return appConfigMap
-    }
+//    private Map appConfig() {
+//        if (!appConfigMap) {
+//            appConfigMap = grailsApplication.config.flatten()
+//        }
+//        return appConfigMap
+//    }
 
     private String getShardConfigOrfail(String key) {
         if (shardConfig == null) {
@@ -194,7 +194,7 @@ class ConfigService {
     }
 
     String getServerUrl() {
-        configOrThrow('grails.serverURL')
+        configOrThrow('serverURL')
     }
 
     String getTempFileDir() {
@@ -231,15 +231,16 @@ class ConfigService {
      * @param path
      */
     private def configOrThrow(String path) {
-        if (appConfig() && appConfig().containsKey(path)) {
-            return appConfig().get(path)
+        def rtn = grailsApplication.config.getProperty(path)
+        if (rtn) {
+            return rtn
         } else {
             throw new Exception("Config error. Config option $path not found, please set it in '.nsl/services-config.groovy'.")
         }
     }
 
     String printAppConfig() {
-        appConfig().toString()
+        grailsApplication.config.flatten().toString()
     }
 
     List<FileAppender> getLogFiles() {

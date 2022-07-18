@@ -1,5 +1,5 @@
 
-grails.serverURL = "http://biodiversity.local:8080/nsl/services"
+//grails.serverURL = "http://biodiversity.local:8080/nsl/services"
 
 shard {
     system.message.file = "/etc/nsl/broadcast.txt"
@@ -37,16 +37,16 @@ security {
     shiro {
         realm {
             ldap {
-                server.urls = 'ldap://biodiversity.local:10389'
+                server.urls = 'ldap://appstst1-ibis.cloud.biodiversity.org.au:10389'
                 userName.attribute = 'uid'
 
                 search {
-                    base = 'ou=users,o=shards'
+                    base = 'ou=users,dc=nsl,dc=bio,dc=org,dc=au'
                     user = 'uid=admin,ou=system'
                     pass = 'secret'
 
                     group {
-                        name = "ou=groups,ou=vasc,o=shards"
+                        name = 'ou=groups,dc=apni,dc=nsl,dc=bio,dc=org,dc=au'
                         member {
                             element = 'uniqueMember'
                             prefix = 'uid='

@@ -21,6 +21,7 @@ class NameConstructionServiceSpec extends Specification implements ServiceUnitTe
 
         //create basic nameRanks
         List<Map> data = [
+                [useVerbatimRank: false, abbrev: 'regio', name: 'Regio', displayName: 'Regio', sortOrder: 8, descriptionHtml: '[description of <b>Regio</b>]', rdfId: 'regio'],
                 [useVerbatimRank: false, abbrev: 'reg.', name: 'Regnum', displayName: 'Regnum', sortOrder: 10, descriptionHtml: '[description of <b>Regnum</b>]', rdfId: 'regnum'],
                 [useVerbatimRank: false, abbrev: 'div.', name: 'Division', displayName: 'Division', sortOrder: 20, descriptionHtml: '[description of <b>Division</b>]', rdfId: 'division'],
                 [useVerbatimRank: false, abbrev: 'cl.', name: 'Classis', displayName: 'Classis', sortOrder: 30, descriptionHtml: '[description of <b>Classis</b>]', rdfId: 'classis'],
@@ -32,12 +33,14 @@ class NameConstructionServiceSpec extends Specification implements ServiceUnitTe
                 [useVerbatimRank: false, abbrev: 'subfam.', name: 'Subfamilia', displayName: 'Subfamilia', sortOrder: 90, descriptionHtml: '[description of <b>Subfamilia</b>]', rdfId: 'subfamilia'],
                 [useVerbatimRank: false, abbrev: 'trib.', name: 'Tribus', displayName: 'Tribus', sortOrder: 100, descriptionHtml: '[description of <b>Tribus</b>]', rdfId: 'tribus'],
                 [useVerbatimRank: false, abbrev: 'subtrib.', name: 'Subtribus', displayName: 'Subtribus', sortOrder: 110, descriptionHtml: '[description of <b>Subtribus</b>]', rdfId: 'subtribus'],
+                [useVerbatimRank: true, abbrev: '[infrafamily]', name: '[infrafamily]', displayName: '[infrafamily]', sortOrder: 115, descriptionHtml: '[description of <b>[infrafamily]</b>]', rdfId: 'infrafamily'],
                 [useVerbatimRank: false, abbrev: 'gen.', name: 'Genus', displayName: 'Genus', sortOrder: 120, descriptionHtml: '[description of <b>Genus</b>]', rdfId: 'genus'],
                 [useVerbatimRank: false, abbrev: 'subg.', name: 'Subgenus', displayName: 'Subgenus', sortOrder: 130, descriptionHtml: '[description of <b>Subgenus</b>]', rdfId: 'subgenus'],
                 [useVerbatimRank: false, abbrev: 'sect.', name: 'Sectio', displayName: 'Sectio', sortOrder: 140, descriptionHtml: '[description of <b>Sectio</b>]', rdfId: 'sectio'],
                 [useVerbatimRank: false, abbrev: 'subsect.', name: 'Subsectio', displayName: 'Subsectio', sortOrder: 150, descriptionHtml: '[description of <b>Subsectio</b>]', rdfId: 'subsectio'],
                 [useVerbatimRank: false, abbrev: 'ser.', name: 'Series', displayName: 'Series', sortOrder: 160, descriptionHtml: '[description of <b>Series</b>]', rdfId: 'series'],
                 [useVerbatimRank: false, abbrev: 'subser.', name: 'Subseries', displayName: 'Subseries', sortOrder: 170, descriptionHtml: '[description of <b>Subseries</b>]', rdfId: 'subseries'],
+                [useVerbatimRank: true, abbrev: '[infragenus]', name: '[infragenus]', displayName: '[infragenus]', sortOrder: 175, descriptionHtml: '[description of <b>[infragenus]</b>]', rdfId: 'infragenus'],
                 [useVerbatimRank: false, abbrev: 'supersp.', name: 'Superspecies', displayName: 'Superspecies', sortOrder: 180, descriptionHtml: '[description of <b>Superspecies</b>]', rdfId: 'superspecies'],
                 [useVerbatimRank: false, abbrev: 'sp.', name: 'Species', displayName: 'Species', sortOrder: 190, descriptionHtml: '[description of <b>Species</b>]', rdfId: 'species'],
                 [useVerbatimRank: false, abbrev: 'subsp.', name: 'Subspecies', displayName: 'Subspecies', sortOrder: 200, descriptionHtml: '[description of <b>Subspecies</b>]', rdfId: 'subspecies'],
@@ -49,12 +52,9 @@ class NameConstructionServiceSpec extends Specification implements ServiceUnitTe
                 [useVerbatimRank: false, abbrev: 'form taxon', name: 'form taxon', displayName: 'form taxon', sortOrder: 250, descriptionHtml: '[description of <b>form taxon</b>]', rdfId: 'form-taxon'],
                 [useVerbatimRank: false, abbrev: 'morph.', name: 'morphological var.', displayName: 'morphological var.', sortOrder: 260, descriptionHtml: '[description of <b>morphological var.</b>]', rdfId: 'morphological-var'],
                 [useVerbatimRank: false, abbrev: 'nothomorph', name: 'nothomorph.', displayName: 'nothomorph.', sortOrder: 270, descriptionHtml: '[description of <b>nothomorph.</b>]', rdfId: 'nothomorph'],
+                [useVerbatimRank: true, abbrev: '[infrasp.]', name: '[infraspecies]', displayName: '[infraspecies]', sortOrder: 275, descriptionHtml: '[description of <b>[infraspecies]</b>]', rdfId: 'infraspecies'],
                 [useVerbatimRank: true, abbrev: '[unranked]', name: '[unranked]', displayName: '[unranked]', sortOrder: 500, descriptionHtml: '[description of <b>[unranked]</b>]', rdfId: 'unranked'],
-                [useVerbatimRank: true, abbrev: '[infrafamily]', name: '[infrafamily]', displayName: '[infrafamily]', sortOrder: 500, descriptionHtml: '[description of <b>[infrafamily]</b>]', rdfId: 'infrafamily'],
-                [useVerbatimRank: true, abbrev: '[infragenus]', name: '[infragenus]', displayName: '[infragenus]', sortOrder: 500, descriptionHtml: '[description of <b>[infragenus]</b>]', rdfId: 'infragenus'],
-                [useVerbatimRank: true, abbrev: '[infrasp.]', name: '[infraspecies]', displayName: '[infraspecies]', sortOrder: 500, descriptionHtml: '[description of <b>[infraspecies]</b>]', rdfId: 'infraspecies'],
                 [useVerbatimRank: true, abbrev: '[unknown]', name: '[unknown]', displayName: '[unknown]', sortOrder: 500, descriptionHtml: '[description of <b>[unknown]</b>]', rdfId: 'unknown'],
-                [useVerbatimRank: false, abbrev: 'regio', name: 'Regio', displayName: 'Regio', sortOrder: 8, descriptionHtml: '[description of <b>Regio</b>]', rdfId: 'regio'],
                 [useVerbatimRank: false, abbrev: '[n/a]', name: '[n/a]', displayName: '[n/a]', sortOrder: 500, descriptionHtml: '[description of <b>[n/a]</b>]', rdfId: 'n-a']
         ]
         NameGroup group = new NameGroup([name: 'group'])
@@ -63,7 +63,34 @@ class NameConstructionServiceSpec extends Specification implements ServiceUnitTe
             r.nameGroup = group
             r.save()
         }
+        NameType nameType
+        nameType = new NameType(name: 'scientific')
+        nameType.save()
+        nameType = new NameType(name: 'phrase name')
+        nameType.save()
 
+        NameRank.findByAbbrev('subfam.').parentRank = NameRank.findByAbbrev('fam.')
+        NameRank.findByAbbrev('trib.').parentRank = NameRank.findByAbbrev('fam.')
+        NameRank.findByAbbrev('subtrib.').parentRank = NameRank.findByAbbrev('fam.')
+        NameRank.findByAbbrev('subg.').parentRank = NameRank.findByAbbrev('gen.')
+        NameRank.findByAbbrev('sect.').parentRank = NameRank.findByAbbrev('gen.')
+        NameRank.findByAbbrev('subsect.').parentRank = NameRank.findByAbbrev('gen.')
+        NameRank.findByAbbrev('ser.').parentRank = NameRank.findByAbbrev('gen.')
+        NameRank.findByAbbrev('subser.').parentRank = NameRank.findByAbbrev('gen.')
+        NameRank.findByAbbrev('supersp.').parentRank = NameRank.findByAbbrev('gen.')
+        NameRank.findByAbbrev('sp.').parentRank = NameRank.findByAbbrev('gen.')
+        NameRank.findByAbbrev('subsp.').parentRank = NameRank.findByAbbrev('sp.')
+        NameRank.findByAbbrev('nothovar.').parentRank = NameRank.findByAbbrev('sp.')
+        NameRank.findByAbbrev('var.').parentRank = NameRank.findByAbbrev('sp.')
+        NameRank.findByAbbrev('subvar.').parentRank = NameRank.findByAbbrev('sp.')
+        NameRank.findByAbbrev('f.').parentRank = NameRank.findByAbbrev('sp.')
+        NameRank.findByAbbrev('subf.').parentRank = NameRank.findByAbbrev('sp.')
+        NameRank.findByAbbrev('form taxon').parentRank = NameRank.findByAbbrev('sp.')
+        NameRank.findByAbbrev('morph.').parentRank = NameRank.findByAbbrev('sp.')
+        NameRank.findByAbbrev('nothomorph').parentRank = NameRank.findByAbbrev('sp.')
+        NameRank.findByAbbrev('[infrafamily]').parentRank = NameRank.findByAbbrev('fam.')
+        NameRank.findByAbbrev('[infragenus]').parentRank = NameRank.findByAbbrev('gen.')
+        NameRank.findByAbbrev('[infrasp.]').parentRank = NameRank.findByAbbrev('sp.')
     }
 
     def cleanup() {
@@ -71,42 +98,63 @@ class NameConstructionServiceSpec extends Specification implements ServiceUnitTe
 
     void "test makeSortName returns expected results"() {
         when: "we convert a simple name string"
-        Name name = new Name(simpleName: test, nameRank: NameRank.findByName(rank))
+        Name name = new Name(simpleName: test, nameRank: NameRank.findByName(rank), nameType: NameType.findByName(type))
         String output = service.makeSortName(name, name.simpleName)
 
         then:
         output == result
 
         where:
-        test                                          | rank         | result
-        "Ptilotus"                                    | 'Genus'      | "ptilotus"
-        "Ptilotus sect. Ptilotus"                     | 'Sectio'     | "ptilotus ptilotus"
-        "Ptilotus ser. Ptilotus"                      | 'Series'     | "ptilotus ptilotus"
-        "Ptilotus aervoides"                          | 'Species'    | "ptilotus aervoides"
-        "Ptilotus albidus"                            | 'Species'    | "ptilotus albidus"
-        "Ptilotus alexandri"                          | 'Species'    | "ptilotus alexandri"
-        "Ptilotus alopecuroides"                      | 'Species'    | "ptilotus alopecuroides"
-        "Ptilotus alopecuroideus"                     | 'Species'    | "ptilotus alopecuroideus"
-        "Ptilotus alopecuroideus f. alopecuroideus"   | 'Forma'      | "ptilotus alopecuroideus alopecuroideus"
-        "Ptilotus alopecuroideus var. alopecuroideus" | 'Varietas'   | "ptilotus alopecuroideus alopecuroideus"
-        "Ptilotus alopecuroideus f. rubriflorus"      | 'Forma'      | "ptilotus alopecuroideus rubriflorus"
-        "Ptilotus alopecuroideus var. longistachyus"  | 'Varietas'   | "ptilotus alopecuroideus longistachyus"
-        "Ptilotus alopecuroideus var. rubriflorum"    | 'Varietas'   | "ptilotus alopecuroideus rubriflorum"
-        "Ptilotus alopecuroideus var. rubriflorus"    | 'Varietas'   | "ptilotus alopecuroideus rubriflorus"
-        "Ptilotus amabilis"                           | 'Species'    | "ptilotus amabilis"
-        "Ptilotus andersonii"                         | 'Species'    | "ptilotus andersonii"
-        "Ptilotus aphyllus"                           | 'Species'    | "ptilotus aphyllus"
-        "Ptilotus appendiculatus"                     | 'Species'    | "ptilotus appendiculatus"
-        "Ptilotus appendiculatus var. appendiculatus" | 'Varietas'   | "ptilotus appendiculatus appendiculatus"
-        "Ptilotus appendiculatus var. minor"          | 'Varietas'   | "ptilotus appendiculatus minor"
-        "Ptilotus aristatus"                          | 'Species'    | "ptilotus aristatus"
-        "Ptilotus aristatus subsp. aristatus"         | 'Subspecies' | "ptilotus aristatus aristatus"
-        "Ptilotus aristatus var. aristatus"           | 'Varietas'   | "ptilotus aristatus aristatus"
-        "Ptilotus aristatus subsp. micranthus"        | 'Subspecies' | "ptilotus aristatus micranthus"
-        "Ptilotus aristatus var. eichlerianus"        | 'Varietas'   | "ptilotus aristatus eichlerianus"
-        "Ptilotus aristatus var. exilis"              | 'Varietas'   | "ptilotus aristatus exilis"
-        "Ptilotus aristatus var. stenophyllus"        | 'Varietas'   | "ptilotus aristatus stenophyllus"
+        test                                          | rank         | type          | result
+        "Ptilotus"                                    | 'Genus'      | 'scientific'  | "ptilotus"
+        "Ptilotus sect. Ptilotus"                     | 'Sectio'     | 'scientific'  | "ptilotus 0140 ptilotus"
+        "Ptilotus ser. Ptilotus"                      | 'Series'     | 'scientific'  | "ptilotus 0160 ptilotus"
+        "Ptilotus aervoides"                          | 'Species'    | 'scientific'  | "ptilotus 0190 aervoides"
+        "Ptilotus albidus"                            | 'Species'    | 'scientific'  | "ptilotus 0190 albidus"
+        "Ptilotus alexandri"                          | 'Species'    | 'scientific'  | "ptilotus 0190 alexandri"
+        "Ptilotus alopecuroides"                      | 'Species'    | 'scientific'  | "ptilotus 0190 alopecuroides"
+        "Ptilotus alopecuroideus"                     | 'Species'    | 'scientific'  | "ptilotus 0190 alopecuroideus"
+        "Ptilotus alopecuroideus f. alopecuroideus"   | 'Forma'      | 'scientific'  | "ptilotus 0190 alopecuroideus 0230 alopecuroideus"
+        "Ptilotus alopecuroideus var. alopecuroideus" | 'Varietas'   | 'scientific'  | "ptilotus 0190 alopecuroideus 0210 alopecuroideus"
+        "Ptilotus alopecuroideus f. rubriflorus"      | 'Forma'      | 'scientific'  | "ptilotus 0190 alopecuroideus 0230 rubriflorus"
+        "Ptilotus alopecuroideus var. longistachyus"  | 'Varietas'   | 'scientific'  | "ptilotus 0190 alopecuroideus 0210 longistachyus"
+        "Ptilotus alopecuroideus var. rubriflorum"    | 'Varietas'   | 'scientific'  | "ptilotus 0190 alopecuroideus 0210 rubriflorum"
+        "Ptilotus alopecuroideus var. rubriflorus"    | 'Varietas'   | 'scientific'  | "ptilotus 0190 alopecuroideus 0210 rubriflorus"
+        "Ptilotus amabilis"                           | 'Species'    | 'scientific'  | "ptilotus 0190 amabilis"
+        "Ptilotus andersonii"                         | 'Species'    | 'scientific'  | "ptilotus 0190 andersonii"
+        "Ptilotus aphyllus"                           | 'Species'    | 'scientific'  | "ptilotus 0190 aphyllus"
+        "Ptilotus appendiculatus"                     | 'Species'    | 'scientific'  | "ptilotus 0190 appendiculatus"
+        "Ptilotus appendiculatus var. appendiculatus" | 'Varietas'   | 'scientific'  | "ptilotus 0190 appendiculatus 0210 appendiculatus"
+        "Ptilotus appendiculatus var. minor"          | 'Varietas'   | 'scientific'  | "ptilotus 0190 appendiculatus 0210 minor"
+        "Ptilotus aristatus"                          | 'Species'    | 'scientific'  | "ptilotus 0190 aristatus"
+        "Ptilotus aristatus subsp. aristatus"         | 'Subspecies' | 'scientific'  | "ptilotus 0190 aristatus 0200 aristatus"
+        "Ptilotus aristatus subsp. aristatus"         | 'Subspecies' | 'phrase name' | "ptilotus 0190 aristatus 0200 subsp. aristatus"
+        "Ptilotus aristatus var. aristatus"           | 'Varietas'   | 'scientific'  | "ptilotus 0190 aristatus 0210 aristatus"
+        "Ptilotus aristatus subsp. micranthus"        | 'Subspecies' | 'scientific'  | "ptilotus 0190 aristatus 0200 micranthus"
+        "Ptilotus aristatus var. eichlerianus"        | 'Varietas'   | 'scientific'  | "ptilotus 0190 aristatus 0210 eichlerianus"
+        "Ptilotus aristatus var. aff. exilis"         | 'Varietas'   | 'scientific'  | "ptilotus 0190 aristatus 0210 exilis 0"
+        "Ptilotus aristatus var. stanophyllus cf."    | 'Varietas'   | 'scientific'  | "ptilotus 0190 aristatus 0210 stanophyllus 0"
+        "Ptilotus aristatus var. cf. stenopyllus"     | 'Varietas'   | 'scientific'  | "ptilotus 0190 aristatus 0210 stenopyllus 0"
+        "Ptilotus aristatus stenophylus var."         | 'Varietas'   | 'scientific'  | "ptilotus 0190 aristatus 0210 stenophylus"
+        "Ptilotus aristatus stonophylusvar. var."     | 'Varietas'   | 'scientific'  | "ptilotus 0190 aristatus 0210 stonophylusvar."
+        "Ptilotus aristatus stonophylusvar. VAR."     | 'Varietas'   | 'scientific'  | "ptilotus 0190 aristatus 0210 stonophylusvar."
+        "Ptilotus aristatus stonophyllus var."        | 'Varietas'   | 'phrase name' | "ptilotus 0190 aristatus 0210 stonophyllus var."
+    }
 
+
+    void "test makeSortName returns expected results for verbatim rank"() {
+        when: "we convert a simple name string"
+        Name name = new Name(simpleName: test, nameRank: NameRank.findByName(rank), nameType: NameType.findByName(type), verbatimRank: vr)
+        String output = service.makeSortName(name, name.simpleName)
+
+        then:
+        output == result
+
+        where:
+        test                                          | rank         | type         | vr   | result
+        "Leptomeria a. Xeromeria"                     |'[infragenus]'| 'scientific' | 'a.' | "leptomeria 0175 xeromeria"
+        "Erigeron [unranked] Caenotus"                |'[infragenus]'| 'scientific' | '[unranked]' | "erigeron 0175 caenotus"
+        "Erigeron [UNRANKED] Caenotus"                |'[infragenus]'| 'scientific' | '[unranked]' | "erigeron 0175 caenotus"
     }
 
     void "test strip markup"() {

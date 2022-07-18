@@ -31,7 +31,6 @@ endpoints:
 
 ---
 grails:
-  serverURL: 'http://localhost:8080/services'
   mime:
     disable:
       accept:
@@ -108,3 +107,10 @@ hibernate:
 grails:
   gorm:
     failOnError: true
+environments:
+  development:
+    serverURL: 'http://localhost:8097'
+    server:
+      port: 8097
+  production:
+    serverURL: 'http://localhost:8080/services'
