@@ -41,8 +41,6 @@ security {
 
                 search {
                     base = 'dc=cloud,dc=biodiversity,dc=org,dc=au'
-//                    base = 'ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
-//                    base = 'cn=Users,dc=cloud,dc=biodiversity,dc=org,dc=au'
                     user = 'cn=NSL Admin,ou=users,ou=nsl,dc=cloud,dc=biodiversity,dc=org,dc=au'
                     pass = 'askgreg'
 
@@ -62,44 +60,10 @@ security {
     }
 }
 
-//security {
-//    shiro {
-//        realm {
-//            ldap {
-//                server.urls = 'ldap://appstst1-ibis.cloud.biodiversity.org.au:10389'
-//                userName.attribute = 'uid'
-//
-//                search {
-//                    base = 'ou=users,dc=nsl,dc=bio,dc=org,dc=au'
-//                    user = 'uid=admin,ou=system'
-//                    pass = 'secret'
-//
-//                    group {
-//                        name = 'ou=groups,dc=apni,dc=nsl,dc=bio,dc=org,dc=au'
-//                        member {
-//                            element = 'uniqueMember'
-//                            prefix = 'uid='
-//                        }
-//                    }
-//                    permission {
-//                        commonName = 'cn=permission'
-//                        member {
-//                            element = 'uniqueMember'
-//                            prefix = 'uid='
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-
 dataSource {
     username = 'nsl'
-//    password = 'nsl'
-    password = "pvq0;yv!t4s3=lld602!"
-//    url = "jdbc:postgresql://localhost:5432/nsl"
-    url = "jdbc:postgresql://pgsql-test1-ibis.cloud.biodiversity.org.au:5432/apni"
+    password = 'nsl'
+    url = "jdbc:postgresql://localhost:5432/nsl"
 }
 
 api.auth = [
