@@ -443,7 +443,7 @@ WHERE tve.tree_version_id = :versionId
         String hostPart = treeVersion.hostPart()
         TreeElement.executeQuery('''
 select tve.treeElement.displayHtml, tve.elementLink, tve.treeElement.nameLink, tve.treeElement.instanceLink, 
- tve.treeElement.excluded, tve.depth, tve.treeElement.synonymsHtml 
+ tve.treeElement.excluded, tve.depth, coalesce(synonyms_as_html(tve.treeElement.instance_id)) 
     from TreeVersionElement tve 
     where tve.treeVersion = :version
     and regex(tve.treePath, :pattern) = true 
