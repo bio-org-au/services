@@ -48,7 +48,7 @@ class TreeController extends BaseApiController {
             results.payload = treeService.createNewTree(treeName, groupName ?: userName, referenceId, descriptionHtml, linkToHomePage, acceptedTree)
         }
     }
-v
+
     def editTree() {
         withTree { ResultObject results, Tree tree, Map data ->
             treeService.authorizeTreeOperation(tree)
