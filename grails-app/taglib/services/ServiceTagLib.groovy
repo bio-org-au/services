@@ -279,7 +279,7 @@ class ServiceTagLib {
     }
 
     private static String snakeToLabel(String text) {
-        text.replaceAll('_', ' ').split(' ').collect{ it.capitalize() }.join(' ')
+        text.replaceAll('_id$', '').replaceAll('_', ' ').split(' ').collect{ it.capitalize() }.join(' ')
     }
 
     def primaryInstance = { attrs, body ->
@@ -413,7 +413,7 @@ class ServiceTagLib {
             Instance: [
                     bhlUrl: [label: 'BHL'],
                     draft: [label: 'draft'],
-                    instanceType: [label: 'Instance Type'],
+                    instanceType: [:],
                     page: [:],
                     parent: [:],
                     reference: [:],
@@ -485,7 +485,8 @@ class ServiceTagLib {
     def diffLabel = {attrs ->
         String table = toCamelCase2(attrs.table)
         String field = snakeToLabel(attrs.field)
-        out << (fieldDefinitions[table]?.get(field)?.get('label') ?: "$field")
+        String cname = toCamelCase(attrs.field)
+        out << (fieldDefinitions[table]?.get(cname)?.get('label') ?: "$field")
     }
 
     def diffValue = { attrs ->
