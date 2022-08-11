@@ -271,7 +271,7 @@ class ServiceTagLib {
     }
 
     private static String toCamelCase(String text) {
-        return text.replaceAll( "(_)([A-Za-z0-9])", { Object[] it -> it[2].toUpperCase() } )
+        return text.replaceAll('_id$', '').replaceAll( "(_)([A-Za-z0-9])", { Object[] it -> it[2].toUpperCase() } )
     }
 
     private static String toCamelCase2(String text) {
@@ -413,7 +413,7 @@ class ServiceTagLib {
             Instance: [
                     bhlUrl: [label: 'BHL'],
                     draft: [label: 'draft'],
-                    instanceType: [:],
+                    instanceType: [label: 'Instance Type'],
                     page: [:],
                     parent: [:],
                     reference: [:],
