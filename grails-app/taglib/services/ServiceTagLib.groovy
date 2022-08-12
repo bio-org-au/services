@@ -540,7 +540,7 @@ class ServiceTagLib {
                     String link = linkService.getPreferredLinkForObject(note)
                     out << "<div class='title'><a href='$link' target='audit'>Instance Note ($note.id)</a> "
                     if (note.instance) {
-                        "<a href='$editor/search?query_string=id%3A+$note.instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
+                        out << "<a href='$editor/search?query_string=id%3A+$note.instance.id&query_target=instances' target='edit'><i class=\"fa fa-edit\"></i></a>"
                     }
                     out << "</div>"
                     out << "<div><b>${note.instanceNoteKey.name}:</b></div>"
