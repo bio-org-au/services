@@ -535,7 +535,7 @@ class ServiceTagLib {
                     out << "<li>${instance.name?.fullNameHtml}</li>"
                     out << "<li>${instance.reference?.citationHtml}</li>"
                     if (instance.page) {
-                        out << "<li>${instance.page}</li>"
+                        out << "<li>page ${instance.page}</li>"
                     }
                     out << "</ul>"
                     break
