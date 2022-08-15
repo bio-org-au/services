@@ -455,7 +455,7 @@ class ServiceTagLib {
                     text: [:]
             ],
             InstanceNote: [
-                    instanceNoteKey: [:],
+                    instanceNoteKey: [label: 'Instance Note Type'],
                     value: [:]
             ]
     ]
@@ -620,6 +620,10 @@ class ServiceTagLib {
                     out << "<ul><li>${instance.instanceType.name}</li>"
                     out << "<li>${instance.name?.fullNameHtml}</li>"
                     out << "<li>${instance.reference?.citationHtml}</li></ul>"
+                    break
+                case 'InstanceNoteKey':
+                    InstanceNoteKey instanceNoteKey = (InstanceNoteKey) val
+                    out << instanceNoteKey.name
                     break
                 default:
                     out << val ? val.toString() : '-'
