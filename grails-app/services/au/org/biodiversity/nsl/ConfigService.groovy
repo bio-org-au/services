@@ -135,6 +135,10 @@ class ConfigService {
         return getShardConfigOrfail('menu label')
     }
 
+    String getHomeURL() {
+        return getShardConfigOrfail('home URL')
+    }
+
     /**
      * Disable the checkPolynomialsBelowNameParent function for virus shard
      */
