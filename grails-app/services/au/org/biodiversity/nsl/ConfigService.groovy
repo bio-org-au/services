@@ -135,6 +135,14 @@ class ConfigService {
         return getShardConfigOrfail('menu label')
     }
 
+    String getHomeURL() {
+        URL url = new URL(getShardConfigOrfail('home URL'))
+        if (grails.util.Environment.current != grails.util.Environment.PRODUCTION) {
+            url = new URL(url.protocol, grails.util.Environment.current.name + '.' + url.host, url.port, url.file)
+        }
+        return url.toString()
+    }
+
     /**
      * Disable the checkPolynomialsBelowNameParent function for virus shard
      */
