@@ -138,7 +138,11 @@ class ConfigService {
     }
 
     String getHomeURL() {
-        return getShardConfigOrfail('home URL')
+        URL url = new URL(getShardConfigOrfail('home URL'))
+        if (grails.util.Environment.current != grails.util.Environment.PRODUCTION) {
+            url = new URL(url.protocol, grails.util.Environment.current.name + '.' + url.host, url.port, url.file)
+        }
+        return url.toString()
     }
 
     /**
