@@ -14,7 +14,7 @@
 </div>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation">
-  <a class="navbar-brand" href="${configService.getHomeURL()}">
+  <a class="navbar-brand" href="${createLink(uri: configService.getHomeURL())}">
     NSL
   </a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"

@@ -335,10 +335,6 @@ class ServiceTagLib {
         out << configService.getCardImage()
     }
 
-    def homeURL = { attrs ->
-        out << configService.getHomeURL()
-    }
-
     def panelClass = { attrs ->
         String product = attrs.product
         out << (product == configService.classificationTreeName ? 'tree' : 'bibliography')
