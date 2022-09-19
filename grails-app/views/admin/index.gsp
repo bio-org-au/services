@@ -246,27 +246,6 @@
       </div>
     </div>
 
-    
-
-    <div role="tabpanel" class="tab-pane fade show" id="views">
-
-      <h2>
-        Admin tasks for Views
-      </h2>
-
-      <div>
-
-        <ul>
-          <li>
-            <a class=""
-               href="${g.createLink(controller: "admin", action: "refreshViews")}">
-              Refresh all views
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-
     <div role="tabpanel" class="tab-pane fade show" id="tree">
 
       <h2>

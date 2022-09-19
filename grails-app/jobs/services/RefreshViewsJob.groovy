@@ -15,8 +15,6 @@ class RefreshViewsJob {
 
     def execute() {
         Name.withTransaction {
-            flatViewService.refreshNameView()
-            flatViewService.refreshTaxonView()
             photoService.refresh()
         }
     }

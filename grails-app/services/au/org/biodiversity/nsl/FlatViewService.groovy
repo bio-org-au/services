@@ -31,43 +31,9 @@ class FlatViewService implements WithSql {
     def grailsApplication
     ConfigService configService
 
-    private static String TAXON_VIEW = 'taxon_view'
-    private static String NAME_VIEW = 'name_view'
+    private static String TAXON_VIEW = 'dwc_taxon_v'
+    private static String NAME_VIEW = 'dwc_name_v'
     private static String COMMON_VIEW = 'common_name_export'
-
-    def refreshNameView(Sql sql) {
-        log.debug "Refreshing name view..."
-        if (viewExists(sql, NAME_VIEW)) {
-            String refresh = "REFRESH MATERIALIZED VIEW $NAME_VIEW"
-            sql.execute(refresh)
-        } else {
-            throw new Exception("Name View doesn't exist")
-        }
-        log.debug "Refreshing name view complete."
-    }
-
-    def refreshNameView() {
-        withSql { Sql sql ->
-            refreshNameView(sql)
-        }
-    }
-
-    def refreshTaxonView(Sql sql) {
-        log.debug "Refreshing taxon view..."
-        if (viewExists(sql, TAXON_VIEW)) {
-            String refresh = "REFRESH MATERIALIZED VIEW ${TAXON_VIEW}"
-            sql.execute(refresh)
-        } else {
-            throw new Exception("Taxon View doesn't exist.")
-        }
-        log.debug "Refreshing taxon view complete."
-    }
-
-    def refreshTaxonView() {
-        withSql { Sql sql ->
-            refreshTaxonView(sql)
-        }
-    }
 
     File exportTaxonToCSV() {
         exportToCSV(TAXON_VIEW, "${configService.classificationTreeName}-taxon")
