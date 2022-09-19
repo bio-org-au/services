@@ -76,12 +76,6 @@
       </a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#views" id="views-tab" aria-controls="views" role="tab" data-toggle="tab" aria-selected="false"
-         class="nav-link">
-        Views
-      </a>
-    </li>
-    <li role="presentation" class="nav-item">
       <a href="#tree" id="tree-tab" aria-controls="tree" role="tab" data-toggle="tab" aria-selected="false"
          class="nav-link">
         Tree
