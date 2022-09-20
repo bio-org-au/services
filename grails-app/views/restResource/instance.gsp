@@ -51,7 +51,11 @@
     <instance-type class="${instance?.instanceType?.name}">[${instance?.instanceType?.name}]</instance-type>
 
     <st:preferredLink target="${instance.reference}"><i class="fa fa-book"></i></st:preferredLink>
-
+    <g:if test="${instance.bhlUrl}">
+      <bhl-link>
+        <a href="${instance.bhlUrl}" title="BHL link"><asset:image src="BHL.svg" alt="BHL" height="12"/></a>
+      </bhl-link>
+    </g:if>
     <span class="vertbar" title="Search for names in this reference.">
       <a href="${af.refNameTreeSearchLink(citation: instance.reference?.citation, product: params.product)}"
          title="Search for names in this reference.">

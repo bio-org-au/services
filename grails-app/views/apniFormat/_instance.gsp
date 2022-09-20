@@ -20,11 +20,13 @@
             <a href="${instance.bhlUrl}" title="BHL link"><asset:image src="BHL.svg" alt="BHL" height="12"/></a>
           </bhl-link>
         </g:if>
-
+        <span title="Reference link">
+          <st:preferredLink target="${reference}"><i class="fa fa-book"></i></st:preferredLink>
+        </span>
+      </g:if>
         <a href="${af.refNameTreeSearchLink(citation: reference?.citation, product: params.product)}"
            class="hidden-print" title="Search for names in this reference."><i
             class="fa fa-search"></i></a>
-      </g:if>
 
       <af:onTree element="${treeVersionElement}" instance="${instance}"/>
       <af:rangeOnAcceptedTree instance="${instance}">

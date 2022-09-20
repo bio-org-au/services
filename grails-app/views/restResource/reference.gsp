@@ -29,6 +29,19 @@
       <b>${raw(reference?.citationHtml)}</b> <st:preferredLink target="${reference}"><i
         class="fa fa-link"></i></st:preferredLink>
     </ref-citation>
+    <g:if test="${reference.pages}">
+      : ${reference.pages}
+    </g:if>
+    <g:if test="${reference.bhlUrl}">
+      <bhl-link>
+        <a href="${reference.bhlUrl}" title="BHL link"><asset:image src="BHL.svg" alt="BHL" height="12"/></a>
+      </bhl-link>
+    </g:if>
+    <g:if test="${reference.doi}">
+      <doi-link>
+        <a href="${reference.doi}" title="DOI link"><asset:image src="doi.png" alt="DOI"/></a>
+      </doi-link>
+    </g:if>
     (<reference-type>${reference.refType.name}</reference-type>)
 
     <reference-author data-authorId="${reference.author?.id}"><i
