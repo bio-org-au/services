@@ -53,7 +53,7 @@
     <st:preferredLink target="${instance.reference}"><i class="fa fa-book"></i></st:preferredLink>
     <g:if test="${instance.bhlUrl}">
       <bhl-link>
-        <a href="${instance.bhlUrl}" title="BHL link"><asset:image src="BHL.svg" alt="BHL" height="12"/></a>
+        <a href="${instance.bhlUrl}" title="BHL link" target="_blank"><asset:image src="BHL.svg" alt="BHL" height="12"/></a>
       </bhl-link>
     </g:if>
     <span class="vertbar" title="Search for names in this reference.">

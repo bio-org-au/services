@@ -269,3 +269,7 @@ doi-link img {
 .undo {
     text-decoration: grey line-through;
 }
+
+.fa-book {
+    opacity: 0.60;
+}

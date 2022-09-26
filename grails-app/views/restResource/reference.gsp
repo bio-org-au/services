@@ -34,12 +34,12 @@
     </g:if>
     <g:if test="${reference.bhlUrl}">
       <bhl-link>
-        <a href="${reference.bhlUrl}" title="BHL link"><asset:image src="BHL.svg" alt="BHL" height="12"/></a>
+        <a href="${reference.bhlUrl}" title="BHL link" target="_blank"><asset:image src="BHL.svg" alt="BHL" height="12"/></a>
       </bhl-link>
     </g:if>
     <g:if test="${reference.doi}">
       <doi-link>
-        <a href="${reference.doi}" title="DOI link"><asset:image src="doi.png" alt="DOI"/></a>
+        <a href="${reference.doi}" title="DOI link" target="_blank"><asset:image src="doi.svg" alt="DOI"/></a>
       </doi-link>
     </g:if>
     (<reference-type>${reference.refType.name}</reference-type>)
