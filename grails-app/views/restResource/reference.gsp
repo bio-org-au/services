@@ -39,7 +39,7 @@
     </g:if>
     <g:if test="${reference.doi}">
       <doi-link>
-        <a href="${reference.doi}" title="DOI link" target="_blank"><asset:image src="doi.svg" alt="DOI"/></a>
+        <a href="${reference.doi}" title="DOI link" target="_blank"><asset:image src="doi.svg" alt="DOI" height="22"/></a>
       </doi-link>
     </g:if>
     (<reference-type>${reference.refType.name}</reference-type>)
