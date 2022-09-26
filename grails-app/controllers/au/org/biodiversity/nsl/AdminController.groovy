@@ -170,16 +170,6 @@ class AdminController {
     }
 
     @RequiresRoles('admin')
-    refreshViews() {
-        log.debug "Refreshing views."
-        flatViewService.refreshTaxonView()
-        flatViewService.refreshNameView()
-        log.debug "Refreshed views."
-        redirect(action: 'index')
-    }
-
-
-    @RequiresRoles('admin')
     runSynonymyUpdateOnInstances() {
         if (treeService.checkQueryStatus('synonyms_as_html') < 2) {
             treeService.refreshSynonymHtmlCache()

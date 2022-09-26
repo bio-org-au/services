@@ -114,24 +114,5 @@ environments:
   development:
     grails:
       serverURL: /nsl/services
-    server:
-      port: 8181
-    dataSource:
-      #            dbCreate: create-drop
-      #            dbCreate: none
-      #            dbCreateDDL: create
-      #            dbCreate: create
-      dbCreate: update
-      #            url: jdbc:derby://localhost/holder-dev;create=true
-      #            driverClassName: org.apache.derby.jdbc.ClientDriver
-      #            username: app
-      #            password: app
-      #            url: jdbc:postgresql://pg.tech.com.au/postgres
-      url: jdbc:postgresql://pgsql-test1-ibis.cloud.biodiversity.org.au:5432/apni
-#      url: jdbc:postgresql://localhost:5432/apni
-      driverClassName: org.postgresql.Driver
-      username: nsl
-      password: changeme
-
 
 

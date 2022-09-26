@@ -258,11 +258,18 @@ dt.divide {
     color: darkgray;
 }
 
-
 bhl-link img {
     vertical-align: baseline;
 }
 
+doi-link img {
+    vertical-align: center;
+}
+
 .undo {
     text-decoration: grey line-through;
+}
+
+.fa-book {
+    opacity: 0.60;
 }

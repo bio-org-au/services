@@ -76,12 +76,6 @@
       </a>
     </li>
     <li role="presentation" class="nav-item">
-      <a href="#views" id="views-tab" aria-controls="views" role="tab" data-toggle="tab" aria-selected="false"
-         class="nav-link">
-        Views
-      </a>
-    </li>
-    <li role="presentation" class="nav-item">
       <a href="#tree" id="tree-tab" aria-controls="tree" role="tab" data-toggle="tab" aria-selected="false"
          class="nav-link">
         Tree
@@ -241,27 +235,6 @@
               Update Tree Synonymy For RefereID: <input name="referenceId" type="number" />
               <g:actionSubmit class="btn btn-success btn-sm" value="Start Update" action="updateTreeElementsForReference"/>
             </g:form>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    
-
-    <div role="tabpanel" class="tab-pane fade show" id="views">
-
-      <h2>
-        Admin tasks for Views
-      </h2>
-
-      <div>
-
-        <ul>
-          <li>
-            <a class=""
-               href="${g.createLink(controller: "admin", action: "refreshViews")}">
-              Refresh all views
-            </a>
           </li>
         </ul>
       </div>
