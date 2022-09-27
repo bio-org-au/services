@@ -107,25 +107,5 @@ environments:
   development:
     editorUrl: 'https://test.biodiversity.org.au/nsl/editor'
     grails:
-      serverURL: 'http://localhost:8097'
-    server:
-      port: 8097
-    dataSource:
-      #            dbCreate: create-drop
-      #            dbCreate: none
-      #            dbCreateDDL: create
-      #            dbCreate: create
-      dbCreate: update
-      url: jdbc:postgresql://pgsql-test1-ibis.cloud.biodiversity.org.au:5432/apni
-      #      url: jdbc:postgresql://localhost:5432/apni
-      driverClassName: org.postgresql.Driver
-      username: nsl
-      password: changeme
-  test:
-    editorUrl: 'https://test.biodiversity.org.au/nsl/editor'
-    grails:
-      serverURL: 'https://test.biodiversity.org.au/nsl/services'
-  production:
-    editorUrl: 'https://biodiversity.org.au/nsl/editor'
-    grails:
-      serverURL: 'https://biodiversity.org.au/nsl/services'
+    serverURL: /nsl/services
+
