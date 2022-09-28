@@ -107,5 +107,5 @@ environments:
   development:
     editorUrl: 'https://test.biodiversity.org.au/nsl/editor'
     grails:
-    serverURL: /nsl/services
+      serverURL: /nsl/services
 
