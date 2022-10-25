@@ -395,7 +395,7 @@ class ServiceTagLib {
                     duplicateOf: [:],
                     exAuthor: [:],
                     exBaseAuthor: [:],
-                    family: ['family'],
+                    family: [label: 'family'],
                     fullName: [:],
                     nameRank: [:],
                     nameStatus: [:],
@@ -486,6 +486,7 @@ class ServiceTagLib {
         String table = toCamelCase2(attrs.table)
         String field = snakeToLabel(attrs.field)
         String cname = toCamelCase(attrs.field)
+        System.out.println("table: $table field: $attrs.field field: $field cname: $cname")
         out << (fieldDefinitions[table]?.get(cname)?.get('label') ?: "$field")
     }
 

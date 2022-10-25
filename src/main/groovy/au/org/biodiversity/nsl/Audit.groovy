@@ -107,7 +107,11 @@ class Audit {
 
     HashSet<String> getRelevantChangedFields() {
         if (!relevantChangedFields) {
-            relevantChangedFields = new HashSet(changedFields.keySet())
+            if (action == 'U') {
+                relevantChangedFields = new HashSet(changedFields.keySet())
+            } else {
+                relevantChangedFields = new HashSet(rowData.keySet())
+            }
             relevantChangedFields.removeAll(['lock_version', 'updated_by', 'updated_at'])
         }
         return relevantChangedFields
@@ -175,13 +179,21 @@ class Audit {
                 if (d) {
                     diff.addAll(d)
                 } else {
-                    diff << new Diff(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                    if (action == 'I') {
+                        diff << new Diff(table, key, null, lookupField(key, rowData[key]))
+                    } else {
+                        diff << new Diff(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                    }
                 }
             }
         } else {
             getRelevantRowData().each { String key ->
                 if (rowData[key]) {
-                    diff << new Diff(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                    if (action == 'I') {
+                        diff << new Diff(table, key, null, lookupField(key, rowData[key]))
+                    } else {
+                        diff << new Diff(table, key, lookupField(key, rowData[key]), lookupField(key, changedFields[key]))
+                    }
                 }
             }
         }
