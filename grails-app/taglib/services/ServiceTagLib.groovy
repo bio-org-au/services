@@ -407,8 +407,8 @@ class ServiceTagLib {
                     orthVar: [ label: 'orth var'],
                     changedCombination: [label: 'new comb'],
                     validRecord: [label: 'valid rec'],
-                    comment: [],
-                    publishedYear: []
+                    comment: [:],
+                    publishedYear: [:]
             ],
             Instance: [
                     bhlUrl: [label: 'BHL'],
@@ -448,8 +448,8 @@ class ServiceTagLib {
                     validRecord: [label: 'valid rec']
             ],
             TreeElement: [
-                    'comment': [],
-                    'distribution': []
+                    'comment': [:],
+                    'distribution': [:]
             ],
             Comment: [
                     text: [:]
