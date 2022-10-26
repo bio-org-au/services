@@ -195,11 +195,11 @@ where type = :type
 SELECT
   e1.name_id                                                            AS accepted_name_id,
   e1.simple_name                                                        AS accepted_name,
-  '<div class="tr">' || e1.display_html || coalesce(synonyms_as_html(e1.instance_id))  || '</div>' as accepted_html,
+  '<div class="tr">' || e1.display_html || e1.synonyms_html || '</div>' as accepted_html,
   tve1.element_link                                                     AS accepted_name_tve,
   tve1.name_path                                                        AS accepted_name_path,
   e2.simple_name                                                        AS synonym_accepted_name,
-  '<div class="tr">' || e2.display_html || coalesce(synonyms_as_html(e2.instance_id))  || '</div>' as synonym_accepted_html,
+  '<div class="tr">' || e2.display_html || e2.synonyms_html || '</div>' as synonym_accepted_html,
   tve2.element_link                                                     AS synonym_tve,
   tax_syn                                                               AS synonym_record,
   tax_syn ->> 'type'                                                    AS synonym_type,
@@ -264,7 +264,7 @@ SELECT
   (tax_syn2 ->> 'name_id')       AS common_synonym,
   jsonb_build_object((tax_syn2 ->> 'name_id') ::NUMERIC :: BIGINT,
                      jsonb_agg(jsonb_build_object('html',
-                                                  '<div class="tr">' || e1.display_html || coalesce(synonyms_as_html(e1.instance_id))  || '</div>',
+                                                  '<div class="tr">' || e1.display_html || e1.synonyms_html || '</div>',
                                                   'name_link', e1.name_link,
                                                   'tree_link', tree.host_name || tve1.element_link,
                                                   'type', tax_syn1 ->> 'type',
@@ -347,7 +347,6 @@ where tve.tree_version_id = :versionId
         return [count: count, results: results]
     }
 
-
     Map getSynonymOrderingInfo(Instance instance) {
         Sql sql = getSql()
         List<Map> nom = []
@@ -384,4 +383,3 @@ where tve.tree_version_id = :versionId
     }
 
 }
-

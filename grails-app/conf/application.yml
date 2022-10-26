@@ -1,3 +1,4 @@
+server.contextPath: /nsl/services
 ---
 grails:
   profile: web
@@ -17,13 +18,20 @@ info:
 spring:
   main:
     banner-mode: "off"
-#    allow-bean-definition-overriding: true  # Workaround for some grails 5 tomcat deploy issue
-#    allow-circular-references: true  # Workaround for some grails 5 tomcat deploy issue
   groovy:
     template:
       check-template-location: false
+
+# Spring Actuator Endpoints are Disabled by Default
+endpoints:
+  enabled: false
+  jmx:
+    enabled: true
+    unique-names: true
+
 ---
 grails:
+  serverURL: 'http://localhost:8080/services'
   mime:
     disable:
       accept:
@@ -96,16 +104,14 @@ hibernate:
     use_second_level_cache: false
     use_query_cache: false
 
-# Spring Actuator Endpoints are Disabled by Default
-endpoints:
-  enabled: false
-  jmx:
-    enabled: true
-    unique-names: true
+---
+grails:
+  gorm:
+    failOnError: true
+
 
 environments:
   development:
-    editorUrl: 'https://test.biodiversity.org.au/nsl/editor'
     grails:
       serverURL: /nsl/services
 

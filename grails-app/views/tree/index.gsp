@@ -71,7 +71,7 @@
 
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Don't do it. <i
-                class="fa fa-hand-o-left"></i></button>
+                    class="fa fa-hand-o-left"></i></button>
             <button type="submit" class="btn btn-primary">Save changes  <i class="fa fa-refresh"></i></button>
           </div>
         </form>
@@ -110,7 +110,7 @@
 
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Don't do it. <i
-                class="fa fa-hand-o-left"></i></button>
+                    class="fa fa-hand-o-left"></i></button>
             <button type="submit" class="btn btn-primary">Save changes  <i class="fa fa-refresh"></i></button>
           </div>
         </form>
@@ -140,7 +140,7 @@
 
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Don't do it. <i
-                class="fa fa-hand-o-left"></i></button>
+                    class="fa fa-hand-o-left"></i></button>
             <button type="submit" class="btn btn-primary">Publish <i class="fa fa-refresh"></i></button>
           </div>
         </form>
@@ -172,7 +172,7 @@
 
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Don't do it. <i
-                class="fa fa-hand-o-left"></i></button>
+                    class="fa fa-hand-o-left"></i></button>
             <button type="submit" class="btn btn-primary">Delete <i class="fa fa-trash"></i></button>
           </div>
         </form>
@@ -240,7 +240,7 @@
             <tree:drafts tree="${tree}">
               <div class="row">
                 <span
-                    class="cell">${raw(defaultDraft ? '<i class="fa fa-check"></i>' : '')} ${tree.name}: ${draft.draftName}</span>
+                        class="cell">${raw(defaultDraft ? '<i class="fa fa-check"></i>' : '')} ${tree.name}: ${draft.draftName}</span>
                 <span class="cell">&nbsp;
                   <shiro:hasRole name="${tree.groupName}">
                     <button type="button" class="btn btn-primary" data-toggle="modal"
@@ -269,7 +269,7 @@
                       <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v1: tree.currentTreeVersion.id, v2: draft.id])}">diff</a>,
                     </g:if>
                     <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'validate', params: [version: draft.id])}">validate</a>,
-%{--                    <a href="${createLink(namespace: 'api', controller: 'tree', action: 'checkCurrentSynonymy', params: [treeVersionId: draft.id])}">synonymy</a>--}%
+                    <a href="${createLink(namespace: 'api', controller: 'tree', action: 'checkCurrentSynonymy', params: [treeVersionId: draft.id])}">synonymy</a>
                   </shiro:hasRole>
                 </span>
               </div>
@@ -301,4 +301,3 @@
 </div>
 </body>
 </html>
-

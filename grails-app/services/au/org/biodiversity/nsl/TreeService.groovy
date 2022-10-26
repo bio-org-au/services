@@ -443,15 +443,13 @@ WHERE tve.tree_version_id = :versionId
         String hostPart = treeVersion.hostPart()
         TreeElement.executeQuery('''
 select tve.treeElement.displayHtml, tve.elementLink, tve.treeElement.nameLink, tve.treeElement.instanceLink, 
- tve.treeElement.excluded, tve.depth, tve.treeElement.instanceId
+ tve.treeElement.excluded, tve.depth, tve.treeElement.synonymsHtml 
     from TreeVersionElement tve 
     where tve.treeVersion = :version
     and regex(tve.treePath, :pattern) = true 
     order by tve.namePath
 ''', [version: treeVersion, pattern: pattern]).collect { data ->
-            List data2 = data as List
-            data2[6] = getSynonymsHtmlViaDBFunction(data[6])
-            new DisplayElement(data2, hostPart)
+            new DisplayElement(data as List, hostPart)
         } as List<DisplayElement>
     }
 
