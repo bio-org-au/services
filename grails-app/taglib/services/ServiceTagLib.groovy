@@ -479,7 +479,7 @@ class ServiceTagLib {
     }
 
     static boolean shouldDisplay(Diff diff) {
-        return fieldDefinitions[toCamelCase2(diff.tableName)]?.get(toCamelCase(diff.fieldName)) != null
+        return (diff.before != null || diff.after != null) && fieldDefinitions[toCamelCase2(diff.tableName)]?.get(toCamelCase(diff.fieldName)) != null
     }
 
     def diffLabel = {attrs ->
@@ -492,6 +492,7 @@ class ServiceTagLib {
 
     def diffValue = { attrs ->
         def val = attrs.value
+        boolean abbrev = attrs.abbrev ? new Boolean(attrs.abbrev) : false
         String editor = grailsApplication.config.get('editorUrl')
         String top = configService.serverUrl + '/assets'
         if (val) {
@@ -549,7 +550,9 @@ class ServiceTagLib {
                     }
                     out << "</div>"
                     out << "<div><b>${note.instanceNoteKey.name}:</b></div>"
-                    out << "<div>${note.value}</div>"
+                    if (!abbrev) {
+                        out << "<div>${note.value}</div>"
+                    }
                     Instance instance = note.instance
                     if (instance) {
                         String instLink = linkService.getPreferredLinkForObject(instance)
@@ -575,7 +578,9 @@ class ServiceTagLib {
                         out << "<a href='$editor/search?query_string=id%3A+$comment.reference.id&query_target=references' target='edit'><i class=\"fa fa-edit\"></i></a>"
                     }
                     out << "</div>"
-                    out << "<div>${comment.text}</div>"
+                    if (!abbrev) {
+                        out << "<div>${comment.text}</div>"
+                    }
                     out << "<div>on:</div>"
                     if (comment.name) {
                         out << diffValue(value: comment.name)

@@ -47,7 +47,7 @@
             <td>
               <div class="height-${row.sessionUserName}">
                 <g:if test="${row.auditedObj}">
-                  <st:diffValue value="${row.auditedObj}"/>
+                  <st:diffValue value="${row.auditedObj}" abbrev="true"/>
                 </g:if>
                 <g:else>
                   ${"$row.table $row.rowData.id ${row.action != 'D' ? '(deleted?)' : ''}"}
