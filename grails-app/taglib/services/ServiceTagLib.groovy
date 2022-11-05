@@ -389,6 +389,43 @@ class ServiceTagLib {
     }
 
     static fieldDefinitions = [
+            Author: [
+                    abbrev: [label: 'abbreviation'],
+                    duplicateOf: [:],
+                    fullName: [label: 'full name'],
+                    name: [label: 'name'],
+                    notes: [label: 'notes'],
+                    ipniId: [label: 'IPNI id'],
+                    validRecord: [label: 'valid rec']
+            ],
+            Reference: [
+                    author: [:],
+                    bhlUrl: [label: 'BHL'],
+                    doi: [:],
+                    duplicateOf: [:],
+                    edition: [:],
+                    isbn: [:],
+                    isoPublicationDate: [label: 'ISO publication date'],
+                    issn: [:],
+                    language: [:],
+                    notes: [:],
+                    pages: [:],
+                    parent: [:],
+                    publicationDate: [:],
+                    published: [:],
+                    publishedLocation: [:],
+                    publisher: [:],
+                    refAuthorRole: [:],
+                    refType: [label: 'reference type'],
+                    title: [:],
+                    volume: [:],
+                    year: [label: 'year'],
+                    tl2: [label: 'TL2'],
+                    validRecord: [label: 'valid rec'],
+                    verbatimAuthor: [:],
+                    verbatimCitation: [:],
+                    verbatimReference: [:]
+            ],
             Name: [
                     author: [:],
                     baseAuthor: [:],
@@ -403,60 +440,37 @@ class ServiceTagLib {
                     parent: [label: 'parent'],
                     sanctioningAuthor: [:],
                     secondParent: [label: 'parent2'],
-                    verbatimRank: [:],
+                    verbatimNameString: [label: 'verbatim name'],
                     orthVar: [ label: 'orth var'],
                     changedCombination: [label: 'new comb'],
                     validRecord: [label: 'valid rec'],
-                    comment: [:],
                     publishedYear: [:]
-            ],
-            Instance: [
-                    bhlUrl: [label: 'BHL'],
-                    draft: [label: 'draft'],
-                    instanceType: [:],
-                    page: [:],
-                    parent: [:],
-                    reference: [:],
-                    verbatimNameString: [label: 'verbatim name'],
-                    citedBy: [label: 'cited by'],
-                    nomenclaturalStatus: [:],
-                    validRecord: [label: 'valid rec']
-            ],
-            Reference: [
-                    bhlUrl: [label: 'BHL'],
-                    citation: [label: 'citation'],
-                    doi: [:],
-                    isbn: [:],
-                    isoPublicationDate: [label: 'ISO publication date'],
-                    issn: [:],
-                    language: [:],
-                    notes: [:],
-                    published: [:],
-                    publishedLocation: [:],
-                    publisher: [:],
-                    refType: [label: 'reference type'],
-                    year: [label: 'year'],
-                    tl2: [label: 'TL2'],
-                    validRecord: [label: 'valid rec']
-            ],
-            Author: [
-                    abbrev: [label: 'abbreviation'],
-                    fullName: [label: 'full name'],
-                    name: [label: 'name'],
-                    notes: [label: 'notes'],
-                    ipniId: [label: 'IPNI id'],
-                    validRecord: [label: 'valid rec']
-            ],
-            TreeElement: [
-                    'comment': [:],
-                    'distribution': [:]
             ],
             Comment: [
                     text: [:]
             ],
+            Instance: [
+                    bhlUrl: [label: 'BHL'],
+                    cites: [:],
+                    citedBy: [label: 'cited by'],
+                    draft: [label: 'draft'],
+                    instanceType: [:],
+                    name: [:],
+                    page: [:],
+                    pageQualifier: [:],
+                    parent: [:],
+                    reference: [:],
+                    verbatimNameString: [label: 'verbatim name'],
+                    nomenclaturalStatus: [:],
+                    validRecord: [label: 'valid rec']
+            ],
             InstanceNote: [
                     instanceNoteKey: [label: 'Instance Note Type'],
                     value: [:]
+            ],
+            TreeElement: [
+                    'comment': [:],
+                    'distribution': [:]
             ]
     ]
 
@@ -486,7 +500,6 @@ class ServiceTagLib {
         String table = toCamelCase2(attrs.table)
         String field = snakeToLabel(attrs.field)
         String cname = toCamelCase(attrs.field)
-        System.out.println("table: $table field: $attrs.field field: $field cname: $cname")
         out << (fieldDefinitions[table]?.get(cname)?.get('label') ?: "$field")
     }
 
@@ -612,6 +625,10 @@ class ServiceTagLib {
                     RefType refType = (RefType) val
                     out << refType.name
                     break
+                case 'NameRank':
+                    NameRank nameRank = (NameRank) val
+                    out << nameRank.abbrev
+                    break;
                 case 'InstanceType':
                     InstanceType instanceType = (InstanceType) val
                     out << instanceType.name
