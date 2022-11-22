@@ -33,11 +33,12 @@ updates.dir = "${userHome}/.nsl/updates"
 dataSource {
     username = "nsl"
     password = "nsl"
-    url = "jdbc:postgresql://localhost:5432/nsl"
+    url = "jdbc:postgresql://localhost:5432/apni"
+    driverClassName = "org.postgresql.Driver"
+//    jndiName = 'java:comp/env/jdbc/nsl'
 
     pooled = true
     jmxExport = true
-    driverClassName = "org.postgresql.Driver"
     dialect = "au.org.biodiversity.nsl.ExtendedPostgreSQLDialect"
     formatSql = false
     logSql = false

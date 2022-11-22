@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter
  *
  */
 class Audit {
-
     final long eventId
     final String table
     final String action
@@ -31,7 +30,7 @@ class Audit {
     final String updatedAtTimestamp
     final Object auditedObj
     final Class auditedClass
-    final GrailsClass domainClass
+    final def domainClass
 
     private HashSet<String> relevantChangedFields
     private HashSet<String> relevantRowData
@@ -51,7 +50,9 @@ class Audit {
         }
         String clsName = 'au.org.biodiversity.nsl.' + snakeToCamel(table).capitalize()
         this.auditedClass = Class.forName(clsName)
-        this.domainClass = Holders.grailsApplication.domainClasses.find { it.fullName == clsName }
+//        this.domainClass = Holders.grailsApplication.domainClasses.find { it.fullName == clsName }
+        def grailsDomainClassMappingContext = Holders.applicationContext.getBean("grailsDomainClassMappingContext")
+        this.domainClass = grailsDomainClassMappingContext.getPersistentEntity(clsName)
         this.auditedObj = getTheAuditedObject()
         if (this.auditedObj instanceof Instance) {
             (this.auditedObj as Instance).instanceType  // load into memory to avoid LazyInitializationException
@@ -213,7 +214,8 @@ class Audit {
             rowData.each { Map.Entry<String,Object> it ->
                 if (it.value) {
                     String oCol = columns[it.key] ?: snakeToCamel(it.key)
-                    def prop = domainClass.persistentProperties.find { it.persistentProperty.name == oCol }?.persistentProperty
+//                    def prop = domainClass.persistentProperties.find { it.persistentProperty.name == oCol }?.persistentProperty
+                    def prop = domainClass.getPropertyByName(oCol);
                     if (prop || oCol == 'id') {
                         if (prop?.type == Timestamp) {
                             String v = it.value.replaceAll('\\.[0-9]*', '')
@@ -230,7 +232,8 @@ class Audit {
                     } else if (it.key.endsWith('_id')) {
                         def dCol = it.key.substring(0, it.key.length() - 3)
                         oCol = columns[it.key] ?: snakeToCamel(dCol)
-                        prop = domainClass.persistentProperties.find { it.persistentProperty.name == oCol }?.persistentProperty
+//                        prop = domainClass.persistentProperties.find { it.persistentProperty.name == oCol }?.persistentProperty
+                        prop = domainClass.getPropertyByName(oCol);
                         def val = session.get(prop.type, it.value as Long)
                         rtn.setProperty(oCol, val)
                     }
