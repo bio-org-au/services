@@ -290,15 +290,11 @@ class ConfigService {
     }
 
     Sql getSqlForNSLDB() {
-//        String dbUrl = grailsApplication.config.dataSource.url
-//        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
-//        println "database url2: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
-
-//        String username = grailsApplication.config.dataSource.username
-//        String password = grailsApplication.config.dataSource.password
-//        String driverClassName = grailsApplication.config.dataSource.driverClassName
-//        Sql.newInstance(dbUrl, username, password, driverClassName)
-        Sql.newInstance(dataSource)
+        String dbUrl = grailsApplication.config.dataSource.url
+        String username = grailsApplication.config.dataSource.username
+        String password = grailsApplication.config.dataSource.password
+        String driverClassName = grailsApplication.config.dataSource.driverClassName
+        Sql.newInstance(dbUrl, username, password, driverClassName)
     }
 
     String getWebUserName() {
