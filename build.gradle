@@ -30,7 +30,7 @@ apply plugin: 'org.asciidoctor.convert'
 
 //war.archiveName("nsl#services##${rootProject.version}.war")
 bootWar {
-    archiveFileName = "nsl#services##${rootProject.version}.war"
+    archiveFileName = "nsl#services.war"
 }
 
 repositories {
