@@ -129,6 +129,9 @@ dependencies {
 //    implementation project("au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3")
 }
 
+
+springBoot { mainClass = 'services3.Application' }
+
 bootRun {
     ignoreExitValue true
     jvmArgs(
