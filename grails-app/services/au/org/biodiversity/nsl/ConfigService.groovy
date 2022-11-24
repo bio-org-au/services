@@ -105,6 +105,7 @@ class ConfigService {
             return getShardConfigOrfail('classification tree key')
         } catch (e) {
             log.error e.message
+            throw e
         }
         return getShardConfigOrfail('classification tree label')
     }
