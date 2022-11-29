@@ -506,8 +506,7 @@ class ServiceTagLib {
     def diffValue = { attrs ->
         def val = attrs.value
         boolean abbrev = attrs.abbrev ? new Boolean(attrs.abbrev) : false
-        String editor = grailsApplication.config.getProperty('editorUrl')
-        String top = configService.serverUrl + '/assets'
+        String editor = configService.editorlink
         if (val) {
             switch (val.class?.simpleName) {
                 case 'Name':
