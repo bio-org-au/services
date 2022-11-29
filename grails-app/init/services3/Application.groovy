@@ -26,8 +26,8 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
         if (configBase.exists()) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
             println "Loading external configuration from Groovy: ${configBase.absolutePath} ${LocalDateTime.now().format(dtf)}"
-            def config = new ConfigSlurper().parse(configBase.toURI().toURL())
-            println "load database url: ${config.dataSource.url} ${LocalDateTime.now().format(dtf)}"
+            def config = new ConfigSlurper().parse(configBase.toURI().toURL()).flatten()
+            println "load database url: ${config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
             environment.propertySources.addFirst(new MapPropertySource("externalGroovyConfig", config))
         } else {
             println "External config could not be found, checked ${configBase.absolutePath}"

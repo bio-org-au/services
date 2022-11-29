@@ -176,7 +176,7 @@ class ConfigService {
 
     Map getLdapConfig() {
         if (grailsApplication.config.containsKey('ldap')) {
-            return grailsApplication.config.ldap as Map
+            return grailsApplication.config.getProperty('ldap') as Map
         }
         throw new Exception("Config error. Add ldap config.")
     }
@@ -185,12 +185,12 @@ class ConfigService {
 
     Map<String, ApplicationUser> getApiAuth() {
         if (!applicationUsers) {
-            if (!grailsApplication.config.api) {
+            if (!grailsApplication.config.getProperty('api')) {
                 throw new Exception("Config error. Add api config.")
             }
-            if (grailsApplication.config.api.auth instanceof Map) {
+            if (grailsApplication.config.getProperty('api.auth') instanceof Map) {
                 applicationUsers = [:]
-                (Map) (grailsApplication.config.api.auth).each { k, v ->
+                (Map) (grailsApplication.config.getProperty('api.auth')).each { k, v ->
                     applicationUsers.put(k, new ApplicationUser(k, v as Map))
                 }
             } else {
@@ -303,7 +303,7 @@ class ConfigService {
     }
 
     String getWebUserName() {
-        grailsApplication.config.shard.webUser
+        grailsApplication.config.getProperty('shard.webUser')
     }
 
     Map getUpdateScriptParams() {

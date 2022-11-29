@@ -7,11 +7,11 @@ buildscript {
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
-        classpath "org.grails.plugins:hibernate5:7.3.0"
         classpath "gradle.plugin.com.github.erdi.webdriver-binaries:webdriver-binaries-gradle-plugin:2.6"
+        classpath "org.grails.plugins:hibernate5:7.3.0"
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:3.4.7"
-        classpath "org.grails.plugins:views-gradle:2.2.0"
 
+        classpath "org.grails.plugins:views-gradle:2.2.0"
         classpath "org.asciidoctor:asciidoctor-gradle-plugin:1.5.9.2"
     }
 }
@@ -21,11 +21,11 @@ group "services3"
 
 apply plugin: "eclipse"
 apply plugin: "idea"
+apply plugin: "war"
 apply plugin:"org.grails.grails-web"
 apply plugin:"com.github.erdi.webdriver-binaries"
 apply plugin: "org.grails.grails-gsp"
 apply plugin:"com.bertramlabs.asset-pipeline"
-apply plugin: "war"
 apply plugin: 'org.asciidoctor.convert'
 
 //war.archiveName("nsl#services##${rootProject.version}.war")
@@ -37,11 +37,11 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven { url "https://repo.grails.org/grails/core" }
-    maven { url "https://dl.bintray.com/nerderg/plugins" }
-    maven {
-        url "https://oss.jfrog.org/artifactory/oss-snapshot-local"
-    }
-    maven { url "https://dl.bintray.com/bio-org-au/plugins" }
+//    maven { url "https://dl.bintray.com/nerderg/plugins" }
+//    maven {
+//        url "https://oss.jfrog.org/artifactory/oss-snapshot-local"
+//    }
+//    maven { url "https://dl.bintray.com/bio-org-au/plugins" }
 }
 
 configurations {
@@ -161,7 +161,7 @@ tasks.withType(Test) {
     systemProperty "webdriver.gecko.driver", System.getProperty('webdriver.gecko.driver')
 }
 
-bootJar.enabled = false
+bootJar.enabled = true
 
 assets {
     packagePlugin = true
