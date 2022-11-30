@@ -178,7 +178,7 @@ class ServiceTagLib {
     }
 
     def googleAnalytics = { attrs ->
-        String script = grailsApplication?.config?.services?.scriptAddOns
+        String script = grailsApplication.config.getProperty('services.scriptAddOns')
         if (script) {
             out << script
         }
@@ -296,7 +296,7 @@ class ServiceTagLib {
     }
 
     def documentationLink = { attrs ->
-        String serverURL = grailsApplication?.config?.grails?.serverURL
+        String serverURL = grailsApplication.config.getProperty('grails.serverURL')
         if (serverURL) {
             serverURL -= '/services'
             out << "<a class=\"nav-link doco\" href=\"$serverURL/docs/main.html\">"

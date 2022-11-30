@@ -205,7 +205,8 @@ class ConfigService {
     }
 
     String getServerUrl() {
-        configOrThrow('grails.serverURL')
+//        configOrThrow('grails.serverURL')
+        grailsApplication.config.getProperty('grails.serverURL', String) ?: '/'
     }
 
     String getTempFileDir() {
@@ -291,10 +292,10 @@ class ConfigService {
     }
 
     Sql getSqlForNSLDB() {
-        String dbUrl = grailsApplication.config.dataSource.url
-        String username = grailsApplication.config.dataSource.username
-        String password = grailsApplication.config.dataSource.password
-        String driverClassName = grailsApplication.config.dataSource.driverClassName
+        String dbUrl = grailsApplication.config.getProperty('dataSource.url')
+        String username = grailsApplication.config.getProperty('dataSource.username')
+        String password = grailsApplication.config.getProperty('dataSource.password')
+        String driverClassName = grailsApplication.config.getProperty('dataSource.driverClassName')
         Sql.newInstance(dbUrl, username, password, driverClassName)
     }
 

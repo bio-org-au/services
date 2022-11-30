@@ -114,5 +114,6 @@ grails:
 environments:
   development:
     grails:
-      serverURL: /nsl/services
+#      serverURL: /
+#      serverURL: /nsl/services
 
