@@ -38,14 +38,16 @@ appender("dailyFileAppender", RollingFileAppender) {
     }
 }
 
-def targetDir = BuildSettings.TARGET_DIR
+println "ENV: ${Environment.getCurrent()} DEV: ${Environment.isDevelopmentMode()}"
 if (Environment.isDevelopmentMode()) {
     root(WARN, ['STDOUT'])
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
     logger("services3", DEBUG, ['STDOUT'], false)
-}
-
-if (Environment.getCurrent() == Environment.PRODUCTION && targetDir != null) {
+} else if (Environment.getCurrent() == Environment.PRODUCTION) {
+    root(ERROR, ['STDOUT'])
+    logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
+    logger("services3", DEBUG, ['STDOUT'], false)
+} else {
     root(ERROR, ['STDOUT'])
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
     logger("services3", DEBUG, ['STDOUT'], false)
