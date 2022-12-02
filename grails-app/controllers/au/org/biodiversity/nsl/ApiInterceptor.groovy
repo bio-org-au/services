@@ -25,6 +25,7 @@ class ApiInterceptor {
                 SecurityUtils.subject.login(authToken)
 
                 String runAsUser = params.remove('as')
+                log.debug "key: $apiKey as: $runAsUser"
                 if (runAsUser) {
                     log.debug("${SecurityUtils.subject.principal} is running as ${runAsUser}")
                     LdapUser ldapUser = ldapRealm.getLdapUser(runAsUser)
@@ -34,7 +35,7 @@ class ApiInterceptor {
                 log.debug "login took ${System.currentTimeMillis() - start}ms"
                 return true
             } catch (AuthenticationException e) {
-                log.info e.message
+                log.error "$e.message host: ${SecurityUtils.subject.host}"
                 redirect(controller: 'auth', action: 'unauthorized', params: [format: params.format])
                 return false
             }
