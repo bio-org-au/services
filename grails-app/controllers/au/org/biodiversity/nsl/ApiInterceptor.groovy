@@ -19,13 +19,13 @@ class ApiInterceptor {
     boolean before() {
         if (params.apiKey) {
             try {
+                String runAsUser = params.remove('as')
                 String apiKey = params.remove('apiKey')
+                log.debug "key: $apiKey as: $runAsUser"
                 ApiKeyToken authToken = new ApiKeyToken(apiKey, null as char[], SecurityUtils.subject.host as String)
                 Long start = System.currentTimeMillis()
                 SecurityUtils.subject.login(authToken)
 
-                String runAsUser = params.remove('as')
-                log.debug "key: $apiKey as: $runAsUser"
                 if (runAsUser) {
                     log.debug("${SecurityUtils.subject.principal} is running as ${runAsUser}")
                     LdapUser ldapUser = ldapRealm.getLdapUser(runAsUser)
