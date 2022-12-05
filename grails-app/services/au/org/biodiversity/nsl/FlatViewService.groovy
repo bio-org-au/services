@@ -35,6 +35,18 @@ class FlatViewService implements WithSql {
     private static String NAME_VIEW = 'dwc_name_v'
     private static String COMMON_VIEW = 'common_name_export'
 
+    boolean taxonViewExists() {
+        return viewExists(TAXON_VIEW)
+    }
+
+    boolean nameViewExists() {
+        return viewExists(NAME_VIEW)
+    }
+
+    boolean commonViewExists() {
+        return viewExists(COMMON_VIEW)
+    }
+
     File exportTaxonToCSV() {
         exportToCSV(TAXON_VIEW, "${configService.classificationTreeName}-taxon")
     }
@@ -59,6 +71,14 @@ class FlatViewService implements WithSql {
             DataExportService.sqlCopyToCsvFile("SELECT * FROM $viewName", outputFile, sql)
         }
         return outputFile
+    }
+
+    private boolean viewExists(String viewName) {
+        boolean rtn = false
+        withSql { Sql sql ->
+            rtn = viewExists(sql, viewName)
+        }
+        return rtn
     }
 
     Map findNameRow(Name name, String namespace = configService.nameSpace.name.toLowerCase()) {
