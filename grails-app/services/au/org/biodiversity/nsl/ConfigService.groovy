@@ -185,12 +185,12 @@ class ConfigService {
 
     Map<String, ApplicationUser> getApiAuth() {
         if (!applicationUsers) {
-            if (!grailsApplication.config.getProperty('api')) {
+            if (!grailsApplication.config.api) {
                 throw new Exception("Config error. Add api config.")
             }
-            if (grailsApplication.config.getProperty('api.auth') instanceof Map) {
+            if (grailsApplication.config.api.auth instanceof Map) {
                 applicationUsers = [:]
-                (Map) (grailsApplication.config.getProperty('api.auth')).each { k, v ->
+                ((Map) (grailsApplication.config.api.auth)).each { k, v ->
                     applicationUsers.put(k, new ApplicationUser(k, v as Map))
                 }
             } else {
