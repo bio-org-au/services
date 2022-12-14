@@ -159,9 +159,9 @@ class IcznNameConstructionService implements NameConstructor {
                 }
             } else {
                 if (name.publishedYear) {
-                    bits << "(<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>, $name.publishedYear)".toString()
+                    bits << "<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>, $name.publishedYear".toString()
                 } else {
-                    bits << "(<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>)".toString()
+                    bits << "<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>".toString()
                 }
             }
         }

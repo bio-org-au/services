@@ -155,7 +155,7 @@ class IcnpNameConstructionService implements NameConstructor {
                 }
             }
             if (name.exAuthor) {
-                bits << "<ex data-id='$name.exAuthor.id' title='${encodeHtml(name.exAuthor.name)}'>$name.exAuthor.abbrev</ex> ex".toString()
+                bits << "(<ex data-id='$name.exAuthor.id' title='${encodeHtml(name.exAuthor.name)}'>$name.exAuthor.abbrev</ex>)".toString()
             }
             bits << "<author data-id='$name.author.id' title='${encodeHtml(name.author.name)}'>$name.author.abbrev</author>".toString()
             if (name.sanctioningAuthor) {
