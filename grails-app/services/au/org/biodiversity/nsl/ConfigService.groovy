@@ -175,10 +175,11 @@ class ConfigService {
     }
 
     Map getLdapConfig() {
-        if (grailsApplication.config.containsKey('ldap')) {
-            return grailsApplication.config.getProperty('ldap') as Map
+        Map rtn = grailsApplication.config.ldap
+        if (!rtn) {
+            throw new Exception("Config error. Add ldap config.")
         }
-        throw new Exception("Config error. Add ldap config.")
+        return rtn
     }
 
     Map<String, ApplicationUser> applicationUsers
@@ -222,7 +223,11 @@ class ConfigService {
     }
 
     Map getMapperCredentials() {
-        configOrThrow('services.mapper', Map)
+        Map rtn = grailsApplication.config.services.mapper
+        if (!rtn) {
+            throw new Exception("Config error. Add services.mapper config.")
+        }
+        return rtn
     }
 
     String getSystemMessageFilename() {
