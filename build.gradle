@@ -97,6 +97,9 @@ dependencies {
 //    compile "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.1.21-SNAPSHOT"
     implementation 'com.nerderg.plugins:SimpleSuggestions3:1.1'
     implementation "org.grails.plugins:grails-shiro:4.4"
+
+    implementation "org.grails.plugins:converters:4.0.1"
+
     implementation "org.quartz-scheduler:quartz:2.3.2"
     implementation 'org.grails.plugins:quartz:2.0.13'
 //    runtime 'org.grails.plugins:async:4.0.0'
