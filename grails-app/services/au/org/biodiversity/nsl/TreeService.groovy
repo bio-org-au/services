@@ -1721,7 +1721,8 @@ and regex(namePath, :newPath) = true
     private deleteTreeVersionElement(TreeVersionElement target) {
         removeLink(target)
         target.treeElement.removeFromTreeVersionElements(target)
-        target.treeVersion.removeFromTreeVersionElements(target)
+        // Don't remove from target.treeVersion.treeVersionElements, because that will suck tens of thousands
+        // of objects into memory. Maybe we don't need the above line either.
         target.delete()
     }
 
