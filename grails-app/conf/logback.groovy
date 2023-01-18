@@ -48,11 +48,11 @@ if (Environment.isDevelopmentMode()) {
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
     logger("services3", DEBUG, ['STDOUT'], false)
 } else if (Environment.getCurrent() == Environment.TEST)  {
-    root(DEBUG, ['STDOUT'])
+    root(WARN, ['STDOUT'])
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
     logger("services3", DEBUG, ['STDOUT'], false)
 } else {
-    root(DEBUG, ['STDOUT'])
+    root(WARN, ['STDOUT'])
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
     logger("services3", DEBUG, ['STDOUT'], false)
 }

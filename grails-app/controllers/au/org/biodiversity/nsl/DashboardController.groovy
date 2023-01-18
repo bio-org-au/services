@@ -138,7 +138,26 @@ class DashboardController {
 
     @RequiresRoles('QA')
     stats(String userName, String fromStr, String toStr) {
-        if (params._action_stats) {
+        if (params._export_stats) {
+
+            def vals = values(fromStr, toStr)
+            if (vals.msg) {
+                flash.message = vals.msg
+            }
+            Map stats = auditService.report(vals.from, vals.to)
+            response.contentType = grailsApplication.config.grails.mime.types['text/csv']
+            response.setHeader("Content-disposition", "attachment; filename=books.${params.extension}")
+
+            List fields = ["Last Modified By"]
+            for (String thing in stats[stats.keySet()[0]]?.keySet()) {
+                fields.add(thing)
+                fields.add(thing)
+                fields.add(thing)
+            }
+
+
+            exportService.export(params.format, response.outputStream, Book.list(params), fields, labels, formatters, parameters)
+        } else if (params._action_stats) {
             def vals = values(fromStr, toStr)
             if (vals.msg) {
                 flash.message = vals.msg
