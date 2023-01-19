@@ -48,13 +48,13 @@
             </g:each>
         </table>
     </g:if>
-%{--    <g:form>--}%
-%{--    <div class="col-md-1">--}%
-%{--        <label for="exportStats">--}%
-%{--            <g:actionSubmit type="submit" name="exportStats" value="Export" class="btn btn-primary audit-search" action="stats"/>--}%
-%{--        </label>--}%
-%{--    </div>--}%
-%{--    </g:form>--}%
+    <g:form>
+    <div class="col-md-1">
+        <label for="exportStats">
+            <g:actionSubmit type="submit" name="exportStats" value="Export" class="btn btn-primary audit-search" action="exportStats"/>
+        </label>
+    </div>
+    </g:form>
 </div>
 </body>
 </html>

@@ -112,6 +112,8 @@ dependencies {
     implementation 'joda-time:joda-time:2.10.13'
     implementation 'org.postgresql:postgresql:42.3.3'
 
+    implementation 'net.sf.supercsv:super-csv:2.4.0'
+
 //    console "org.grails:grails-console"
 //    profile "org.grails.profiles:web"
 //    runtime "org.glassfish.web:el-impl:2.1.2-b03"

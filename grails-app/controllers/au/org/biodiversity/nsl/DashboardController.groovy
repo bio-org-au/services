@@ -18,6 +18,13 @@ package au.org.biodiversity.nsl
 
 import grails.core.GrailsApplication
 import org.apache.shiro.authz.annotation.RequiresRoles
+import org.supercsv.cellprocessor.constraint.NotNull
+import org.supercsv.cellprocessor.ift.CellProcessor
+import org.supercsv.io.CsvListWriter
+import org.supercsv.io.CsvResultSetWriter
+import org.supercsv.io.ICsvListWriter
+import org.supercsv.io.ICsvResultSetWriter
+import org.supercsv.prefs.CsvPreference
 
 import java.sql.Timestamp
 
@@ -136,9 +143,15 @@ class DashboardController {
         }
     }
 
+
+    @RequiresRoles('QA')
+    exportStats(String userName, String fromStr, String toStr) {
+        stats(userName, fromStr, toStr)
+    }
+
     @RequiresRoles('QA')
     stats(String userName, String fromStr, String toStr) {
-        if (params._export_stats) {
+        if (params._action_exportStats) {
 
             def vals = values(fromStr, toStr)
             if (vals.msg) {
@@ -149,14 +162,41 @@ class DashboardController {
             response.setHeader("Content-disposition", "attachment; filename=books.${params.extension}")
 
             List fields = ["Last Modified By"]
+            List<CellProcessor> processors = [ new NotNull() ]
             for (String thing in stats[stats.keySet()[0]]?.keySet()) {
-                fields.add(thing)
-                fields.add(thing)
-                fields.add(thing)
+                fields.add(thing) ; processors.add(new NotNull())
+                fields.add(thing) ; processors.add(new NotNull())
+                fields.add(thing) ; processors.add(new NotNull())
             }
 
-
-            exportService.export(params.format, response.outputStream, Book.list(params), fields, labels, formatters, parameters)
+            def out = response.outputStream
+            response.setContentType("text/csv")
+            response.setHeader "Content-disposition", "attachment;filename=audit.csv"
+            ICsvListWriter writer = null;
+            try {
+                writer = new CsvListWriter(new OutputStreamWriter(out), CsvPreference.STANDARD_PREFERENCE);
+                List headers = ['Last Modified By']
+                for (def recType : stats[stats.keySet()[0]]?.keySet()) {
+                    headers.add("$recType create".toString())
+                    headers.add("$recType delete".toString())
+                    headers.add("$recType update".toString())
+                }
+                writer.writeHeader(*headers)
+                // writer csv file from ResultSet
+                for (def name : stats.keySet().sort()) {
+                    List<?> cols = [name]
+                    for (def recType : stats[name].keySet()) {
+                        cols.add(stats[name][recType]['created'].toString())
+                        cols.add(stats[name][recType]['deleted'].toString())
+                        cols.add(stats[name][recType]['updated'].toString())
+                    }
+                    writer.write(cols, (CellProcessor[])processors.toArray());
+                }
+            } finally {
+                if ( writer != null ) {
+                    writer.close();
+                }
+            }
         } else if (params._action_stats) {
             def vals = values(fromStr, toStr)
             if (vals.msg) {
