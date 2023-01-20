@@ -18,6 +18,7 @@ package au.org.biodiversity.nsl
 
 import grails.core.GrailsApplication
 import org.apache.shiro.authz.annotation.RequiresRoles
+import org.supercsv.cellprocessor.FmtNumber
 import org.supercsv.cellprocessor.constraint.NotNull
 import org.supercsv.cellprocessor.ift.CellProcessor
 import org.supercsv.io.CsvListWriter
@@ -27,6 +28,8 @@ import org.supercsv.io.ICsvResultSetWriter
 import org.supercsv.prefs.CsvPreference
 
 import java.sql.Timestamp
+import java.text.DecimalFormat
+import java.text.SimpleDateFormat
 
 class DashboardController {
 
@@ -164,34 +167,55 @@ class DashboardController {
             List fields = ["Last Modified By"]
             List<CellProcessor> processors = [ new NotNull() ]
             for (String thing in stats[stats.keySet()[0]]?.keySet()) {
-                fields.add(thing) ; processors.add(new NotNull())
-                fields.add(thing) ; processors.add(new NotNull())
-                fields.add(thing) ; processors.add(new NotNull())
+                fields.add(thing) ; processors.add(new FmtNumber(new DecimalFormat()))
+                fields.add(thing) ; processors.add(new FmtNumber(new DecimalFormat()))
+                fields.add(thing) ; processors.add(new FmtNumber(new DecimalFormat()))
             }
-
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd")
+            String froms = sdf.format(new java.util.Date(vals.from.time));
+            String tos = sdf.format(new java.util.Date(vals.to.time));
             def out = response.outputStream
             response.setContentType("text/csv")
-            response.setHeader "Content-disposition", "attachment;filename=audit.csv"
+            response.setHeader "Content-disposition", "attachment;filename=audit-${froms}-${tos}.csv".toString()
             ICsvListWriter writer = null;
             try {
                 writer = new CsvListWriter(new OutputStreamWriter(out), CsvPreference.STANDARD_PREFERENCE);
                 List headers = ['Last Modified By']
                 for (def recType : stats[stats.keySet()[0]]?.keySet()) {
-                    headers.add("$recType create".toString())
-                    headers.add("$recType delete".toString())
-                    headers.add("$recType update".toString())
+                    headers.add("$recType created".toString())
+                    headers.add("$recType updated".toString())
+                    headers.add("$recType deleted".toString())
                 }
                 writer.writeHeader(*headers)
+                Map<String,Map<String,Long>> totals = new LinkedHashMap<>()
                 // writer csv file from ResultSet
                 for (def name : stats.keySet().sort()) {
                     List<?> cols = [name]
                     for (def recType : stats[name].keySet()) {
-                        cols.add(stats[name][recType]['created'].toString())
-                        cols.add(stats[name][recType]['deleted'].toString())
-                        cols.add(stats[name][recType]['updated'].toString())
+                        Map<String,Long> totalLine = totals[recType]
+                        if (!totalLine) {
+                            totalLine = new HashMap<String,Long>()
+                            totalLine['created'] = 0L
+                            totalLine['updated'] = 0L
+                            totalLine['deleted'] = 0L
+                            totals[recType] = totalLine
+                        }
+                        cols.add(stats[name][recType]['created'])
+                        cols.add(stats[name][recType]['updated'])
+                        cols.add(stats[name][recType]['deleted'])
+                        totalLine['created'] += stats[name][recType]['created']
+                        totalLine['updated'] += stats[name][recType]['updated']
+                        totalLine['deleted'] += stats[name][recType]['deleted']
                     }
                     writer.write(cols, (CellProcessor[])processors.toArray());
                 }
+                List<?> cols = ['TOTAL']
+                for (def recType : totals.keySet()) {
+                    cols.add(totals[recType]['created'])
+                    cols.add(totals[recType]['updated'])
+                    cols.add(totals[recType]['deleted'])
+                }
+                writer.write(cols, (CellProcessor[])processors.toArray());
             } finally {
                 if ( writer != null ) {
                     writer.close();
