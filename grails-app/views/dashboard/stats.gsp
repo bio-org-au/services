@@ -17,11 +17,11 @@
     <g:if test="${stats && !stats.isEmpty()}">
         <table class="table audit-report">
             <tr class="stats-h1">
-                <th>Last Modifed By</th>
+                <th>Last Modified By</th>
                 <g:set var="totals" value="${new LinkedHashMap<String,HashMap<String,Long>>()}"/>
                 <g:each in="${stats[stats.keySet()[0]]?.keySet()}" var="recType">
                     <% totals[recType] = [created: 0L, updated: 0L, deleted: 0L] %>
-                    <th colspan="3">${thing}</th>
+                    <th colspan="3">${recType}</th>
                 </g:each>
             </tr>
             <tr class="stats-h2">
