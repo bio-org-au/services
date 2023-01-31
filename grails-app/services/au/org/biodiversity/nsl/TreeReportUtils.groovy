@@ -69,7 +69,7 @@ where tve.treeVersion = :version
     order by tve.namePath
 ''', [version: second, previousVersion: first])) as List<List<TreeVersionElement>>
         modElements.addAll(modTreeElements)
-        return modElements
+        return modElements.sort { a, b -> a[0].namePath <=> b[0].namePath }
     }
 
     static List<TreeVersionElement> sorted(List<TreeVersionElement> tves) {
