@@ -50,7 +50,7 @@ class TreeReportUtils {
         }
         // Takes the new tree elements and matches with the previous version tree_elements by the name.id.
         //should possibly use the tree_element.previous_element
-        (TreeVersionElement.executeQuery('''
+        List<List<TreeVersionElement>> modElements = (TreeVersionElement.executeQuery('''
 select tve, ptve 
     from TreeVersionElement tve, TreeVersionElement ptve
 where tve.treeVersion = :version
@@ -59,6 +59,17 @@ where tve.treeVersion = :version
     and tve.treeElement.id in :elementIds
     order by tve.namePath
 ''', [version: second, previousVersion: first, elementIds: treeElementsNotInFirst])) as List<List<TreeVersionElement>>
+        List<List<TreeVersionElement>> modTreeElements = (TreeVersionElement.executeQuery('''
+select tve, ptve 
+    from TreeVersionElement tve, TreeVersionElement ptve
+where tve.treeVersion = :version
+    and ptve.treeVersion =:previousVersion
+    and ptve.treeElement.nameId = tve.treeElement.nameId
+    and tve.namePath <> ptve.namePath
+    order by tve.namePath
+''', [version: second, previousVersion: first])) as List<List<TreeVersionElement>>
+        modElements.addAll(modTreeElements)
+        return modElements
     }
 
     static List<TreeVersionElement> sorted(List<TreeVersionElement> tves) {
