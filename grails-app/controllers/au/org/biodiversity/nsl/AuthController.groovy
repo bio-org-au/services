@@ -193,7 +193,7 @@ class AuthController {
         webRequest.getCurrentRequest().session = null
 
         // For now, redirect back to the home page.
-        redirect(url: '/')
+        redirect(uri: '/')
     }
 
     def unauthorized() {

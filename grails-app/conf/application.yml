@@ -1,5 +1,3 @@
-server.contextPath: /nsl/services
----
 grails:
   profile: web
   codegen:
@@ -18,6 +16,8 @@ info:
 spring:
   main:
     banner-mode: "off"
+#    allow-bean-definition-overriding: true  # Workaround for some grails 5 tomcat deploy issue
+#    allow-circular-references: true  # Workaround for some grails 5 tomcat deploy issue
   groovy:
     template:
       check-template-location: false
@@ -31,7 +31,6 @@ endpoints:
 
 ---
 grails:
-  serverURL: 'http://localhost:8080/services'
   mime:
     disable:
       accept:
@@ -113,5 +112,6 @@ grails:
 environments:
   development:
     grails:
-      serverURL: /nsl/services
+#      serverURL: /
+#      serverURL: /nsl/services
 

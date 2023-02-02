@@ -50,7 +50,7 @@ class TreeReportUtils {
         }
         // Takes the new tree elements and matches with the previous version tree_elements by the name.id.
         //should possibly use the tree_element.previous_element
-        (TreeVersionElement.executeQuery('''
+        List<List<TreeVersionElement>> modTE = (TreeVersionElement.executeQuery('''
 select tve, ptve 
     from TreeVersionElement tve, TreeVersionElement ptve
 where tve.treeVersion = :version
@@ -59,6 +59,18 @@ where tve.treeVersion = :version
     and tve.treeElement.id in :elementIds
     order by tve.namePath
 ''', [version: second, previousVersion: first, elementIds: treeElementsNotInFirst])) as List<List<TreeVersionElement>>
+        List<List<TreeVersionElement>> modTVE = (TreeVersionElement.executeQuery('''
+select tve, ptve 
+    from TreeVersionElement tve, TreeVersionElement ptve
+where tve.treeVersion = :version
+    and ptve.treeVersion =:previousVersion
+    and ptve.treeElement.nameId = tve.treeElement.nameId
+    and tve.namePath <> ptve.namePath
+    and function('regexp_replace', tve.parent, '/.*/(.*)/(.*)', '\\2') <> function('regexp_replace', ptve.parent, '/.*/(.*)/(.*)', '\\2')
+    order by tve.namePath
+''', [version: second, previousVersion: first])) as List<List<TreeVersionElement>>
+        modTE.addAll(modTVE)
+        return modTE.sort { a, b -> a[0].namePath <=> b[0].namePath }
     }
 
     static List<TreeVersionElement> sorted(List<TreeVersionElement> tves) {

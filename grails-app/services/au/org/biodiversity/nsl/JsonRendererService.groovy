@@ -521,10 +521,10 @@ class JsonRendererService {
         }
 
         Hibernate.initialize(entity)
-        if (entity instanceof HibernateProxy) {
-            entity = (T) ((HibernateProxy) entity).getHibernateLazyInitializer()
-                                                  .getImplementation()
-        }
+//        if (entity instanceof HibernateProxy) {
+//            entity = ((HibernateProxy) entity).getHibernateLazyInitializer()
+//                                                  .getImplementation()
+//        }
         return entity
     }
 }

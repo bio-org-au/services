@@ -316,7 +316,7 @@ from tree_element te
 where tve.tree_version_id = :versionId 
       and te.synonyms_html <> i.cached_synonymy_html''', [versionId: treeVersion.id])[0] as Integer
 
-        sql.eachRow('''select tve.element_link, te.instance_id, te.instance_link, i.cached_synonymy_html, coalesce(synonyms_as_html(i.id), '<synonyms></synonyms>') calc_syn_html
+            sql.eachRow('''select tve.element_link, te.instance_id, te.instance_link, i.cached_synonymy_html, coalesce(synonyms_as_html(i.id), '<synonyms></synonyms>') calc_syn_html
 from tree_element te
        join tree_version_element tve on te.id = tve.tree_element_id
        join instance i on te.instance_id = i.id
