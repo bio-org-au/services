@@ -38,6 +38,21 @@ appender("dailyFileAppender", RollingFileAppender) {
     }
 }
 
-root(ERROR, ['STDOUT'])
-logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
-logger("services3", DEBUG, ['STDOUT'], false)
+println "logback environment: ${Environment.getCurrent()} isDevelopment: ${Environment.isDevelopmentMode()}"
+if (Environment.isDevelopmentMode()) {
+    root(WARN, ['STDOUT'])
+    logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
+    logger("services3", DEBUG, ['STDOUT'], false)
+} else if (Environment.getCurrent() == Environment.PRODUCTION) {
+    root(ERROR, ['STDOUT'])
+    logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
+    logger("services3", DEBUG, ['STDOUT'], false)
+} else if (Environment.getCurrent() == Environment.TEST)  {
+    root(WARN, ['STDOUT'])
+    logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
+    logger("services3", DEBUG, ['STDOUT'], false)
+} else {
+    root(WARN, ['STDOUT'])
+    logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
+    logger("services3", DEBUG, ['STDOUT'], false)
+}

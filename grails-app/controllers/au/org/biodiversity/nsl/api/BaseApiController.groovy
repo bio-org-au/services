@@ -66,14 +66,14 @@ class BaseApiController implements WithTarget {
         if (!json) {
             log.debug "withJsonData: branch NOT JSON"
             results.ok = false
-            results.fail("JSON paramerters not supplied. You must supply JSON parameters ${list ? 'as a list' : requiredKeys}.",
+            results.fail("JSON parameters not supplied. You must supply JSON parameters ${list ? 'as a list' : requiredKeys}.",
                     BAD_REQUEST)
             return serviceRespond(results)
         }
         if (list && !(json.class instanceof JSONArray)) {
             log.debug "withJsonData: branch LIST and NOT JSONArray"
             results.ok = false
-            results.fail("JSON paramerters not supplied. You must supply JSON parameters as a list.", BAD_REQUEST)
+            results.fail("JSON parameters not supplied. You must supply JSON parameters as a list.", BAD_REQUEST)
             return serviceRespond(results)
         }
         if (list) {

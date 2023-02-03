@@ -111,7 +111,7 @@ class LdapRealm implements GrailsShiroRealm, SimplifiedRealm {
         ldapServer.usernameAttribute = grailsApplication.config.getProperty('security.shiro.realm.ldap.username.attribute', String, "uid")
         ldapServer.searchUser = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.user', String, "")
         ldapServer.searchPass = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.pass', String, "")
-        ldapServer.ldapUrls = grailsApplication.config.getProperty('security.shiro.realm.ldap.server.urls', String, "ldap://localhost:389/")
+        ldapServer.ldapUrls = grailsApplication.config.getProperty('security.shiro.realm.ldap.urls', String, "ldap://localhost:389/")
                                                       .split(',').collect { it.trim() }
         //Group or role config
         ldapServer.groupOu = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.group.name', String, '')
