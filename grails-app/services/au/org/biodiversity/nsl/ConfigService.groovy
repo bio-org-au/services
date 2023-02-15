@@ -304,6 +304,14 @@ class ConfigService {
         Sql.newInstance(dbUrl, username, password, driverClassName)
     }
 
+    Sql getSqlForNSLSchema() {
+        String dbUrl = grailsApplication.config.getProperty('schemaSource.url')
+        String username = grailsApplication.config.getProperty('schemaSource.username')
+        String password = grailsApplication.config.getProperty('schemaSource.password')
+        String driverClassName = grailsApplication.config.getProperty('schemaSource.driverClassName')
+        Sql.newInstance(dbUrl, username, password, driverClassName)
+    }
+
     String getWebUserName() {
         grailsApplication.config.getProperty('shard.webUser')
     }

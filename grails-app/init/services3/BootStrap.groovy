@@ -22,7 +22,7 @@ class BootStrap {
         println "database url: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
         if (!nslDomainService.checkUpToDate()) {
             Map scriptParams = configService.getUpdateScriptParams()
-            Sql sql = configService.getSqlForNSLDB()
+            Sql sql = configService.getSqlForNSLSchema()
             if (!nslDomainService.updateToCurrentVersion(sql, scriptParams)) {
                 log.error "Database is not up to date. Run update script on the DB before restarting."
                 throw new Exception('Database not at expected version.')
