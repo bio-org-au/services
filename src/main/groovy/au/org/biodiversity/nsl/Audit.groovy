@@ -108,7 +108,6 @@ class Audit {
     SimpleDateFormat sdf = new SimpleDateFormat('dd-MMM-yyyy hh:mm a')
 
     String when() {
-        String foo = changedFields.updated_at
         LocalDateTime upd = changedFields.updated_at ? LocalDateTime.parse(changedFields.updated_at.replace(" ", "T").replaceAll('[\\-+][0-9][0-9]$', '')) : null
         upd ? upd.format(dtf): sdf.format(actionTimeStamp)
     }
