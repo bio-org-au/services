@@ -11,8 +11,11 @@ import org.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.grails.web.json.JSONException
 
 import java.sql.Timestamp
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
+import static java.time.format.DateTimeFormatter.*
 
 /**
  * User: pmcneil
@@ -101,9 +104,13 @@ class Audit {
                 changedFields.updated_by ?: rowData.updated_by ?: 'Something'
         }
     }
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern('dd-MMM-yyyy hh:mm a')
+    SimpleDateFormat sdf = new SimpleDateFormat('dd-MMM-yyyy hh:mm a')
 
     String when() {
-        changedFields.updated_at ?: actionTimeStamp.toString()
+        String foo = changedFields.updated_at
+        LocalDateTime upd = changedFields.updated_at ? LocalDateTime.parse(changedFields.updated_at.replace(" ", "T").replaceAll('[\\-+][0-9][0-9]$', '')) : null
+        upd ? upd.format(dtf): sdf.format(actionTimeStamp)
     }
 
     HashSet<String> getRelevantChangedFields() {
@@ -210,7 +217,7 @@ class Audit {
             def session = Holders.grailsApplication.mainContext.sessionFactory.currentSession
             def columns = GrailsDomainBinder.getMapping(auditedClass).columns.entrySet().findAll { it.value.column }.collectEntries { [(it.value.column): it.key]}
             Object rtn = auditedClass.newInstance()
-            DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ssx')
+            DateTimeFormatter timestampFormatter = ofPattern('yyyy-MM-dd HH:mm:ssx')
             rowData.each { Map.Entry<String,Object> it ->
                 if (it.value) {
                     String oCol = columns[it.key] ?: snakeToCamel(it.key)
