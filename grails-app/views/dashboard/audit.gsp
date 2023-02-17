@@ -76,7 +76,7 @@
               </div>
             </td>
             <td><b>${row.updatedBy()}</b></td>
-            <td>${row.when()}</td>
+            <td style="width:120px;">${row.when()}</td>
           </tr>
         </g:if>
         </g:if>
