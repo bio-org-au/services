@@ -23,7 +23,7 @@
         while being able to trace the history all the way to the current placement.</p>
         <ul>
           <li>At the bottom of this page are the citable links to this Instance object or just use the <i
-              class="fa fa-link"></i> icon.
+                  class="fa fa-link"></i> icon.
           You can "right click" in most browsers to copy it or open it in a new browser tab.</li>
         </ul>
       </div>
@@ -76,7 +76,7 @@
 
         <p>Below are all revisions of the ${treeVersion.tree.name}. Versions older than
         <st:preferredLink
-            target="${currentTreeVersion}">${currentTreeVersion.id} published ${currentTreeVersion.publishedAt.dateString}</st:preferredLink>
+                target="${currentTreeVersion}">${currentTreeVersion.id} published ${currentTreeVersion.publishedAt.dateString}</st:preferredLink>
         are for reference only.</p>
         <table class="table">
           <tr><th>Version</th><th>published</th><th>Notes</th><th>Remove action</th></tr>
@@ -91,7 +91,7 @@
                     <g:if test="${version.published}">
                       <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v1: version.id, v2: currentTreeVersion.id])}"
                          title="Diff to current version">&Delta;&nbsp;current</a>,<g:if
-                        test="${version.previousVersion}">
+                            test="${version.previousVersion}">
                       <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v2: version.id, v1: version.previousVersion.id])}"
                          title="Diff to current version">&Delta;&nbsp;previous</a>,</g:if>
                     </g:if>
@@ -127,4 +127,3 @@
 </div>
 </body>
 </html>
-

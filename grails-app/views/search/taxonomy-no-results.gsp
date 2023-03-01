@@ -37,8 +37,12 @@
     <div class="panel-body">
       <div class="results">
         <h2>No results found <g:if test="${query.name}">for &quot;${query.name}&quot;</g:if>.</h2>
-
-        <p>Try searching for a different name, e.g. "<st:randomName q="${query.name}"/>"</p>
+        <p>       Suggestions:</p>
+        <ul>
+          <li>Check the spelling of your search string.</li>
+          <li>Use one or more wildcards (%) for a broader search.</li>
+          <li>Change the type of name(s) included in the search.</li>
+        </ul>
       </div>
     </div>
   </div>

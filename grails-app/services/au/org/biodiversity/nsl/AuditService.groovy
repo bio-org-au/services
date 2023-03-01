@@ -2,7 +2,7 @@ package au.org.biodiversity.nsl
 
 import groovy.sql.GroovyResultSet
 import groovy.sql.GroovyRowResult
-import org.postgresql.jdbc.PgResultSet
+//import org.postgresql.jdbc.PgResultSet
 import groovy.sql.Sql
 
 import java.sql.Timestamp
@@ -17,7 +17,7 @@ class AuditService implements WithSql {
         userName = userName ?: '%'
         if (filter == 'all') {
             tableName = '%'
-        } else if (['name', 'author', 'reference', 'instance'].contains(filter)) {
+        } else if (['name', 'author', 'reference', 'instance', 'instance_note', 'tree_element', 'comment'].contains(filter)) {
             tableName = filter
         } else {
             return []
@@ -49,13 +49,15 @@ WHERE action_tstamp_tx > :from
      * @param things (optional list of things to get totals on)
      * @return
      */
-    Map report(Timestamp from, Timestamp to, List<String> things = ['name', 'author', 'reference', 'instance']) {
+    Map report(Timestamp from, Timestamp to, List<String> things = ['name', 'author', 'reference', 'instance', 'instance_note', 'tree_element', 'comment']) {
         Map userReport = [:]
         withSql { Sql sql ->
             sql.withTransaction {
                 things.each { String thing ->
                     //created
-                    String query = "select count(t) as count, t.created_by as uname from $thing t where created_at > :from and created_at < :to group by created_by"
+                    String query = (thing == 'tree_element'
+                            ? "select count(t) as count, t.updated_by as uname from $thing t where updated_at > :from and updated_at < :to group by updated_by"
+                            : "select count(t) as count, t.created_by as uname from $thing t where created_at > :from and created_at < :to group by created_by")
                     sql.eachRow(query, [from: from, to: to]) { GroovyResultSet row ->
                         // log.debug row.toString()
                         userReport.get(row.uname, defaultUserThingReport(things)).get(thing).created = row.count

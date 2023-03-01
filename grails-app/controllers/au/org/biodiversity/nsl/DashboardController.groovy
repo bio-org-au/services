@@ -18,8 +18,18 @@ package au.org.biodiversity.nsl
 
 import grails.core.GrailsApplication
 import org.apache.shiro.authz.annotation.RequiresRoles
+import org.supercsv.cellprocessor.FmtNumber
+import org.supercsv.cellprocessor.constraint.NotNull
+import org.supercsv.cellprocessor.ift.CellProcessor
+import org.supercsv.io.CsvListWriter
+import org.supercsv.io.CsvResultSetWriter
+import org.supercsv.io.ICsvListWriter
+import org.supercsv.io.ICsvResultSetWriter
+import org.supercsv.prefs.CsvPreference
 
 import java.sql.Timestamp
+import java.text.DecimalFormat
+import java.text.SimpleDateFormat
 
 class DashboardController {
 
@@ -96,33 +106,133 @@ class DashboardController {
         return null
     }
 
+    static Map values(String fromStr, String toStr) {
+        List<Integer> fromInts = fromStr ? fromStr.split('/').collect { it.toInteger() } : null
+        List<Integer> toInts = toStr ? toStr.split('/').collect { it.toInteger() } : null
+        Timestamp from
+        Timestamp to
+        String msg
+        if (!(toInts?.size() == 3 || fromInts?.size() == 3)) {
+            msg = "No period set, using last 7 days."
+        }
+        if (fromInts?.size() == 3) {
+            GregorianCalendar fromCal = new GregorianCalendar(fromInts[2], fromInts[1] - 1, fromInts[0])
+            from = new Timestamp(fromCal.time.time)
+        } else {
+            from = new Timestamp(System.currentTimeMillis() - WEEK_MS)
+        }
+        if (toInts?.size() == 3) {
+            GregorianCalendar toCal = new GregorianCalendar(toInts[2], toInts[1] - 1, toInts[0] + 1)
+            to = new Timestamp(toCal.time.time)
+        } else {
+            to = new Timestamp(System.currentTimeMillis())
+        }
+        return [from: from, to: to, msg: msg]
+    }
+
     @RequiresRoles('QA')
     audit(String userName, String fromStr, String toStr) {
-        if (params.search) {
-
-            List<Integer> fromInts = fromStr ? fromStr.split('/').collect { it.toInteger() } : null
-            List<Integer> toInts = toStr ? toStr.split('/').collect { it.toInteger() } : null
-            Timestamp from
-            Timestamp to
-            if (fromInts?.size() == 3 && toInts?.size() == 3) {
-                GregorianCalendar fromCal = new GregorianCalendar(fromInts[2], fromInts[1] - 1, fromInts[0])
-                GregorianCalendar toCal = new GregorianCalendar(toInts[2], toInts[1] - 1, toInts[0] + 1)
-                from = new Timestamp(fromCal.time.time)
-                to = new Timestamp(toCal.time.time)
-            } else {
-                from = new Timestamp(System.currentTimeMillis() - WEEK_MS)
-                to = new Timestamp(System.currentTimeMillis())
-                flash.message = "No period set, using last 7 days."
+        if (params._action_audit) {
+            def vals = values(fromStr, toStr)
+            if (vals.msg) {
+                flash.message = vals.msg
             }
-
-            List rows = userName ? auditService.list(userName, from, to, params?.filterBy) : auditService.list('', from, to, params?.filterBy)
-            Map stats = auditService.report(from, to)
-            // log.debug stats.toString()
+            List rows = userName ? auditService.list(userName, vals.from, vals.to, params?.filterBy) : auditService.list('', vals.from, vals.to, params?.filterBy)
             // log.debug "rows: $rows"
-            [auditRows: rows, query: params, stats: stats]
+            [auditRows: rows, query: params]
         } else {
             flash.message = "Nothing to show."
             [auditRows: null, query: [:]]            
+        }
+    }
+
+
+    @RequiresRoles('QA')
+    exportStats(String userName, String fromStr, String toStr) {
+        stats(userName, fromStr, toStr)
+    }
+
+    @RequiresRoles('QA')
+    stats(String userName, String fromStr, String toStr) {
+        if (params._action_exportStats) {
+
+            def vals = values(fromStr, toStr)
+            if (vals.msg) {
+                flash.message = vals.msg
+            }
+            Map stats = auditService.report(vals.from, vals.to)
+            response.contentType = grailsApplication.config.grails.mime.types['text/csv']
+            response.setHeader("Content-disposition", "attachment; filename=books.${params.extension}")
+
+            List fields = ["Last Modified By"]
+            List<CellProcessor> processors = [ new NotNull() ]
+            for (String thing in stats[stats.keySet()[0]]?.keySet()) {
+                fields.add(thing) ; processors.add(new FmtNumber(new DecimalFormat()))
+                fields.add(thing) ; processors.add(new FmtNumber(new DecimalFormat()))
+                fields.add(thing) ; processors.add(new FmtNumber(new DecimalFormat()))
+            }
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd")
+            String froms = sdf.format(new java.util.Date(vals.from.time));
+            String tos = sdf.format(new java.util.Date(vals.to.time));
+            def out = response.outputStream
+            response.setContentType("text/csv")
+            response.setHeader "Content-disposition", "attachment;filename=audit-${froms}-${tos}.csv".toString()
+            ICsvListWriter writer = null;
+            try {
+                writer = new CsvListWriter(new OutputStreamWriter(out), CsvPreference.STANDARD_PREFERENCE);
+                List headers = ['Last Modified By']
+                for (def recType : stats[stats.keySet()[0]]?.keySet()) {
+                    headers.add("$recType created".toString())
+                    headers.add("$recType updated".toString())
+                    headers.add("$recType deleted".toString())
+                }
+                writer.writeHeader(*headers)
+                Map<String,Map<String,Long>> totals = new LinkedHashMap<>()
+                // writer csv file from ResultSet
+                for (def name : stats.keySet().sort()) {
+                    List<?> cols = [name]
+                    for (def recType : stats[name].keySet()) {
+                        Map<String,Long> totalLine = totals[recType]
+                        if (!totalLine) {
+                            totalLine = new HashMap<String,Long>()
+                            totalLine['created'] = 0L
+                            totalLine['updated'] = 0L
+                            totalLine['deleted'] = 0L
+                            totals[recType] = totalLine
+                        }
+                        cols.add(stats[name][recType]['created'])
+                        cols.add(stats[name][recType]['updated'])
+                        cols.add(stats[name][recType]['deleted'])
+                        totalLine['created'] += stats[name][recType]['created']
+                        totalLine['updated'] += stats[name][recType]['updated']
+                        totalLine['deleted'] += stats[name][recType]['deleted']
+                    }
+                    writer.write(cols, (CellProcessor[])processors.toArray());
+                }
+                List<?> cols = ['TOTAL']
+                for (def recType : totals.keySet()) {
+                    cols.add(totals[recType]['created'])
+                    cols.add(totals[recType]['updated'])
+                    cols.add(totals[recType]['deleted'])
+                }
+                writer.write(cols, (CellProcessor[])processors.toArray());
+            } finally {
+                if ( writer != null ) {
+                    writer.close();
+                }
+            }
+        } else if (params._action_stats) {
+            def vals = values(fromStr, toStr)
+            if (vals.msg) {
+                flash.message = vals.msg
+            }
+            Map stats = auditService.report(vals.from, vals.to)
+            // log.debug stats.toString()
+            // log.debug "rows: $rows"
+            [query: params, stats: stats]
+        } else {
+            flash.message = "Nothing to show."
+            [auditRows: null, query: [:]]
         }
     }
 }

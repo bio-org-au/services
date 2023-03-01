@@ -8,14 +8,17 @@ class ExportController {
     def configService
 
     def index() {
-
-        [
-                exports: [
-                        [label: "${configService.nameTreeName} - Australian ${configService.getMenuLabel()} Names as CSV", url: 'namesCsv'],
-                        [label: "${configService.classificationTreeName} - Australian ${configService.getMenuLabel()} Taxa as CSV", url: 'taxonCsv'],
-                        [label: "Australian ${configService.getMenuLabel()} Common Names as CSV", url: 'commonCsv'],
-                ]
-        ]
+        def exports = []
+        if (flatViewService.nameViewExists()) {
+            exports.add([label: "${configService.nameTreeName} - Australian ${configService.getMenuLabel()} Names as CSV", url: 'namesCsv'])
+        }
+        if (flatViewService.taxonViewExists()) {
+            exports.add([label: "${configService.classificationTreeName} - Australian ${configService.getMenuLabel()} Taxa as CSV", url: 'taxonCsv'])
+        }
+        if (flatViewService.commonViewExists()) {
+            exports.add([label: "Australian ${configService.getMenuLabel()} Common Names as CSV", url: 'commonCsv'])
+        }
+        [ exports: exports ]
     }
 
     @SuppressWarnings("GroovyUnusedDeclaration")

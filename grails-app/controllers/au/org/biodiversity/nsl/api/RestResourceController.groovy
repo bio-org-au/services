@@ -80,7 +80,7 @@ class RestResourceController {
             return notFound("No instanceNote in $shard with id $idNumber found")
         }
         def links = linkService.getLinksForObject(instanceNote)
-        respond instanceNote, [model: [instanceNote: instanceNote, links: links], status: OK]
+        respond instanceNote, [model: [instanceNote: instanceNote, links: links], status: OK, view: 'instanceNote']
     }
 
 

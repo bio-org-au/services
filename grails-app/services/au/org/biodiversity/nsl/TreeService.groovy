@@ -1551,7 +1551,8 @@ where te.display_html <> ('<data>' || n.full_name_html || ' <citation>' || r.cit
            update tree_element te 
              set display_html = '<data>' || n.full_name_html || 
              '<name-status class="' || ns.name|| '">, ' || ns.name || 
-             '</name-status> <citation>' || r.citation_html || '</citation></data>'
+             '</name-status> <citation>' || r.citation_html || '</citation></data>',
+            synonyms_html = coalesce(synonyms_as_html(i.id), '<synonyms></synonyms>')     
            from name n join name_status ns on n.name_status_id = ns.id, 
            instance i, reference r
            where te.name_id = n.id
@@ -1721,7 +1722,8 @@ and regex(namePath, :newPath) = true
     private deleteTreeVersionElement(TreeVersionElement target) {
         removeLink(target)
         target.treeElement.removeFromTreeVersionElements(target)
-        target.treeVersion.removeFromTreeVersionElements(target)
+        // Don't remove from target.treeVersion.treeVersionElements, because that will suck tens of thousands
+        // of objects into memory. Maybe we don't need the above line either.
         target.delete()
     }
 
@@ -1742,6 +1744,8 @@ and regex(namePath, :newPath) = true
                 sourceElementLink: source.sourceElementLink,
                 nameLink: source.nameLink,
                 instanceLink: source.instanceLink,
+                createdBy: userName,
+                createdAt: new Timestamp(System.currentTimeMillis()),
                 updatedBy: userName,
                 updatedAt: new Timestamp(System.currentTimeMillis()))
         Map profile = treeElement.profile

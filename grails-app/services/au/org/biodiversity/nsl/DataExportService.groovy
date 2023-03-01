@@ -111,6 +111,7 @@ class DataExportService {
 
         String statement = "COPY ($sqlStatement) TO STDOUT WITH ENCODING 'UTF8' CSV HEADER"
         println statement
+        println "connection type: ${sql.connection}"
         CopyManager copyManager = ((PGConnection) sql.connection).getCopyAPI()
         PrintWriter printWriter = new PrintWriter(file,'UTF-8')
         IOGroovyMethods.withWriter(printWriter) { writer ->

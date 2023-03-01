@@ -3,6 +3,9 @@ package services3
 import groovy.sql.Sql
 import io.jsonwebtoken.impl.crypto.MacProvider
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 class BootStrap {
     def grailsApplication
     def jsonRendererService
@@ -15,9 +18,11 @@ class BootStrap {
     def photoService
 
     def init = { servletContext ->
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
+        println "database url: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
         if (!nslDomainService.checkUpToDate()) {
             Map scriptParams = configService.getUpdateScriptParams()
-            Sql sql = configService.getSqlForNSLDB()
+            Sql sql = configService.getSqlForNSLSchema()
             if (!nslDomainService.updateToCurrentVersion(sql, scriptParams)) {
                 log.error "Database is not up to date. Run update script on the DB before restarting."
                 throw new Exception('Database not at expected version.')
@@ -27,8 +32,9 @@ class BootStrap {
 
         Sql sql = configService.getSqlForNSLDB()
         def result = sql.firstRow('select count(*) from information_schema.triggers where trigger_name = \'audit_trigger_row\';')
-        if (result?.getAt(0) != 18) {
-            log.error "\n\n*** Audit triggers not set up, expected 18 audit triggers got ${result?.getAt(0)} *** \n"
+        int expectedTriggers = 21
+        if (result?.getAt(0) != expectedTriggers) {
+            log.error "\n\n*** Audit triggers not set up, expected ${expectedTriggers} audit triggers got ${result?.getAt(0)} *** \n"
         }
         sql.close()
 
@@ -49,7 +55,7 @@ class BootStrap {
             development {
                 photoService.refresh()
                 nameService.startUpdatePolling()
-                println grailsApplication.config.updates.dir
+                println grailsApplication.config.getProperty('updates.dir')
             }
             production {
                 photoService.refresh()

@@ -464,9 +464,9 @@ hybrid[title="intergrade"]::after {
 
 /* Audit screen tr line height hover style */
 div[class^="height-nsl"] {
-    max-height: 3em;
-    overflow: hidden;
-    transition-delay: 5s;
+    /*max-height: 3em;*/
+    /*overflow: hidden;*/
+    /*transition-delay: 5s;*/
 }
 
 /* Audit screen tr line height hover style */
@@ -493,8 +493,8 @@ tr[class^="editor-web"] {
 /* Audit screen Search button margin top to align it*/
 .audit-search {
     margin-top: 1.5em;
-    padding-left: 3em;
-    padding-right: 3em;
+    padding-left: 1em;
+    padding-right: 1em;
 }
 
 /*Audit screen styles for synonymy diff to place one element per line*/

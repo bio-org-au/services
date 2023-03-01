@@ -19,12 +19,13 @@ class ApiInterceptor {
     boolean before() {
         if (params.apiKey) {
             try {
+                String runAsUser = params.remove('as')
                 String apiKey = params.remove('apiKey')
+                log.debug "key: $apiKey as: $runAsUser"
                 ApiKeyToken authToken = new ApiKeyToken(apiKey, null as char[], SecurityUtils.subject.host as String)
                 Long start = System.currentTimeMillis()
                 SecurityUtils.subject.login(authToken)
 
-                String runAsUser = params.remove('as')
                 if (runAsUser) {
                     log.debug("${SecurityUtils.subject.principal} is running as ${runAsUser}")
                     LdapUser ldapUser = ldapRealm.getLdapUser(runAsUser)
@@ -34,7 +35,7 @@ class ApiInterceptor {
                 log.debug "login took ${System.currentTimeMillis() - start}ms"
                 return true
             } catch (AuthenticationException e) {
-                log.info e.message
+                log.error "$e.message host: ${SecurityUtils.subject.host}"
                 redirect(controller: 'auth', action: 'unauthorized', params: [format: params.format])
                 return false
             }

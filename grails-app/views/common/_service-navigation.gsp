@@ -1,5 +1,5 @@
 <%@ page import="org.apache.shiro.SecurityUtils" %>
-
+<g:set var="configService" bean="configService"/>
 <div class="imageAndText">
   <asset:image src="${st.bannerImage().toString()}" class="align-right"/>
   <div class="col">
@@ -14,7 +14,7 @@
 </div>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation">
-  <a class="navbar-brand" href="${createLink(uri: '/')}">
+  <a class="navbar-brand" href="${createLink(uri: configService.getHomeURL())}">
     NSL
   </a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"

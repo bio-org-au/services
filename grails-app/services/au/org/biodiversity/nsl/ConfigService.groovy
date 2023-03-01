@@ -28,6 +28,8 @@ import groovy.sql.Sql
 import org.slf4j.LoggerFactory
 
 import javax.sql.DataSource
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * This is a helper service for abstracting, accessing and managing configuration of the services.
@@ -49,14 +51,14 @@ class ConfigService {
 
     private String nameSpaceName
     private Map shardConfig = null
-    private Map appConfigMap = null
-
-    private Map appConfig() {
-        if (!appConfigMap) {
-            appConfigMap = grailsApplication.config.flatten()
-        }
-        return appConfigMap
-    }
+//    private Map appConfigMap = null
+//
+//    private Map appConfig() {
+//        if (!appConfigMap) {
+//            appConfigMap = grailsApplication.config.flatten()
+//        }
+//        return appConfigMap
+//    }
 
     private String getShardConfigOrfail(String key) {
         if (shardConfig == null) {
@@ -103,6 +105,7 @@ class ConfigService {
             return getShardConfigOrfail('classification tree key')
         } catch (e) {
             log.error e.message
+            throw e
         }
         return getShardConfigOrfail('classification tree label')
     }
@@ -135,6 +138,14 @@ class ConfigService {
         return getShardConfigOrfail('menu label')
     }
 
+    String getHomeURL() {
+        URL url = new URL(getShardConfigOrfail('home URL'))
+        if (grails.util.Environment.current != grails.util.Environment.PRODUCTION) {
+            url = new URL(url.protocol, grails.util.Environment.current.name + '.' + url.host, url.port, url.file)
+        }
+        return url.toString()
+    }
+
     /**
      * Disable the checkPolynomialsBelowNameParent function for virus shard
      */
@@ -156,7 +167,7 @@ class ConfigService {
     }
 
     String getPhotoSearch(String name) {
-        def search = configOrThrow('services.photoService.search')
+        def search = configOrThrow('services.photoService.search', Closure)
         if (search && search instanceof Closure) {
             return search(name)
         }
@@ -164,10 +175,11 @@ class ConfigService {
     }
 
     Map getLdapConfig() {
-        if (grailsApplication.config.containsKey('ldap')) {
-            return grailsApplication.config.ldap as Map
+        Map rtn = grailsApplication.config.ldap
+        if (!rtn) {
+            throw new Exception("Config error. Add ldap config.")
         }
-        throw new Exception("Config error. Add ldap config.")
+        return rtn
     }
 
     Map<String, ApplicationUser> applicationUsers
@@ -179,7 +191,7 @@ class ConfigService {
             }
             if (grailsApplication.config.api.auth instanceof Map) {
                 applicationUsers = [:]
-                (Map) (grailsApplication.config.api.auth).each { k, v ->
+                ((Map) (grailsApplication.config.api.auth)).each { k, v ->
                     applicationUsers.put(k, new ApplicationUser(k, v as Map))
                 }
             } else {
@@ -194,7 +206,8 @@ class ConfigService {
     }
 
     String getServerUrl() {
-        configOrThrow('grails.serverURL')
+//        configOrThrow('grails.serverURL')
+        grailsApplication.config.getProperty('grails.serverURL', String) ?: '/'
     }
 
     String getTempFileDir() {
@@ -210,7 +223,11 @@ class ConfigService {
     }
 
     Map getMapperCredentials() {
-        configOrThrow('services.mapper') as Map
+        Map rtn = grailsApplication.config.services.mapper
+        if (!rtn) {
+            throw new Exception("Config error. Add services.mapper config.")
+        }
+        return rtn
     }
 
     String getSystemMessageFilename() {
@@ -230,16 +247,21 @@ class ConfigService {
      * it throws and exception saying the config is missing.
      * @param path
      */
-    private def configOrThrow(String path) {
-        if (appConfig() && appConfig().containsKey(path)) {
-            return appConfig().get(path)
+    private def configOrThrow(String path, Class<?> targetType = String) {
+        def rtn = grailsApplication.config.getProperty(path, targetType)
+//        if (!rtn) {
+//            rtn = grailsApplication.config.getProperty(path, java.util.Map)
+//        }
+        if (rtn) {
+            return rtn
         } else {
             throw new Exception("Config error. Config option $path not found, please set it in '.nsl/services-config.groovy'.")
         }
     }
 
+
     String printAppConfig() {
-        appConfig().toString()
+        grailsApplication.config.flatten().toString()
     }
 
     List<FileAppender> getLogFiles() {
@@ -275,15 +297,23 @@ class ConfigService {
     }
 
     Sql getSqlForNSLDB() {
-        String dbUrl = grailsApplication.config.dataSource.url
-        String username = grailsApplication.config.dataSource.username
-        String password = grailsApplication.config.dataSource.password
-        String driverClassName = grailsApplication.config.dataSource.driverClassName
+        String dbUrl = grailsApplication.config.getProperty('dataSource.url')
+        String username = grailsApplication.config.getProperty('dataSource.username')
+        String password = grailsApplication.config.getProperty('dataSource.password')
+        String driverClassName = grailsApplication.config.getProperty('dataSource.driverClassName')
+        Sql.newInstance(dbUrl, username, password, driverClassName)
+    }
+
+    Sql getSqlForNSLSchema() {
+        String dbUrl = grailsApplication.config.getProperty('schemaSource.url')
+        String username = grailsApplication.config.getProperty('schemaSource.username')
+        String password = grailsApplication.config.getProperty('schemaSource.password')
+        String driverClassName = grailsApplication.config.getProperty('schemaSource.driverClassName')
         Sql.newInstance(dbUrl, username, password, driverClassName)
     }
 
     String getWebUserName() {
-        grailsApplication.config.shard.webUser
+        grailsApplication.config.getProperty('shard.webUser')
     }
 
     Map getUpdateScriptParams() {

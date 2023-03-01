@@ -2,7 +2,7 @@
   User: pmcneil
   Date: 15/09/14
 --%>
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page import="services.ServiceTagLib" contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
   <meta name="layout" content="main">
@@ -10,83 +10,9 @@
 </head>
 
 <body>
-<div class="container">
+<div class="container-lg">
   <h2>Audit</h2>
-  <g:form name="search" role="form" controller="dashboard" action="audit" method="GET">
-    <div class="form-group">
-      <div class="form-row">
-        <div class="col-md-3">
-          <label>User name
-            <input type="text" name="userName" placeholder="Enter a user name" value="${query.userName}"
-                  class="form-control" size="30"/>
-          </label>
-        </div>
-        <div class="col-md-2">
-          <label>From
-            <input type="text" name="fromStr" class="form-control fromDate" value="${query.fromStr}">
-          </label>  
-        </div>
-        <div class="col-md-2">
-          <label>To
-            <input type="text" name="toStr" class="form-control toDate" value="${query.toStr}">
-          </label>  
-        </div>
-
-        <div class="col-md-2">
-          <label for="filterBy">Show only
-          <select name="filterBy" id="filter-by" type="text" name="filterBy" class="form-control filterBy" value="${query.filterBy}">
-            <option value="all">All</option>
-            <option value="name">Names</option>
-            <option value="instance">Instances</option>
-            <option value="reference">References</option>
-            <option value="author">Authors</option>
-          </select>
-          </label>
-        </div>
-        <div class="col-md-2">
-          <label for="search">
-            <button type="submit" name="search" value="true" class="btn btn-primary audit-search">Search</button>
-          </label>
-        </div>
-        
-      </div>
-    </div>
-  </g:form>
-
-  <g:if test="${stats && !stats.isEmpty()}">
-    <table class="table audit-report">
-      <tr class="stats-h1">
-        <th>Last Modifed By</th>
-        <g:each in="${stats[stats.keySet()[0]]?.keySet()}" var="thing">
-          <th colspan="3">${thing}</th>
-        </g:each>
-      </tr>
-      <tr class="stats-h2">
-        <th></th>
-        <g:each in="${stats[stats.keySet()[0]]?.keySet()}" var="thing">
-          <th><i class="fa fa-plus"></i></th>
-          <th><i class="fa fa-minus"></i></th>
-          <th><i class="fa fa-edit"></i></th>
-        </g:each>
-      </tr>
-      <g:each in="${stats.keySet().sort()}" var="user">
-        <tr>
-          <td>${user}</td>
-          <g:each in="${stats[user]}" var="thing">
-            <td class="data">
-               ${thing.value.created ?: ''}
-            </td>
-            <td class="data">
-              ${thing.value.deleted ?: ''}
-            </td>
-            <td class="data">
-               ${thing.value.updated ?: ''}
-            </td>
-          </g:each>
-        </tr>
-      </g:each>
-    </table>
-  </g:if>
+  <g:render template="form"/>
 
   <g:if test="${auditRows == null}">
     <div>
@@ -113,15 +39,15 @@
     </h2>
     <table class="table">
       <g:each in="${auditRows}" var="row">
+        <g:set var="diffs" value="${row.fieldDiffs()}"/>
+        <g:if test="${ServiceTagLib.shouldDisplayRow(row, diffs)}">
         <g:if test="${!row.isUpdateBeforeDelete()}">
           <tr class="editor-${row.sessionUserName}">
-            <td>${row.when()}</td>
-            <td><b>${row.updatedBy()}</b></td>
             <td>${[U: 'Updated', I: 'Created', D: 'Deleted'].get(row.action)}</td>
             <td>
               <div class="height-${row.sessionUserName}">
                 <g:if test="${row.auditedObj}">
-                  <st:diffValue value="${row.auditedObj}"/>
+                  <st:diffValue value="${row.auditedObj}" abbrev="true"/>
                 </g:if>
                 <g:else>
                   ${"$row.table $row.rowData.id ${row.action != 'D' ? '(deleted?)' : ''}"}
@@ -130,24 +56,33 @@
             </td>
             <td>
               <div class="height-${row.sessionUserName}">
-                <g:each in="${row.fieldDiffs()}" var="diff">
-                  <div>
-                    <div><b>${diff.fieldName.replaceAll('_id', '').replaceAll('_', ' ')}</b></div>
+                <g:each in="${ServiceTagLib.sortDiffs(row.table, diffs)}" var="diff">
+                  <g:if test="${ServiceTagLib.shouldDisplay(diff)}">
 
-                    <div class="diffBefore">
+                  <div style="overflow: hidden;width: 100%;">
+%{--                    <div style="float: left;width:20%;"><b>${diff.fieldName.replaceAll('_id', '').replaceAll('_', ' ')}</b></div>--}%
+                    <div style="float: left;width:20%;"><b title="${diff.fieldName}"><st:diffLabel table="${row.table}" field="${diff.fieldName}"/>&nbsp;</b></div>
+                    <div class="diffBefore" style="float: left;width: 40%;">
                       <st:diffValue value="${diff.before}"/>
                     </div>
                     <g:if test="${row.action != 'D'}">
-                      <div class="diffAfter">
+                      <div class="diffAfter" style="float: left;width:40%;">
                         <st:diffValue value="${diff.after}"/>
                       </div>
                     </g:if>
                   </div>
+                  </g:if>
                 </g:each>
               </div>
             </td>
+            <td><b>${row.updatedBy()}</b></td>
+            <td style="width:120px;">${row.when()}</td>
           </tr>
         </g:if>
+        </g:if>
+%{--        <g:else>--}%
+%{--          <tr><td colspan="3"> D: ${diffs[0]} :D</td></tr>--}%
+%{--        </g:else>--}%
       </g:each>
     </table>
   </g:elseif>
