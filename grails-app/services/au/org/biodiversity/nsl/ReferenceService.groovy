@@ -53,8 +53,8 @@ class ReferenceService implements AsyncHelper {
 
             String authorName = ''
 
-            if (reference.author != unknownAuthor) {
-                if (reference.refAuthorRole == editor) {
+            if (reference.author.id != unknownAuthor.id) {
+                if (reference.refAuthorRole.id == editor.id) {
                     authorName = "${reference.author.name?.trim()} (ed.)"
                 } else {
                     authorName = "${reference.author.name?.trim()}"
@@ -64,10 +64,10 @@ class ReferenceService implements AsyncHelper {
             String parentAuthorName = ''
 
             if (reference.parent && reference.parent.author != unknownAuthor) {
-                if (reference.author != reference.parent.author) {
+                if (reference.author.id != reference.parent.author.id) {
                     parentAuthorName = (reference.parent.author.name?.trim() == "-") ? "" : "in ${reference.parent.author.name?.trim()}"
                 }
-                if (reference.parent?.refAuthorRole == editor) {
+                if (reference.parent?.refAuthorRole.id == editor.id) {
                     parentAuthorName = (reference.parent.author.name == "-") ? "" : "in ${reference.parent.author.name?.trim()} (ed.)"
                 }
             }
