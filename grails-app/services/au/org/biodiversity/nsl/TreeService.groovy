@@ -443,9 +443,10 @@ WHERE tve.tree_version_id = :versionId
         String hostPart = treeVersion.hostPart()
         TreeElement.executeQuery('''
 select tve.treeElement.displayHtml, tve.elementLink, tve.treeElement.nameLink, tve.treeElement.instanceLink, 
- tve.treeElement.excluded, tve.depth, tve.treeElement.synonymsHtml 
-    from TreeVersionElement tve 
+ tve.treeElement.excluded, tve.depth, i.cachedSynonymyHtml
+    from TreeVersionElement tve, Instance i
     where tve.treeVersion = :version
+    and tve.treeElement.instanceId = i.id
     and regex(tve.treePath, :pattern) = true 
     order by tve.namePath
 ''', [version: treeVersion, pattern: pattern]).collect { data ->
