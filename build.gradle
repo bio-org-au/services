@@ -130,7 +130,7 @@ dependencies {
 //    testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
 //    testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:2.47.1"
 //    implementation project(":nsl-domain-plugin-g3")
-    implementation "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.5.0-SNAPSHOT"
+    implementation "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.5.1-SNAPSHOT"
 //    implementation project("au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3")
 }
 
