@@ -21,8 +21,11 @@ class BootStrap {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
         println "database url: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
         if (!nslDomainService.checkUpToDate()) {
+            println('db 1')
             Map scriptParams = configService.getUpdateScriptParams()
+            println('db 2')
             Sql sql = configService.getSqlForNSLSchema()
+            println('db 3')
             if (!nslDomainService.updateToCurrentVersion(sql, scriptParams)) {
                 log.error "Database is not up to date. Run update script on the DB before restarting."
                 throw new Exception('Database not at expected version.')
