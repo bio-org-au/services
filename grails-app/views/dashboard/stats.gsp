@@ -27,9 +27,12 @@
             <tr class="stats-h2">
                 <th></th>
                 <g:each in="${stats[stats.keySet()[0]]?.keySet()}" var="thing">
-                    <th><i class="fa fa-plus" title="Created"></i></th>
-                    <th><i class="fa fa-edit" title="Updated"></i></th>
-                    <th><i class="fa fa-minus" title="Deleted"></i></th>
+                    <th>Add</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+%{--                    <th><i class="fa fa-plus" title="Created"></i></th>--}%
+%{--                    <th><i class="fa fa-edit" title="Updated"></i></th>--}%
+%{--                    <th><i class="fa fa-minus" title="Deleted"></i></th>--}%
                 </g:each>
             </tr>
             <g:each in="${stats.keySet().sort()}" var="user">
