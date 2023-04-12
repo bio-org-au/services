@@ -57,13 +57,13 @@
             <tr>
                 <td>TOTAL</td>
                 <g:each in="${totals.keySet()}" var="recType">
-                    <td>
+                    <td class="data">
                         ${totals[recType]['created']}
                     </td>
-                    <td>
+                    <td class="data">
                         ${totals[recType]['updated']}
                     </td>
-                    <td>
+                    <td class="data">
                         ${totals[recType]['deleted']}
                     </td>
                 </g:each>
