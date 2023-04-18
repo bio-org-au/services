@@ -20,8 +20,8 @@
         <table class="table">
           <thead>
           <tr>
-            <th>Synonymy on the Tree</th>
-            <th>Current Instance synonymy</th>
+            <th>Previous synonymy</th>
+            <th>Accepted current instance Synonymy</th>
           </tr>
           </thead>
           <g:each in="${data.payload.results}" var="report">
