@@ -21,7 +21,7 @@
           <thead>
           <tr>
             <th>Previous synonymy</th>
-            <th>Accepted current instance Synonymy</th>
+            <th>Accepted current instance synonymy</th>
           </tr>
           </thead>
           <g:each in="${data.payload.results}" var="report">
