@@ -71,14 +71,20 @@ class DistributionService {
 //    }
 
     void reconstructDistribution(TreeElement element, String dist, String userName, Boolean ignoreErrors = false) {
+        log.debug "distEntries: $element.distributionEntries"
         Set<DistEntry> oldEntries = element.distributionEntries.collect{it.distEntry} ?: new HashSet<>()
+        log.debug "oldEntries: $oldEntries"
         List<DistEntry> newEntryList = deconstructDistributionString(dist, ignoreErrors)
+        log.debug "newEntries: $newEntryList"
         Set<DistEntry> newEntries = new HashSet<>(newEntryList)
+        log.debug "oldEntries-newEntries: ${oldEntries.minus(newEntries)}"
         oldEntries.minus(newEntries).each { DistEntry entry ->
             TreeElementDistEntry ent = element.distributionEntries.find {it.distEntry == entry }
             element.removeFromDistributionEntries(ent)
+            log.debug "removing: $ent : $element"
             ent.delete()
         }
+        log.debug "newEntries-oldEntries: ${newEntries.minus(oldEntries)}"
         newEntries.minus(oldEntries).each { DistEntry entry ->
             TreeElementDistEntry ent = new TreeElementDistEntry(
                     treeElement: element,
@@ -86,6 +92,7 @@ class DistributionService {
                     updatedAt: new Timestamp(System.currentTimeMillis()),
                     updatedBy: userName
             )
+            log.debug "creating: $entry : $element"
             ent.save()
             element.addToDistributionEntries(ent)
         }
