@@ -47,6 +47,11 @@ class BaseApiController implements WithTarget {
                 results.ok = false
                 results.fail(published.message, CONFLICT)
                 log.error("$published.message : $results")
+            } catch (Exception x) {
+                results.ok = false
+                results.fail(x.message, INTERNAL_SERVER_ERROR)
+                log.error("Exception $x.class.name : $x.message, $params")
+                x.printStackTrace()
             }
         }
         log.debug "handleResults: finishing without exception"

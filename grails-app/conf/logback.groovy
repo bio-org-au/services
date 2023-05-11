@@ -27,7 +27,7 @@ appender('STDOUT', ConsoleAppender) {
 
 println "logback environment: ${Environment.getCurrent()} isDevelopment: ${Environment.isDevelopmentMode()}"
 if (Environment.isDevelopmentMode()) {
-    root(DEBUG, ['STDOUT'])
+    root(WARN, ['STDOUT'])
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
     logger("services3", DEBUG, ['STDOUT'], false)
 } else if (Environment.getCurrent() == Environment.PRODUCTION) {
@@ -35,7 +35,7 @@ if (Environment.isDevelopmentMode()) {
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
     logger("services3", DEBUG, ['STDOUT'], false)
 } else if (Environment.getCurrent() == Environment.TEST)  {
-    root(DEBUG, ['STDOUT'])
+    root(WARN, ['STDOUT'])
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
     logger("services3", DEBUG, ['STDOUT'], false)
 } else {
