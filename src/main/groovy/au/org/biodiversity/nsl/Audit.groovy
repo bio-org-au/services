@@ -108,7 +108,7 @@ class Audit {
     SimpleDateFormat sdf = new SimpleDateFormat('dd-MMM-yyyy hh:mm a')
 
     String when() {
-        LocalDateTime upd = changedFields.updated_at ? LocalDateTime.parse(changedFields.updated_at.replace(" ", "T").replaceAll('[\\-+][0-9][0-9]$', '')) : null
+        LocalDateTime upd = changedFields.updated_at ? LocalDateTime.parse(changedFields.updated_at.replace(" ", "T").replaceAll("Z", "").replaceAll('[\\-+][0-9][0-9]$', '')) : null
         upd ? upd.format(dtf): sdf.format(actionTimeStamp)
     }
 
@@ -225,7 +225,7 @@ class Audit {
                     if (prop || oCol == 'id') {
                         if (prop?.type == Timestamp) {
                             String v = it.value.replaceAll('\\.[0-9]*', '')
-                            rtn.setProperty(oCol, Timestamp.valueOf(LocalDateTime.from(timestampFormatter.parse(v))))
+                            rtn.setProperty(oCol, Timestamp.valubeOf(LocalDateTime.from(timestampFormatter.parse(v))))
                         } else if (oCol == 'id' || prop?.type == Long) {
                             rtn.setProperty(oCol, it.value as Long)
                         } else if (prop?.type == Integer) {
