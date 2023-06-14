@@ -225,7 +225,7 @@ class Audit {
                     if (prop || oCol == 'id') {
                         if (prop?.type == Timestamp) {
                             String v = it.value.replaceAll('\\.[0-9]*', '')
-                            rtn.setProperty(oCol, Timestamp.valubeOf(LocalDateTime.from(timestampFormatter.parse(v))))
+                            rtn.setProperty(oCol, Timestamp.valueOf(LocalDateTime.from(timestampFormatter.parse(v))))
                         } else if (oCol == 'id' || prop?.type == Long) {
                             rtn.setProperty(oCol, it.value as Long)
                         } else if (prop?.type == Integer) {
