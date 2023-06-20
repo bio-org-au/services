@@ -226,7 +226,7 @@ class SearchService {
                 .replaceAll("\u2026", "...")
                 .replaceAll('\u2032', '\'')
                 .replaceAll('\u2033', '\"')
-                .replaceAll('[\\s]+', ' ')
+                . replaceAll('[\\s]+', ' ')
                 .trim()
     }
 

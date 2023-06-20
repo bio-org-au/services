@@ -13,6 +13,8 @@ import org.grails.web.json.JSONException
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 import static java.time.format.DateTimeFormatter.*
@@ -108,8 +110,9 @@ class Audit {
     SimpleDateFormat sdf = new SimpleDateFormat('dd-MMM-yyyy hh:mm a')
 
     String when() {
-        LocalDateTime upd = changedFields.updated_at ? LocalDateTime.parse(changedFields.updated_at.replace(" ", "T").replaceAll("Z", "").replaceAll('[\\-+][0-9][0-9]$', '')) : null
-        upd ? upd.format(dtf): sdf.format(actionTimeStamp)
+        ZonedDateTime upd = changedFields.updated_at ? ZonedDateTime.parse(changedFields.updated_at.replace(" ", "T")) : null
+        ZonedDateTime local = upd?.withZoneSameInstant(ZoneId.systemDefault())
+        local ? local.format(dtf) : sdf.format(actionTimeStamp)
     }
 
     HashSet<String> getRelevantChangedFields() {
