@@ -64,7 +64,7 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
                 String nm = configPath.getFileName().toString()
                 if (nm.endsWith('.groovy')) {
                     // Sometime I had to add .flatten() on the end of this..?..?
-                    Map config = new ConfigSlurper().parse(configPath.toUri().toURL())
+                    Map config = new ConfigSlurper().parse(configPath.toUri().toURL()).flatten()
                     propertySource = new MapPropertySource(resource.filename, config)
                 } else if (nm.endsWith('.yml')) {
                     List<PropertySource<?>> sources = new YamlPropertySourceLoader().load(resource.filename, resource)
