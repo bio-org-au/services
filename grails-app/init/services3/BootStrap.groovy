@@ -2,6 +2,7 @@ package services3
 
 import groovy.sql.Sql
 import io.jsonwebtoken.impl.crypto.MacProvider
+import org.springframework.core.env.Environment
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -18,6 +19,7 @@ class BootStrap {
     def photoService
 
     def init = { servletContext ->
+        printInfo('NSL services')
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
         println "database url: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
         if (!nslDomainService.checkUpToDate()) {
@@ -63,6 +65,13 @@ class BootStrap {
             }
         }
     }
+
+    void printInfo(String name) {
+        println("$name application version ${grailsApplication.config.getProperty('info.app.version')}")
+        println("$name services grails version ${grailsApplication.config.getProperty('info.app.grailsVersion')}")
+        println("$name services build timestamp ${grailsApplication.config.getProperty('info.app.build.date')}")
+    }
+
     def destroy = {
     }
 }
