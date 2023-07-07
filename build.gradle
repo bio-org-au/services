@@ -215,3 +215,7 @@ task dockerPublish() {
         }
     }
 }
+
+buildProperties {
+    inputs.property("info.app.build.date", new Date().format('yyyy-MM-dd HH:mm:ss'))
+}

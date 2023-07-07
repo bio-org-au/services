@@ -24,6 +24,12 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
         def fs = FileSystems.getDefault()
         def configDirs = [fs.getPath(System.getProperty('user.dir')), fs.getPath(System.getProperty('user.home'), '.nsl')]
         loadConfigs(environment, "services-g5-config", configDirs)
+        printInfo(environment)
+    }
+
+    void printInfo(Environment environment) {
+        println("NSL services application version ${environment.propertyResolver.getProperty('info.app.grailsVersion')}")
+        println("NSL services build timestamp ${environment.propertyResolver.getProperty('info.app.build.date')}")
     }
 
     /**
