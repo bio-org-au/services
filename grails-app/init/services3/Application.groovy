@@ -28,7 +28,8 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
     }
 
     void printInfo(Environment environment) {
-        println("NSL services application version ${environment.propertyResolver.getProperty('info.app.grailsVersion')}")
+        println("NSL services application version ${environment.propertyResolver.getProperty('info.app.version')}")
+        println("NSL services grails version ${environment.propertyResolver.getProperty('info.app.grailsVersion')}")
         println("NSL services build timestamp ${environment.propertyResolver.getProperty('info.app.build.date')}")
     }
 
