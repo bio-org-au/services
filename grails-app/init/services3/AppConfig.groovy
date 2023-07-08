@@ -1,6 +1,5 @@
 package services3
 
-import grails.core.GrailsApplication
 import grails.util.Holders
 import grails.util.Metadata
 import org.grails.config.yaml.YamlPropertySourceLoader
@@ -37,7 +36,7 @@ class AppConfig {
         // info.app.name can be changed by setting rootProject.name in settings.gradle
         String appName = metadata.getProperty('info.app.name', String, 'Unknown')
         println("$appName application version ${metadata.getProperty('info.app.version', String.class, 'Unknown')}")
-        println("$appName version ${metadata.getProperty('info.app.grailsVersion', String.class, 'Unknown')}")
+        println("$appName grails version ${metadata.getProperty('info.app.grailsVersion', String.class, 'Unknown')}")
         println("$appName build timestamp ${metadata.getProperty('info.app.build.date', String.class, 'Unknown')}")
     }
 
