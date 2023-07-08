@@ -19,7 +19,7 @@ class BootStrap {
     def photoService
 
     def init = { servletContext ->
-        printInfo('NSL services')
+        AppConfig.printInfo()
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
         println "database url: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
         if (!nslDomainService.checkUpToDate()) {
@@ -64,12 +64,6 @@ class BootStrap {
                 nameService.startUpdatePolling()
             }
         }
-    }
-
-    void printInfo(String name) {
-        println("$name application version ${grailsApplication.config.getProperty('info.app.version')}")
-        println("$name services grails version ${grailsApplication.config.getProperty('info.app.grailsVersion')}")
-        println("$name services build timestamp ${grailsApplication.config.getProperty('info.app.build.date')}")
     }
 
     def destroy = {

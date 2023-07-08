@@ -22,8 +22,9 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
     @Override
     void setEnvironment(Environment environment) {
         def fs = FileSystems.getDefault()
-        def configDirs = [fs.getPath(System.getProperty('user.dir')), fs.getPath(System.getProperty('user.home'), '.nsl')]
-        loadConfigs(environment, "services-g5-config", configDirs)
+        AppConfig appConfig = new AppConfig('services-g5')
+        appConfig.configDirs = [fs.getPath(System.getProperty('user.dir')), fs.getPath(System.getProperty('user.home'), '.nsl')]
+        appConfig.loadConfigs(environment)
     }
 
     /**
@@ -36,6 +37,10 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
      */
     void loadConfigs(Environment environment, String name, List<Path> configDirs) {
         def fs = FileSystems.getDefault()
+//        environment.propertySources.addFirst(grails.util.Metadata.current)
+//        grails.util.Metadata.current
+//        String info = this.getClass().getResource("/META-INF/grails.build.info").toURI().toURL().getFile()
+//        loadConfig(environment, fs.getPath(info))
         def configFiles = ['groovy', 'yml', 'properties'].collect { name.concat(".$it") }
         String env = System.getenv(name.replaceAll('-', '_'))
         if (env) {
@@ -72,7 +77,7 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
                     if (sources.size() > 0) {
                         propertySource = sources.first() as PropertySource
                     }
-                } else if (nm.endsWith('.properties')) {
+                } else if (nm.endsWith('.properties') || nm.endsWith('.info')) {
                     def props = new Properties()
                     props.load(resource.inputStream)
                     propertySource = new MapPropertySource(resource.filename, props as Map)

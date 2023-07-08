@@ -24,8 +24,7 @@ appender('STDOUT', ConsoleAppender) {
     logger("org.hibernate.orm.deprecation", OFF)
     root(WARN, ['STDOUT'])
 }
-
-println "logback environment: ${Environment.getCurrent()} isDevelopment: ${Environment.isDevelopmentMode()}"
+//println "logback environment: ${Environment.getCurrent()} isDevelopment: ${Environment.isDevelopmentMode()}"
 if (Environment.isDevelopmentMode()) {
     root(WARN, ['STDOUT'])
     logger("au.org.biodiversity", DEBUG, ['STDOUT'], false)
