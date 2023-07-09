@@ -1,3 +1,5 @@
+server:
+  name: services-g5
 grails:
   profile: web
   codegen:

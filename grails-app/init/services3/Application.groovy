@@ -15,8 +15,7 @@ class Application extends GrailsAutoConfiguration implements EnvironmentAware {
     @Override
     void setEnvironment(Environment environment) {
         def fs = FileSystems.getDefault()
-        AppConfig appConfig = new AppConfig('services-g5')
-        appConfig.configDirs = [fs.getPath(System.getProperty('user.dir')), fs.getPath(System.getProperty('user.home'), '.nsl')]
+        AppConfig appConfig = new AppConfig(environment.getProperty('server.name'))
         appConfig.loadConfigs(environment)
     }
 }

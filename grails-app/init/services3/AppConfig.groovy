@@ -33,8 +33,7 @@ class AppConfig {
 
     static void printInfo() {
         Metadata metadata = Holders.grailsApplication.metadata
-        // info.app.name can be changed by setting rootProject.name in settings.gradle
-        String appName = metadata.getProperty('info.app.name', String, 'Unknown')
+        String appName = Holders.grailsApplication.config.getProperty('server.name')
         println("$appName application version ${metadata.getProperty('info.app.version', String.class, 'Unknown')}")
         println("$appName grails version ${metadata.getProperty('info.app.grailsVersion', String.class, 'Unknown')}")
         println("$appName build timestamp ${metadata.getProperty('info.app.build.date', String.class, 'Unknown')}")
@@ -144,3 +143,4 @@ class AppConfig {
         return new MapPropertySource(resource.filename, props as Map)
     }
 }
+
