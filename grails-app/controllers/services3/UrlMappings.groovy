@@ -33,6 +33,9 @@ class UrlMappings {
 
         "/rest/$action/$shard/$idNumber?(.$format)?"(controller: 'restResource', method: 'GET')
 
+        "/version"(view: '/version')
+        "/build"(view: '/build')
+
         "/$controller/$action/$id?(.$format)?" {
             constraints {
                 // apply constraints here
