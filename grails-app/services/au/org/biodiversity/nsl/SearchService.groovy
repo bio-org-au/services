@@ -18,6 +18,7 @@ package au.org.biodiversity.nsl
 
 import au.org.biodiversity.nsl.api.AuthorSearchParams
 import au.org.biodiversity.nsl.api.NameSearchParams
+import org.apache.commons.lang3.StringUtils
 
 class SearchService {
 
@@ -97,7 +98,7 @@ class SearchService {
                             params.remove('tree.id')
                             params.remove('tree')
                         }
-                    } else {
+                    } else if (!k.startsWith('_')) {
                         ors << "n.nameType.${k} = true".toString()
                     }
                 }
@@ -108,8 +109,8 @@ class SearchService {
         }
 
         if (params.advanced && params.ex) {
-            params.ex.each { k, v ->
-                if (v == 'on') {
+            params.ex.each { String k, v ->
+                if (v == 'on' && !k.startsWith('_')) {
                     and << "n.nameType.${k} = false".toString()
                 }
             }
