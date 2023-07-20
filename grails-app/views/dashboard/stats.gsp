@@ -72,9 +72,7 @@
     </g:if>
     <g:form>
     <div class="col-md-1">
-        <label for="exportStats">
-            <g:actionSubmit type="submit" name="exportStats" value="Export" class="btn btn-primary audit-search" action="exportStats"/>
-        </label>
+         <g:actionSubmit type="submit" value="Export" class="btn btn-primary audit-search" action="exportStats"/>
     </div>
     </g:form>
 </div>
