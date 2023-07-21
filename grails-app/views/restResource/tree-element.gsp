@@ -15,8 +15,8 @@
   <h1>
     <a href="${treeVersionElement.fullElementLink()}"><i class="fa fa-link"></i></a>
     <g:if test="${treeVersionElement.treeElement.excluded}">
-      <apc style="font-size: 1em" title="excluded from ${treeVersionElement.treeVersion.tree.name}"><i
-          class="fa fa-ban"></i> ${treeVersionElement.treeVersion.tree.name}</apc>
+      <apc title="excluded from ${treeVersionElement.treeVersion.tree.name}"><i
+          class="fa fa-ban"></i> ${treeVersionElement.treeVersion.tree.name}</apc>: ${treeVersionElement.treeElement.simpleName}
     </g:if>
     <g:else>
       ${treeVersionElement.treeVersion.tree.name}: ${treeVersionElement.treeElement.simpleName}
