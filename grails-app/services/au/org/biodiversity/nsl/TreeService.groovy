@@ -1218,16 +1218,16 @@ INSERT INTO tree_version_element (tree_version_id,
         }
 
         //if this is not a draft only element clone it
-//        if (treeVersionElement.treeElement.treeVersionElements.size() > 1) {
-//            log.debug "No matching element, creating a new one."
-//            TreeElement copiedElement = copyTreeElement(treeVersionElement, userName)
-//            treeVersionElement = changeElement(treeVersionElement, copiedElement, userName)
-//            treeVersionElement.save(flush: true)
-//            log.debug "Created. ${treeVersionElement.treeElement}."
-//            //don't update taxonId above as the taxon hasn't changed
-//        } else {
-//            log.debug "Editing draft element ${treeVersionElement.treeElement}."
-//        }
+        if (treeVersionElement.treeElement.treeVersionElements.size() > 1) {
+            log.debug "No matching element, creating a new one."
+            TreeElement copiedElement = copyTreeElement(treeVersionElement, userName)
+            treeVersionElement = changeElement(treeVersionElement, copiedElement, userName)
+            treeVersionElement.save(flush: true)
+            log.debug "Created. ${treeVersionElement.treeElement}."
+            //don't update taxonId above as the taxon hasn't changed
+        } else {
+            log.debug "Editing draft element ${treeVersionElement.treeElement}."
+        }
         distributionService.reconstructDistribution(treeVersionElement.treeElement, distString, userName)
 
         Timestamp now = new Timestamp(System.currentTimeMillis())
