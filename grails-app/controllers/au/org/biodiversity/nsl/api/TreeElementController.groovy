@@ -43,6 +43,7 @@ class TreeElementController extends BaseApiController {
      * @return
      */
     def placeElement() {
+        log.info("placeElement: $request.JSON")
         withJsonData(request.JSON, false, ['parentElementUri', 'instanceUri', 'excluded']) { ResultObject results, Map data ->
 
             String parentTaxonUri = data.parentElementUri
@@ -61,6 +62,7 @@ class TreeElementController extends BaseApiController {
     }
 
     def placeTopElement() {
+        log.info("placeTopElement: $request.JSON")
         withJsonData(request.JSON, false, ['versionId', 'instanceUri', 'excluded']) { ResultObject results, Map data ->
             log.debug "place top element $data"
             Long treeVersionId = data.versionId as Long
@@ -79,6 +81,7 @@ class TreeElementController extends BaseApiController {
     }
 
     def replaceElement() {
+        log.info("replaceElement: $request.JSON")
         withJsonData(request.JSON, false, ['currentElementUri', 'newParentElementUri', 'instanceUri']) { ResultObject results, Map data ->
             String instanceUri = data.instanceUri
             String currentElementUri = data.currentElementUri
@@ -100,6 +103,7 @@ class TreeElementController extends BaseApiController {
     }
 
     def changeParentElement() {
+        log.info("changeParentElement: $request.JSON")
         withJsonData(request.JSON, false, ['currentElementUri', 'newParentElementUri']) { ResultObject results, Map data ->
             String currentElementUri = data.currentElementUri
             String newParentElementUri = data.newParentElementUri
@@ -118,6 +122,7 @@ class TreeElementController extends BaseApiController {
     }
 
     def removeElement() {
+        log.info("removeElement: $request.JSON")
         withJsonData(request.JSON, false, ['taxonUri']) { ResultObject results, Map data ->
             String taxonUri = data.taxonUri
             TreeVersionElement treeVersionElement = TreeVersionElement.get(taxonUri)
@@ -134,6 +139,7 @@ class TreeElementController extends BaseApiController {
     }
 
     def editElementProfile() {
+        log.info("editElementProfile: $request.JSON")
         withJsonData(request.JSON, false, ['taxonUri', 'profile']) { ResultObject results, Map data ->
             TreeVersionElement treeVersionElement = TreeVersionElement.get(data.taxonUri as String)
             if (!treeVersionElement) {
@@ -205,6 +211,7 @@ class TreeElementController extends BaseApiController {
     }
 
     def editElementStatus() {
+        log.info("editElementStatus: $request.JSON")
         withJsonData(request.JSON, false, ['taxonUri', 'excluded']) { ResultObject results, Map data ->
             TreeVersionElement treeVersionElement = TreeVersionElement.get(data.taxonUri as String)
             if (!treeVersionElement) {
@@ -216,6 +223,7 @@ class TreeElementController extends BaseApiController {
     }
 
     def elementDataFromInstance(String instanceUri) {
+        log.debug("editElementStatus: $instanceUri")
         ResultObject results = require('Instance URI': instanceUri)
 
         handleResults(results) {
@@ -252,6 +260,7 @@ class TreeElementController extends BaseApiController {
     }
 
     def updateSynonymyByEvent() {
+        log.info "updateSynonymyByEvent $params.events"
         List<Long> eventIds = paramIdList(params.events)
         log.debug eventIds.toString()
         ResultObject results = requireTarget(eventIds, "No events supplied, updating nothing.")
