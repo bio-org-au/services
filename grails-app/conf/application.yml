@@ -1,6 +1,10 @@
 server:
   name: services-g5
 grails:
+  config:
+    locations:
+      - file:./services-g5-config.groovy
+      - ~/.nsl/services-g5-config.groovy
   profile: web
   codegen:
     defaultPackage: au.org.biodiversity.nsl

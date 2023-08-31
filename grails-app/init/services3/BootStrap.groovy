@@ -19,7 +19,6 @@ class BootStrap {
     def photoService
 
     def init = { servletContext ->
-        AppConfig.printInfo()
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
         println "database url: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
         if (!nslDomainService.checkUpToDate()) {
