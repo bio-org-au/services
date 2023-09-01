@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class ApiInterceptor {
 
-    @Autowired
     LdapRealm ldapRealm
     int order = HIGHEST_PRECEDENCE+98
 
@@ -17,6 +16,7 @@ class ApiInterceptor {
     }
 
     boolean before() {
+        log.debug "ApiInterceptor.before params: $params request: ${request.getRequestURL()}"
         if (params.apiKey) {
             try {
                 String runAsUser = params.remove('as')
@@ -32,7 +32,7 @@ class ApiInterceptor {
                     SecurityUtils.subject.runAs(new SimplePrincipalCollection(ldapUser, "LdapRealm"))
                 }
 
-                log.debug "login took ${System.currentTimeMillis() - start}ms"
+                log.debug "login took ${System.currentTimeMillis() - start}ms session: $session"
                 return true
             } catch (AuthenticationException e) {
                 log.error "$e.message host: ${SecurityUtils.subject.host}"
