@@ -5,9 +5,11 @@ import org.apache.shiro.authc.AuthenticationException
 import org.apache.shiro.grails.LdapUser
 import org.apache.shiro.subject.SimplePrincipalCollection
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
 
+@Service
 class ApiInterceptor {
-
+    @Autowired
     LdapRealm ldapRealm
     int order = HIGHEST_PRECEDENCE+98
 
