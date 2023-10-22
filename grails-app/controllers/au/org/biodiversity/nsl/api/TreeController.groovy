@@ -36,6 +36,7 @@ class TreeController extends BaseApiController {
     }
 
     def createTree() {
+        log.info("createTree: $request.JSON")
         withJsonData(request.JSON, false, ['treeName', 'descriptionHtml']) { ResultObject results, Map data ->
             String treeName = data.treeName
             String groupName = data.groupName
@@ -50,6 +51,7 @@ class TreeController extends BaseApiController {
     }
 
     def editTree() {
+        log.info("editTree: $request.JSON")
         withTree { ResultObject results, Tree tree, Map data ->
             treeService.authorizeTreeOperation(tree)
             results.payload = treeService.editTree(tree,
@@ -80,6 +82,7 @@ class TreeController extends BaseApiController {
      * @return
      */
     def createVersion() {
+        log.info("createVersion: $request.JSON")
         withJsonData(request.JSON, false, ['treeId', 'draftName']) { ResultObject results, Map data ->
             log.debug "createVersion: starting"
             Long treeId = data.treeId
@@ -110,7 +113,7 @@ class TreeController extends BaseApiController {
 
     def checkCurrentSynonymy(Long treeVersionId, Boolean embed) {
         TreeVersion treeVersion = TreeVersion.get(treeVersionId)
-        log.debug "checkCurrentSynonymy: for treeVersion $treeVersion"
+        log.info "checkCurrentSynonymy: for treeVersion $treeVersion"
         ResultObject results = requireTarget(treeVersion, "No Tree version with id: $treeVersionId found")
         handleResults(results, { checkSynRespond(results, treeVersion, embed) }) {
             results.payload = treeReportService.checkCurrentSynonymy(treeVersion, 100)
@@ -119,7 +122,7 @@ class TreeController extends BaseApiController {
 
     def synonymyOrderingInfo(Instance instance) {
         ResultObject results = requireTarget(instance, "No instance supplied.")
-        log.debug "synonymyOrderingInfo: Getting Synonymy ordering info"
+        log.info "synonymyOrderingInfo: Getting Synonymy ordering info"
         handleResults(results, { synOrderRespond(results) }) {
             results.payload = treeReportService.getSynonymOrderingInfo(instance)
         }

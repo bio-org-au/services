@@ -21,9 +21,11 @@ class BaseApiController implements WithTarget {
                 log.debug "handleResults: doing work"
                 work()
             } catch (ObjectExistsException exists) {
+                log.error("handleResults exists $exists")
                 results.ok = false
                 results.fail(exists.message, CONFLICT)
             } catch (BadArgumentsException bad) {
+                log.error("handleResults bad $bad")
                 results.ok = false
                 results.fail(bad.message, BAD_REQUEST)
             } catch (ValidationException invalid) {
@@ -65,18 +67,18 @@ class BaseApiController implements WithTarget {
     }
 
     protected withJsonData(Object json, Boolean list, List<String> requiredKeys, Closure work) {
-        log.debug "withJsonData: starting"
+        log.debug "withJsonData: starting list: $list expecting $requiredKeys getting $json"
         ResultObject results = new ResultObject([action: params.action], jsonRendererService as JsonRendererService)
         results.ok = true
         if (!json) {
-            log.debug "withJsonData: branch NOT JSON"
+            log.error "withJsonData: branch NOT JSON: $json"
             results.ok = false
             results.fail("JSON parameters not supplied. You must supply JSON parameters ${list ? 'as a list' : requiredKeys}.",
                     BAD_REQUEST)
             return serviceRespond(results)
         }
         if (list && !(json.class instanceof JSONArray)) {
-            log.debug "withJsonData: branch LIST and NOT JSONArray"
+            log.error "withJsonData: branch LIST and NOT JSONArray $json"
             results.ok = false
             results.fail("JSON parameters not supplied. You must supply JSON parameters as a list.", BAD_REQUEST)
             return serviceRespond(results)
@@ -93,6 +95,7 @@ class BaseApiController implements WithTarget {
             for (String key in requiredKeys) {
                 if (data[key] == null) {
                     results.ok = false
+                    log.error "withJsonData $key not supplied"
                     results.fail("$key not supplied. You must supply $key.", BAD_REQUEST)
                 }
             }

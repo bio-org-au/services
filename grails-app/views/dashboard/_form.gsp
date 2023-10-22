@@ -26,12 +26,12 @@
             </div>
             <div class="col-md-1">
                 <label for="search">
-                    <g:actionSubmit type="submit" name="search" value="Search" class="btn btn-primary audit-search" action="audit"/>
+                    <g:actionSubmit type="submit" value="Search" class="btn btn-primary audit-search" action="audit"/>
                 </label>
             </div>
             <div class="col-md-1">
                 <label for="search">
-                    <g:actionSubmit type="submit" name="stats" value="Stats" class="btn btn-primary audit-search" action="stats"/>
+                    <g:actionSubmit type="submit" value="Stats" class="btn btn-primary audit-search" action="stats"/>
                 </label>
             </div>
 
