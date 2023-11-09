@@ -61,9 +61,8 @@ class IcvcnNameConstructionService implements NameConstructor {
     private ConstructedName constructAutonymScientificName(Name name) {
         use(NameConstructionUtils) {
             String element = "<element>${encodeHtml(name.nameElement)}</element>"
-            String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
-            List<String> simpleNameParts = [element, manuscript]
+            List<String> simpleNameParts = [element]
 
             String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
             return new ConstructedName(fullMarkedUpName: fullMarkedUpName, simpleMarkedUpName: fullMarkedUpName)
@@ -74,10 +73,9 @@ class IcvcnNameConstructionService implements NameConstructor {
         use(NameConstructionUtils) {
 
             String element = "<element>${encodeHtml(name.nameElement)}</element>"
-            String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
-            List<String> fullNameParts = [element, manuscript]
-            List<String> simpleNameParts = [element, manuscript]
+            List<String> fullNameParts = [element]
+            List<String> simpleNameParts = [element]
 
             String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(fullNameParts)}</name></scientific>"
             String simpleMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"

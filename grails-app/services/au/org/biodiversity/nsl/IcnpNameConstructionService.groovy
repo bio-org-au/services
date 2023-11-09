@@ -72,10 +72,9 @@ class IcnpNameConstructionService implements NameConstructor {
             String connector = makeConnectorString(name, rank)
             String element = "<element>${encodeHtml(name.nameElement)}</element>"
             String author = constructAuthor(name)
-            String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
-            List<String> fullNameParts = [candOpen, precedingName, rank, connector, element, candClose, author, manuscript]
-            List<String> simpleNameParts = [candOpen, precedingName, rank, connector, element, candClose, manuscript]
+            List<String> fullNameParts = [candOpen, precedingName, rank, connector, element, candClose, author]
+            List<String> simpleNameParts = [candOpen, precedingName, rank, connector, element, candClose]
 
             String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(fullNameParts)}</name></scientific>"
             String simpleMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
