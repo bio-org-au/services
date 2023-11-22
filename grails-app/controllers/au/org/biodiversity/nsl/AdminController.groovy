@@ -61,6 +61,13 @@ class AdminController {
     }
 
     @RequiresRoles('admin')
+    reconstructManuscriptNames() {
+        nameService.constructManuscriptNames()
+        flash.message = "reconstructing all manuscript names where changed."
+        redirect(action: 'index')
+    }
+
+    @RequiresRoles('admin')
     reconstructSortNames() {
         nameService.reconstructSortNames()
         flash.message = "reconstructing all sort names where changed."

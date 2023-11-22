@@ -139,6 +139,12 @@
             </a>
           </li>
           <li>
+            <a class=""
+               href="${g.createLink(controller: "admin", action: "reconstructManuscriptNames")}">
+              Reconstruct manuscript name strings
+            </a>
+          </li>
+          <li>
             Deleted names:
             <ul>
               <g:each in="${stats.deletedNames}" var="name">

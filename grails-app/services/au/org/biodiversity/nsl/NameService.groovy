@@ -625,4 +625,46 @@ where child.namePath not like (child.parent.namePath||'/%')''').first() as Integ
         sql.execute(query)
         log.debug("Updated Synonymy for name (${id}) on the tree")
     }
+
+    void constructManuscriptNames() {
+        doAsync('Construct missing manuscript names') {
+            String updaterWas = pollingStatus()
+            pauseUpdates()
+            Closure query = { Map params ->
+                Name.executeQuery("""select n from Name n 
+where n.nameStatus = (
+select s from NameStatus s 
+where s.name = :nameStatusString
+)""", [nameStatusString: 'manuscript name'])
+            }
+
+            chunkThis(1000, query) { List<Name> names, bottom, top ->
+                long start = System.currentTimeMillis()
+                Name.withSession { session ->
+                    names.each { Name name ->
+                        try {
+                            ConstructedName constructedNames = nameConstructionService.constructName(name)
+
+                            name.fullNameHtml = constructedNames.fullMarkedUpName
+                            name.fullName = constructedNames.plainFullName
+                            name.simpleNameHtml = constructedNames.simpleMarkedUpName
+                            name.simpleName = constructedNames.plainSimpleName
+                            name.save()
+                            // log.debug "saved $name.fullName"
+                        } catch (e) {
+                            log.error "Error reconstructing name $name, $e.message"
+                            e.printStackTrace()
+                        }
+                    }
+                    session.flush()
+                    session.clear()
+                }
+                log.info "${names.size()} done. ${top-bottom} took ${System.currentTimeMillis() - start} ms"
+            }
+            log.info "Construct missing manuscript names complete."
+            if (updaterWas == 'running') {
+                resumeUpdates()
+            }
+        }
+    }
 }
