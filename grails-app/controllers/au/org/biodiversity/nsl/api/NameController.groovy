@@ -241,7 +241,7 @@ class NameController implements WithTarget {
 
     def acceptableName(String name) {
         if (name) {
-            List<String> status = ['legitimate', 'manuscript', 'nom. alt.', 'nom. cons.', 'nom. cons., nom. alt.', 'nom. cons., orth. cons.', 'nom. et typ. cons.', 'orth. cons.', 'typ. cons.']
+            List<String> status = ['legitimate', 'manuscript name', 'nom. alt.', 'nom. cons.', 'nom. cons., nom. alt.', 'nom. cons., orth. cons.', 'nom. et typ. cons.', 'orth. cons.', 'typ. cons.']
             List<Name> names = Name.executeQuery('''
 select n
 from Name n
