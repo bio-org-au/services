@@ -34,7 +34,7 @@
     <div data-nameId="${name.id}">
       %{--do not reformat the next line it inserts a space between the comma and the fullName--}%
       <accepted-name><st:preferredLink target="${name}">${raw(name.fullNameHtml)}</st:preferredLink>
-      </accepted-name><name-status class="${name.nameStatus.name}">, ${name.nameStatus.name}</name-status><name-type
+      </accepted-name><name-status class="${name.nameStatus.name}">, ${name.nameStatus.name} </name-status><name-type
         class="show-always">${name.nameType.name}</name-type>
       <g:if test="${!familyName}">
         <af:branch name="${name}" tree="APC"><i class="fa fa-code-branch"></i></af:branch>
