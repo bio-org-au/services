@@ -18,7 +18,6 @@ package au.org.biodiversity.nsl
 
 import au.org.biodiversity.nsl.api.AuthorSearchParams
 import au.org.biodiversity.nsl.api.NameSearchParams
-import org.apache.commons.lang3.StringUtils
 
 class SearchService {
 
@@ -320,7 +319,7 @@ from Name n
 where ((lower(simpleName) like :q) or (lower(fullName) like :q))
 and n.nameStatus.name in ('legitimate', 'nom. cons.', '[n/a]', '[default]', 'nom. alt.',
 'nom. cult.', 'nom. cons.', 'nom. cons., orth. cons.', 'nom. cons., nom. alt.', 'nom. cult., nom. alt.',
-'nom. et typ. cons.', 'nom. et orth. cons.', 'typ. cons.', 'orth. cons.', 'manuscript')
+'nom. et typ. cons.', 'nom. et orth. cons.', 'typ. cons.', 'orth. cons.', 'manuscript name')
 and n.nameType.name <> 'common'
 and n.instances.size > 0
 order by sortName
@@ -446,7 +445,7 @@ order by n.sortName''', [query: regexTokenizeNameQueryString(query.toLowerCase()
         }
 
         suggestService.addSuggestionHandler('acceptableName') { String query ->
-            List<String> status = ['legitimate', 'manuscript', 'nom. alt.', 'nom. cons.', 'nom. cons., nom. alt.', 'nom. cons., orth. cons.', 'nom. et typ. cons.', 'orth. cons.', 'typ. cons.']
+            List<String> status = ['legitimate', 'manuscript name', 'nom. alt.', 'nom. cons.', 'nom. cons., nom. alt.', 'nom. cons., orth. cons.', 'nom. et typ. cons.', 'orth. cons.', 'typ. cons.']
             return Name.executeQuery('''select n from Name n where (iregex(n.fullName, :query) = true or iregex(n.simpleName, :query) = true) and n.instances.size > 0 and n.nameStatus.name in (:ns) order by n.sortName asc''',
                     [query: regexTokenizeNameQueryString(query.toLowerCase()), ns: status], [max: 15])
                        .collect { name -> [name: name.fullName, link: linkService.getPreferredLinkForObject(name)] }

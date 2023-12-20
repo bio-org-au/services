@@ -64,9 +64,8 @@ class IcznNameConstructionService implements NameConstructor {
             String rank = nameParent ? makeRankString(name) : ''
             String connector = makeConnectorString(name, rank)
             String element = "<element>${encodeHtml(name.nameElement)}</element>"
-            String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
-            List<String> simpleNameParts = [precedingName, rank, connector, element, manuscript]
+            List<String> simpleNameParts = [precedingName, rank, connector, element]
 
             String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
             //need to remove Authors below from simple name because preceding name includes author in autonyms
@@ -92,10 +91,9 @@ class IcznNameConstructionService implements NameConstructor {
                 element = "<element>${encodeHtml(name.nameElement)}</element>"
             }
             String author = constructAuthor(name)
-            String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
-            List<String> fullNameParts = [precedingName, rank, connector, element, author, manuscript]
-            List<String> simpleNameParts = [precedingName, rank, connector, element, manuscript]
+            List<String> fullNameParts = [precedingName, rank, connector, element, author]
+            List<String> simpleNameParts = [precedingName, rank, connector, element]
 
             String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(fullNameParts)}</name></scientific>"
             String simpleMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"

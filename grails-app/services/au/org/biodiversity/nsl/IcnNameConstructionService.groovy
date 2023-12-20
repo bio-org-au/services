@@ -140,9 +140,8 @@ class IcnNameConstructionService implements NameConstructor {
         String firstParent = constructPrecedingNameString(name.parent, name)
         String connector = makeConnectorString(name, null)
         String secondParent = name.secondParent ? constructPrecedingNameString(name.secondParent, name) : '<element>?</element>'
-        String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
-        List<String> simpleNameParts = [firstParent, connector, secondParent, manuscript]
+        List<String> simpleNameParts = [firstParent, connector, secondParent] //manuscript
 
         String markedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
         //need to remove Authors below from simple name because preceding name includes author in parent
@@ -156,9 +155,8 @@ class IcnNameConstructionService implements NameConstructor {
         String rank = nameParent ? makeRankString(name) : ''
         String connector = makeConnectorString(name, rank)
         String element = "<element>${htmlEncoder.encode(name.nameElement)}</element>"
-        String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
-        List<String> simpleNameParts = [precedingName, rank, connector, element, manuscript]
+        List<String> simpleNameParts = [precedingName, rank, connector, element] //manuscript
 
         String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
         //need to remove Authors below from simple name because preceding name includes author in autonyms
@@ -178,10 +176,9 @@ class IcnNameConstructionService implements NameConstructor {
         String connector = makeConnectorString(name, rank)
         String element = "<element>${htmlEncoder.encode(name.nameElement)}</element>"
         String author = constructAuthor(name)
-        String manuscript = (name.nameStatus.name == 'manuscript') ? '<manuscript>MS</manuscript>' : ''
 
-        List<String> fullNameParts = [precedingName, rank, connector, element, author, manuscript]
-        List<String> simpleNameParts = [precedingName, rank, connector, element, manuscript]
+        List<String> fullNameParts = [precedingName, rank, connector, element, author] //manuscript
+        List<String> simpleNameParts = [precedingName, rank, connector, element] //manuscript
 
         String fullMarkedUpName = "<scientific><name data-id='$name.id'>${join(fullNameParts)}</name></scientific>"
         String simpleMarkedUpName = "<scientific><name data-id='$name.id'>${join(simpleNameParts)}</name></scientific>"
