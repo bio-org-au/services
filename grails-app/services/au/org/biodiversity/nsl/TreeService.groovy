@@ -1781,8 +1781,8 @@ and regex(namePath, :newPath) = true
     }
 
 
-    static TreeElement makeTreeElementFromTaxonData(TaxonData taxonData, TreeElement previousElement, String userName) {
-        log.info "makeTreeElementFromTaxonData ${taxonData.asMap()}"
+    TreeElement makeTreeElementFromTaxonData(TaxonData taxonData, TreeElement previousElement, String userName) {
+        log.info "makeTreeElementFromTaxonData" + taxonData.asMap()
         TreeElement element = new TreeElement(taxonData.asMap())
         element.previousElement = previousElement
         element.updatedBy = userName
