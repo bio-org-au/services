@@ -1930,7 +1930,7 @@ and regex(namePath, :newPath) = true
         }
 
         //polynomials must be placed under parent
-        if (!configService.disableCheckPolynomialsBelowNameParent) {
+        if (!configService.disableCheckPolynomialsBelowNameParent && !RankUtils.rankHigherThan(parentRank, 'Genus')) {
             checkPolynomialsBelowNameParent(taxonData.simpleName, taxonData.excluded, taxonRank, parentElement.namePath.split('/'))
         }
         return warnings
