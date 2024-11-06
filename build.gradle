@@ -1,18 +1,19 @@
 buildscript {
     repositories {
         mavenLocal()
+        mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://repo.grails.org/grails/core" }
-        jcenter()
+//        jcenter()
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
-        classpath "org.grails.plugins:hibernate5:7.3.0"
         classpath "gradle.plugin.com.github.erdi.webdriver-binaries:webdriver-binaries-gradle-plugin:2.6"
+        classpath "org.grails.plugins:hibernate5:7.3.0"
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:3.4.7"
 
         classpath "org.grails.plugins:views-gradle:2.2.0"
-        classpath "org.asciidoctor:asciidoctor-gradle-plugin:1.5.9.2"
+        classpath "org.asciidoctor:asciidoctor-gradle-plugin:1.6.1"
     }
 }
 
@@ -52,6 +53,7 @@ configurations {
 }
 
 dependencies {
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
     compileOnly "io.micronaut:micronaut-inject-groovy"
     console "org.grails:grails-console"
     implementation "org.springframework.boot:spring-boot-starter-logging"
@@ -92,22 +94,50 @@ dependencies {
     testRuntimeOnly "org.seleniumhq.selenium:selenium-chrome-driver:4.0.0"
     testRuntimeOnly "org.seleniumhq.selenium:selenium-firefox-driver:4.0.0"
 
-    //other dependencies
-    implementation 'dk.glasius:external-config:3.1.0' // Non Standard
+    // application plugins
+//    compile "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.1.21-SNAPSHOT"
     implementation 'com.nerderg.plugins:SimpleSuggestions3:1.1'
-    implementation "org.grails.plugins:grails-shiro:4.4"
+    implementation "org.grails.plugins:grails-shiro:4.5"
     implementation "org.grails.plugins:converters:4.0.1"
+
     implementation "org.quartz-scheduler:quartz:2.3.2"
     implementation 'org.grails.plugins:quartz:2.0.13'
+//    runtime 'org.grails.plugins:async:4.0.0'
     implementation 'org.grails:grails-datastore-rest-client:6.1.12.RELEASE'
     runtimeOnly 'org.codehaus.groovy:groovy-dateutil'
+
+    //other dependencies
     implementation 'net.htmlparser.jericho:jericho-html:3.2'
     implementation "io.jsonwebtoken:jjwt:0.9.1"
     implementation 'joda-time:joda-time:2.10.13'
     implementation 'org.postgresql:postgresql:42.6.0'
+
     implementation 'net.sf.supercsv:super-csv:2.4.0'
+
+//    console "org.grails:grails-console"
+//    profile "org.grails.profiles:web"
+//    runtime "org.glassfish.web:el-impl:2.1.2-b03"
+//    runtime "com.h2database:h2"
+//    runtime "org.apache.tomcat:tomcat-jdbc"
+//    runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.15.1"
+
+
+//    testCompile "org.grails:grails-gorm-testing-support"
+//    testCompile "org.grails.plugins:geb"
+//    testCompile "org.grails:grails-web-testing-support"
+//    testCompile "org.grails.plugins:geb:1.1.2"
+//    testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"
+//    testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
+//    testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:2.47.1"
+//    implementation project(":nsl-domain-plugin-g3")
+    implementation "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.5.1-SNAPSHOT"
     // application plugins
     implementation "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.6.0"
+    implementation "org.apache.shiro:shiro-core:1.13.0"
+    implementation "org.apache.shiro:shiro-web:1.13.0"
+
+//    implementation 'org.ysb33r.gradle:grolifant:0.9'
+//    implementation 'org.ysb33r.gradle:grolifant60:4.0.0'
 }
 
 
