@@ -17,7 +17,7 @@ class LdapRealm implements GrailsShiroRealm, SimplifiedRealm {
     static authTokenClass = UsernamePasswordToken
 
     def grailsApplication
-    private ActiveDirectoryServer theLdapServer
+    private LdapServer theLdapServer
 
     LdapRealm() {
         setTokenClass(UsernamePasswordToken)
@@ -104,8 +104,7 @@ class LdapRealm implements GrailsShiroRealm, SimplifiedRealm {
     }
 
     private setupServer() {
-//        theLdapServer = new LdapServer()
-        theLdapServer = new ActiveDirectoryServer()
+        theLdapServer = new LdapServer()
         theLdapServer.searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         ldapServer.searchBase = grailsApplication.config.getProperty('security.shiro.realm.ldap.search.base', String, '')
         ldapServer.usernameAttribute = grailsApplication.config.getProperty('security.shiro.realm.ldap.username.attribute', String, "uid")
