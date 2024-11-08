@@ -1,5 +1,6 @@
 package services3
 
+import grails.core.GrailsApplication
 import groovy.sql.Sql
 import io.jsonwebtoken.impl.crypto.MacProvider
 import org.springframework.core.env.Environment
@@ -8,7 +9,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class BootStrap {
-    def grailsApplication
+    GrailsApplication grailsApplication
     def jsonRendererService
     def searchService
     def nameService
@@ -19,6 +20,8 @@ class BootStrap {
     def photoService
 
     def init = { servletContext ->
+        grailsApplication.config.info.app.build.date = grailsApplication.metadata.getProperty("info.app.build.date", String)
+
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
         println "database url: ${grailsApplication.config.getProperty('dataSource.url')} ${LocalDateTime.now().format(dtf)}"
         if (!nslDomainService.checkUpToDate()) {
