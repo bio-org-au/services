@@ -111,7 +111,7 @@ dependencies {
     implementation 'net.htmlparser.jericho:jericho-html:3.2'
     implementation "io.jsonwebtoken:jjwt:0.9.1"
     implementation 'joda-time:joda-time:2.10.13'
-    implementation 'org.postgresql:postgresql:42.6.0'
+    implementation 'org.postgresql:postgresql:42.7.2'
 
     implementation 'net.sf.supercsv:super-csv:2.4.0'
 
