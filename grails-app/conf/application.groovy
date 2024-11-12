@@ -14,52 +14,52 @@
     limitations under the License.
 */
 
-shard {
-    system.message.file = "${userHome}/.nsl/broadcast.txt"
-    temp.file.directory = "/tmp"
-}
+//shard {
+//    system.message.file = "${userHome}/.nsl/broadcast.txt"
+//    temp.file.directory = "/tmp"
+//}
 
-services {
-    mapper.apikey = 'not set'
-    link {
-        mapperURL = 'http://localhost:7070/nsl-mapper'
-        internalMapperURL = 'http://localhost:7070/nsl-mapper'
-        editor = 'https://biodiversity.org.au/test-nsl-editor'
-    }
-}
+//services {
+//    mapper.apikey = 'not set'
+//    link {
+//        mapperURL = 'http://localhost:7070/nsl-mapper'
+//        internalMapperURL = 'http://localhost:7070/nsl-mapper'
+//        editor = 'https://biodiversity.org.au/test-nsl-editor'
+//    }
+//}
 
-updates.dir = "${userHome}/.nsl/updates"
+//updates.dir = "${userHome}/.nsl/updates"
 
-dataSource {
-    username = "nsl"
-    password = "nsl"
-    url = "jdbc:postgresql://localhost:5432/apni"
-    driverClassName = "org.postgresql.Driver"
-//    jndiName = 'java:comp/env/jdbc/nsl'
-
-    pooled = true
-    jmxExport = true
-    dialect = "au.org.biodiversity.nsl.ExtendedPostgreSQLDialect"
-    formatSql = false
-    logSql = false
-    properties {
-        // See http://grails.org/doc/latest/guide/conf.html#dataSource for documentation
-        jmxEnabled = true
-        initialSize = 5
-        maxActive = 50
-        minIdle = 5
-        maxIdle = 25
-        maxWait = 10000
-        maxAge = 10 * 60000
-        timeBetweenEvictionRunsMillis = 5000
-        minEvictableIdleTimeMillis = 60000
-        validationQuery = "SELECT 1"
-        validationQueryTimeout = 3
-        validationInterval = 15000
-        testOnBorrow = true
-        testWhileIdle = true
-        testOnReturn = false
-        jdbcInterceptors = "ConnectionState"
-        defaultTransactionIsolation = java.sql.Connection.TRANSACTION_READ_COMMITTED
-    }
-}
+//dataSource {
+//    username = "nsl"
+//    password = "nsl"
+//    url = "jdbc:postgresql://localhost:5432/apni"
+//    driverClassName = "org.postgresql.Driver"
+////    jndiName = 'java:comp/env/jdbc/nsl'
+//
+//    pooled = true
+//    jmxExport = true
+//    dialect = "au.org.biodiversity.nsl.ExtendedPostgreSQLDialect"
+//    formatSql = false
+//    logSql = false
+//    properties {
+//        // See http://grails.org/doc/latest/guide/conf.html#dataSource for documentation
+//        jmxEnabled = true
+//        initialSize = 5
+//        maxActive = 50
+//        minIdle = 5
+//        maxIdle = 25
+//        maxWait = 10000
+//        maxAge = 10 * 60000
+//        timeBetweenEvictionRunsMillis = 5000
+//        minEvictableIdleTimeMillis = 60000
+//        validationQuery = "SELECT 1"
+//        validationQueryTimeout = 3
+//        validationInterval = 15000
+//        testOnBorrow = true
+//        testWhileIdle = true
+//        testOnReturn = false
+//        jdbcInterceptors = "ConnectionState"
+//        defaultTransactionIsolation = java.sql.Connection.TRANSACTION_READ_COMMITTED
+//    }
+//}
