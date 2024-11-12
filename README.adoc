@@ -58,7 +58,7 @@ TIP: See <<Developing with supporting services>> below for how to get these runn
 There are two dependencies you need to build and install in your local maven before running services, grails-shiro and nsl-domain-plugin.
 
 . `git clone git@github.com:bio-org-au/grails-shiro.git ; cd grails-shiro ; ./gradlew publishToMavenLocal`
-. `git clone git@github.com:bio-org-au/services-g3.git ; cd services-g3 ; ./gradlew publishToMavenLocal`
+. `git clone git@github.com:bio-org-au/nsl-domain-plugin-g3.git ; cd nsl-domain-plugin-g3 ; ./gradlew publishToMavenLocal`
 
 To run the services in development mode just run `grails run-app` which will run up the service in it's own tomcat instance
 locally. You can also use the gradle task `bootRun` e.g. `./gradlew bootRun`.
