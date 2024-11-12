@@ -46,7 +46,7 @@ There is a confluence page for the NSL infrastructure as well at https://www.anb
 
 == Building and Running
 
-This is a standard https://grails.org/[Grails] 3.3.10 project. You can use all the standard grails tasks to build and run
+This is a standard https://grails.org/[Grails] 5 project. You can use all the standard grails tasks to build and run
 this project. You will need some supporting services i.e.
 
 . A mapper
@@ -55,8 +55,15 @@ this project. You will need some supporting services i.e.
 
 TIP: See <<Developing with supporting services>> below for how to get these running for development using the included docker-compose scripts.
 
+There are two dependencies you need to build and install in your local maven before running services, grails-shiro and nsl-domain-plugin.
+
+. `git clone git@github.com:bio-org-au/grails-shiro.git ; cd grails-shiro ; ./gradlew publishToMavenLocal`
+. `git clone git@github.com:bio-org-au/services-g3.git ; cd services-g3 ; ./gradlew publishToMavenLocal`
+
 To run the services in development mode just run `grails run-app` which will run up the service in it's own tomcat instance
 locally. You can also use the gradle task `bootRun` e.g. `./gradlew bootRun`.
+
+To create a runnable war, or a war that can be installed in Tomcat run `./gradlew bootWar`
 
 The services work nicely within IntelliJ IDEA just import the project.
 

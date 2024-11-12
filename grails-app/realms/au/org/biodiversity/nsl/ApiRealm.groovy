@@ -40,7 +40,10 @@ class ApiRealm implements SimplifiedRealm, GrailsShiroRealm {
     void loadUsers() {
         if (!appUsersByKey) {
             appUsersByKey = configService.getApiAuth() ?: new HashMap<String, ApplicationUser>()
-            appUsersByKey.each { k, v -> appUsersByPrincipal.put(v.application, v) }
+            appUsersByKey.each { k, v -> appUsersByPrincipal.put(v
+
+
+                    .application, v) }
         }
     }
 
