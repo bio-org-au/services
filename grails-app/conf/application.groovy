@@ -35,7 +35,7 @@
 //    password = "nsl"
 //    url = "jdbc:postgresql://localhost:5432/apni"
 //    driverClassName = "org.postgresql.Driver"
-////    jndiName = 'java:comp/env/jdbc/nsl'
+//    jndiName = 'java:comp/env/jdbc/nsl'
 //
 //    pooled = true
 //    jmxExport = true
