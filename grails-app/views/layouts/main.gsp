@@ -85,11 +85,6 @@
         <asset:image src="CHAH-logo.png" height="42"/>
       </a>
     </span>
-    <span id="page-footer-inner-right" class="pull-right">
-      <a href="https://twitter.com/aubiodiversity" class="twitter-link">
-        <i class="fab fa-twitter fa-2x"></i>
-      </a>
-    </span>
 
     <!-- Version: span<g:meta name="app.version"/> -->
 
