@@ -164,12 +164,16 @@ class RestResourceController {
     }
 
     def taxon(String shard, Long idNumber) {
-        Object[] result = TreeVersionElement.executeQuery('''select tve.treeElement.id, max(tve.treeVersion.id) as mx 
+        List tuples = TreeVersionElement.executeQuery('''select tve.treeElement.id, max(tve.treeVersion.id) as mx 
 from TreeVersionElement tve 
 where taxonId = :idNumber
   and tve.treeVersion.published = true
 group by tve.treeElement.id
-order by mx''', [idNumber: idNumber]).last()
+order by mx''', [idNumber: idNumber])
+        Object[] result = null
+        if (tuples.size() > 0) {
+            result = tuples.last()
+        }
         if (result && result.size() == 2) {
             TreeVersionElement treeVersionElement = treeService.getTreeVersionElement(result[1] as Long, result[0] as Long)
 
