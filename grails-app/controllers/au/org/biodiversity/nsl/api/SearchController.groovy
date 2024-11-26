@@ -262,6 +262,7 @@ class SearchController implements RequestUtil {
         List<List> csvResults = []
         List<String> flatViewExportFields = [
                 'canonicalName',
+                'scientificNameID',
                 'scientificNameAuthorship',
                 'taxonRank',
                 'taxonRankSortOrder',
