@@ -11,7 +11,7 @@
 
 <body>
 
-  <h2>APNI NSL statistics</h2>
+  <h2><st:nameTree/> NSL statistics</h2>
   <ul>
     <li>Services Version: <g:meta name="info.app.version"/></li>
     <g:each in="${stats}" var="info">
