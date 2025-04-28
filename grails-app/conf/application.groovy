@@ -14,6 +14,8 @@
     limitations under the License.
 */
 
+updates.dir = "${userHome}/.nsl/updates"
+
 //shard {
 //    system.message.file = "${userHome}/.nsl/broadcast.txt"
 //    temp.file.directory = "/tmp"
@@ -28,7 +30,6 @@
 //    }
 //}
 
-//updates.dir = "${userHome}/.nsl/updates"
 
 //dataSource {
 //    username = "nsl"
