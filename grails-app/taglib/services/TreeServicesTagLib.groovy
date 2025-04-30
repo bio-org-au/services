@@ -1,4 +1,4 @@
-/*
+*
     Copyright 2015 Australian National Botanic Gardens
 
     This file is part of NSL tree services plugin project.

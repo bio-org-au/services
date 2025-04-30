@@ -399,7 +399,7 @@ WHERE tve.tree_version_id = :versionId
      * @return List of DisplayElement
      */
     @Transactional(readOnly = true)
-    List<DisplayElement> displayElementsToDepth(TreeVersion treeVersion, int depth) {
+  List<DisplayElement> displayElementsToDepth(TreeVersion treeVersion, int depth) {
         mustHave(treeElement: treeVersion)
         String pattern = "^[^/]*(/[^/]*){0,$depth}\$"
         fetchDisplayElements(pattern, treeVersion)
