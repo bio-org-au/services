@@ -190,23 +190,23 @@
       <g:each in="${trees}" var="tree">
         <div class="col-2">
           <st:preferredLink target="${tree}"><b>${tree.name}</b></st:preferredLink>
-          <shiro:hasRole name="${tree.groupName}">
-            <button type="button" class="btn btn-primary" data-toggle="modal"
-                    data-target="#editTree"
-                    data-name="${tree.name}"
-                    data-group="${tree.groupName}"
-                    data-desc="${tree.descriptionHtml}"
-                    data-link="${tree.linkToHomePage}"
-                    data-accepted="${tree.acceptedTree}"
-                    data-ref="${tree.referenceId}"
-                    data-tree="${tree.id}"
-                    title="Edit tree details.">
-              <i class="fa fa-edit"></i>
-            </button>
-            <g:if test="${!tree.currentTreeVersion}">
-              <a href="${createLink(namespace: 'api', controller: 'tree', action: 'deleteTree', params: [treeId: tree.id])}">delete</a>
-            </g:if>
-          </shiro:hasRole>
+%{--          <shiro:hasRole name="${tree.groupName}">--}%
+%{--            <button type="button" class="btn btn-primary" data-toggle="modal"--}%
+%{--                    data-target="#editTree"--}%
+%{--                    data-name="${tree.name}"--}%
+%{--                    data-group="${tree.groupName}"--}%
+%{--                    data-desc="${tree.descriptionHtml}"--}%
+%{--                    data-link="${tree.linkToHomePage}"--}%
+%{--                    data-accepted="${tree.acceptedTree}"--}%
+%{--                    data-ref="${tree.referenceId}"--}%
+%{--                    data-tree="${tree.id}"--}%
+%{--                    title="Edit tree details.">--}%
+%{--              <i class="fa fa-edit"></i>--}%
+%{--            </button>--}%
+%{--            <g:if test="${!tree.currentTreeVersion}">--}%
+%{--              <a href="${createLink(namespace: 'api', controller: 'tree', action: 'deleteTree', params: [treeId: tree.id])}">delete</a>--}%
+%{--            </g:if>--}%
+%{--          </shiro:hasRole>--}%
           <br>
           (${tree.groupName})
           <br>
@@ -241,62 +241,62 @@
               <div class="row">
                 <span
                         class="cell">${raw(defaultDraft ? '<i class="fa fa-check"></i>' : '')} ${tree.name}: ${draft.draftName}</span>
-                <span class="cell">&nbsp;
-                  <shiro:hasRole name="${tree.groupName}">
-                    <button type="button" class="btn btn-primary" data-toggle="modal"
-                            data-target="#editDraft"
-                            data-version-id="${draft.id}"
-                            data-name="${draft.draftName}"
-                            data-default-draft="true"
-                            title="Edit draft ${draft.draftName}.">
-                      edit
-                    </button>
-                    <button type="button" class="btn btn-danger" data-toggle="modal"
-                            data-target="#deleteDraft"
-                            data-url="${createLink(namespace: 'api', controller: 'treeVersion', action: 'delete', id: draft.id)}"
-                            data-draft-name="${draft.draftName}"
-                            title="Delete Draft ${draft.draftName}.">
-                      delete
-                    </button>
-                    <button type="button" class="btn btn-primary" data-toggle="modal"
-                            data-target="#publishDraft"
-                            data-version-id="${draft.id}"
-                            data-default-draft="true"
-                            title="Publish Draft ${draft.draftName}.">
-                      publish
-                    </button>
-                    <g:if test="${tree.currentTreeVersion}">
-                      <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v1: tree.currentTreeVersion.id, v2: draft.id])}">diff</a>,
-                    </g:if>
-                    <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'validate', params: [version: draft.id])}">validate</a>,
-                    <a href="${createLink(namespace: 'api', controller: 'tree', action: 'checkCurrentSynonymy', params: [treeVersionId: draft.id])}">synonymy</a>
-                  </shiro:hasRole>
-                </span>
+%{--                <span class="cell">&nbsp;--}%
+%{--                  <shiro:hasRole name="${tree.groupName}">--}%
+%{--                    <button type="button" class="btn btn-primary" data-toggle="modal"--}%
+%{--                            data-target="#editDraft"--}%
+%{--                            data-version-id="${draft.id}"--}%
+%{--                            data-name="${draft.draftName}"--}%
+%{--                            data-default-draft="true"--}%
+%{--                            title="Edit draft ${draft.draftName}.">--}%
+%{--                      edit--}%
+%{--                    </button>--}%
+%{--                    <button type="button" class="btn btn-danger" data-toggle="modal"--}%
+%{--                            data-target="#deleteDraft"--}%
+%{--                            data-url="${createLink(namespace: 'api', controller: 'treeVersion', action: 'delete', id: draft.id)}"--}%
+%{--                            data-draft-name="${draft.draftName}"--}%
+%{--                            title="Delete Draft ${draft.draftName}.">--}%
+%{--                      delete--}%
+%{--                    </button>--}%
+%{--                    <button type="button" class="btn btn-primary" data-toggle="modal"--}%
+%{--                            data-target="#publishDraft"--}%
+%{--                            data-version-id="${draft.id}"--}%
+%{--                            data-default-draft="true"--}%
+%{--                            title="Publish Draft ${draft.draftName}.">--}%
+%{--                      publish--}%
+%{--                    </button>--}%
+%{--                    <g:if test="${tree.currentTreeVersion}">--}%
+%{--                      <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v1: tree.currentTreeVersion.id, v2: draft.id])}">diff</a>,--}%
+%{--                    </g:if>--}%
+%{--                    <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'validate', params: [version: draft.id])}">validate</a>,--}%
+%{--                    <a href="${createLink(namespace: 'api', controller: 'tree', action: 'checkCurrentSynonymy', params: [treeVersionId: draft.id])}">synonymy</a>--}%
+%{--                  </shiro:hasRole>--}%
+%{--                </span>--}%
               </div>
             </tree:drafts>
 
-            <shiro:hasRole name="${tree.groupName}">
-              <button type="button" class="btn btn-primary" data-toggle="modal"
-                      data-target="#editDraft"
-                      data-tree-id="${tree.id}"
-                      data-default-draft="true"
-                      title="Make a draft tree. (This can take a while)">
-                Add a draft of ${tree.name} <i class="fa fa-plus"></i>
-              </button>
-            </shiro:hasRole>
+%{--            <shiro:hasRole name="${tree.groupName}">--}%
+%{--              <button type="button" class="btn btn-primary" data-toggle="modal"--}%
+%{--                      data-target="#editDraft"--}%
+%{--                      data-tree-id="${tree.id}"--}%
+%{--                      data-default-draft="true"--}%
+%{--                      title="Make a draft tree. (This can take a while)">--}%
+%{--                Add a draft of ${tree.name} <i class="fa fa-plus"></i>--}%
+%{--              </button>--}%
+%{--            </shiro:hasRole>--}%
           </div>
           <hr>
         </div>
       </g:each>
     </div>
   </g:else>
-  <shiro:hasRole name="treebuilder">
-    <button type="button" class="btn btn-primary" data-toggle="modal"
-            data-target="#editTree"
-            title="Create a new tree.">
-      Create a tree <i class="fa fa-plus"></i>
-    </button>
-  </shiro:hasRole>
+%{--  <shiro:hasRole name="treebuilder">--}%
+%{--    <button type="button" class="btn btn-primary" data-toggle="modal"--}%
+%{--            data-target="#editTree"--}%
+%{--            title="Create a new tree.">--}%
+%{--      Create a tree <i class="fa fa-plus"></i>--}%
+%{--    </button>--}%
+%{--  </shiro:hasRole>--}%
 
 </div>
 </body>
