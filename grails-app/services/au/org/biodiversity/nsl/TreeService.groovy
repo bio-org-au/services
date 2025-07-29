@@ -847,14 +847,16 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     String authorizeTreeOperation(Tree tree) {
-        String groupName = tree.groupName
+        // original design was to use Tree.groupName, but now
+        // editor has its own authorisation
+        String groupName = 'login'
         log.debug("authorizeTreeOperation: checking ${SecurityUtils.subject.principal} has role ${groupName}")
         SecurityUtils.subject.checkRole(groupName)
         return SecurityUtils.subject.principal as String
     }
 
     String authorizeTreeBuilder() {
-        SecurityUtils.subject.checkRole('treebuilder')
+        SecurityUtils.subject.checkRole('login')
         return SecurityUtils.subject.principal as String
     }
 

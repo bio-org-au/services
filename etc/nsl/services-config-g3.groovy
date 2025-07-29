@@ -69,11 +69,11 @@ dataSource {
 api.auth = [
         'dev-apni-editor': [
                 application: 'apni-editor',
-                roles      : ['admin', 'APC', 'treebuilder']
+                roles      : ['admin', 'APC', 'login']
         ],
         'IAM-A-TEST-KEY' : [
                 application: 'tester',
-                roles      : ['admin', 'APC', 'treebuilder']
+                roles      : ['admin', 'APC', 'login']
         ]
 ]
 

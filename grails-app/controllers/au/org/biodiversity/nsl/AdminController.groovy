@@ -291,7 +291,8 @@ class AdminController {
     }
 
     private String logSummary(Integer lineLength) {
-        List<String> logLines = configService.getLogFile('dailyFileAppender')?.readLines()?.reverse()?.take(50) ?: []
+//        List<String> logLines = configService.getLogFile('dailyFileAppender')?.readLines()?.reverse()?.take(50) ?: []
+        List<String> logLines = configService.getLogFile(null)?.readLines()?.reverse()?.take(50) ?: []
         StringBuffer processedLog = new StringBuffer()
         logLines.each { String line ->
             line = line.replaceAll(/\[[0-9;]*m/, '')

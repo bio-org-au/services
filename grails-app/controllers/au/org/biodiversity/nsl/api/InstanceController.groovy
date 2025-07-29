@@ -75,7 +75,7 @@ class InstanceController extends BaseApiController {
     }
 
 
-    @RequiresRoles('treebuilder')
+    @RequiresRoles('login')
     def editInstanceNote(Long id, String value) {
         InstanceNote note = InstanceNote.get(id)
         String user = treeService.authorizeTreeBuilder()
