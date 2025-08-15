@@ -367,7 +367,7 @@ class TestUte {
         new Name(
                 nameType: NameType.findByName('scientific'),
                 nameStatus: NameStatus.findByName('legitimate'),
-                +=nameRank: NameRank.findByName(rank),
+                nameRank: NameRank.findByName(rank),
                 createdBy: 'tester',
                 updatedBy: 'tester',
                 createdAt: new Timestamp(System.currentTimeMillis()),
