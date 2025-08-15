@@ -286,7 +286,6 @@ class ConfigService {
         for (Logger logger : context.getLoggerList()) {
             for (Iterator<Appender<ILoggingEvent>> index = logger.iteratorForAppenders(); index.hasNext();) {
                 Appender<ILoggingEvent> appender = index.next()
-System.out.println("APPENDER: " + appender + " " + appender.class + " NAME: " + appender.name)
                 if (appender instanceof FileAppender && (!name || appender.name == name)) {
                     FileAppender<ILoggingEvent> fa = (FileAppender<ILoggingEvent>)appender
                     ResilientFileOutputStream rfos = (ResilientFileOutputStream)fa.getOutputStream()
