@@ -42,11 +42,11 @@
                 <g:elseif test="${!treeVersion.published}">
                     <h3><span class="draftStamp"></span> Draft Version of ${treeVersion.tree.name}</h3>
 
-                    <p>
+                    <div style="display: inline-block">
                         This is a draft version of APC. The <b>current version</b> is
                     <st:preferredLink target="${currentTreeVersion}"
                                       useButton="${true}">${currentTreeVersion.id}</st:preferredLink>
-                    </p>
+                    </div>
                 </g:elseif>
                 <g:else>
                     <h3>Version ${treeVersion.id} of ${treeVersion.tree.name} (OLD)</h3>
