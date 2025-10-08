@@ -58,7 +58,8 @@
   </h1>
 
   <st:preferredLink target="${treeVersionElement.treeVersion}"
-                    title="Go to tree version ${treeVersionElement.treeVersion.id}">
+                    title="Go to tree version ${treeVersionElement.treeVersion.id}"
+                    useButton="${true}">
     <i class="fa fa-link"></i> ${treeVersionElement.treeVersion.tree.name} (version ${treeVersionElement.treeVersion.id})
     <g:if test="${treeVersionElement.treeVersion.published}">
       published ${treeVersionElement.treeVersion.publishedAt.dateString} by ${treeVersionElement.treeVersion.publishedBy}

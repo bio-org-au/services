@@ -132,7 +132,7 @@ class ServiceTagLib {
                     }
                     if (useButton && useButton.booleanValue()) {
                         out << "<form action='${link}'>".toString()
-                        out << "<input type='submit' value='${body(link: link)}'/>"
+                        out << "<button class='linkbutton' type='submit'>${body(link: link)}</button>"
                         out << "</form>"
                     } else {
                         out << "<a href='${link}'>".toString()

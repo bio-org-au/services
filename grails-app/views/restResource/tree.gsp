@@ -44,7 +44,8 @@
 
           <p>
             This is a draft version of APC. The <b>current version</b> is
-          <st:preferredLink target="${currentTreeVersion}">${currentTreeVersion.id}</st:preferredLink>
+          <st:preferredLink target="${currentTreeVersion}"
+                            useButton="${true}">${currentTreeVersion.id}</st:preferredLink>
           </p>
         </g:elseif>
         <g:else>
@@ -52,7 +53,8 @@
 
           <p>
             This is an old version of APC. The current version is
-            <st:preferredLink target="${currentTreeVersion}">${currentTreeVersion.id}</st:preferredLink>
+            <st:preferredLink target="${currentTreeVersion}"
+                              useButton="${true}">${currentTreeVersion.id}</st:preferredLink>
           </p>
         </g:else>
         <tree:versionStats version="${treeVersion}">
@@ -60,7 +62,8 @@
         </tree:versionStats>
 
         <g:if test="${treeVersion.published}">
-          <st:preferredLink target="${treeVersion}">
+          <st:preferredLink target="${treeVersion}"
+                            useButton="${true}">
             published ${treeVersion.publishedAt.dateString} by ${treeVersion.publishedBy}
           </st:preferredLink>
         </g:if>
@@ -76,7 +79,8 @@
 
         <p>Below are all revisions of the ${treeVersion.tree.name}. Versions older than
         <st:preferredLink
-                target="${currentTreeVersion}">${currentTreeVersion.id} published ${currentTreeVersion.publishedAt.dateString}</st:preferredLink>
+                target="${currentTreeVersion}"
+                useButton="${true}">${currentTreeVersion.id} published ${currentTreeVersion.publishedAt.dateString}</st:preferredLink>
         are for reference only.</p>
         <table class="table">
           <tr><th>Version</th><th>published</th><th>Notes</th><th>Remove action</th></tr>
