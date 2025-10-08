@@ -51,12 +51,13 @@
         <g:else>
           <h3>Version ${treeVersion.id} of ${treeVersion.tree.name} (OLD)</h3>
 
-          <p>
+          <div style="display: inline-block">
             This is an old version of APC. The current version is
             <st:preferredLink target="${currentTreeVersion}"
                               useButton="${true}">${currentTreeVersion.id}</st:preferredLink>
-          </p>
+          </div>
         </g:else>
+          <div style="display: inline-block">
         <tree:versionStats version="${treeVersion}">
           ${elements} elements
         </tree:versionStats>
@@ -67,6 +68,7 @@
             published ${treeVersion.publishedAt.dateString} by ${treeVersion.publishedBy}
           </st:preferredLink>
         </g:if>
+          </div>
         <g:else>NOT PUBLISHED</g:else>
 
         <h4>Notes</h4>

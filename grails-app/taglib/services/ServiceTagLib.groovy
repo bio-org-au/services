@@ -126,6 +126,7 @@ class ServiceTagLib {
         if (target) {
             try {
                 String link = linkService.getPreferredLinkForObject(target)
+                link = 'https://test.biodiversity.org.au/nsl/services/rest/treeVersion/apni/51771340'
                 if (link) {
                     if (api) {
                         link += "/$api"
