@@ -88,7 +88,7 @@
                     <tr><th>Version</th><th>published</th><th>Notes</th><th>Remove action</th></tr>
                     <g:each in="${versions}" var="version">
                         <tr>
-                            <td><st:preferredLink target="${version}">${version.id}</st:preferredLink></td>
+                            <td><st:preferredLink target="${version}" useButton="${true}">${version.id}</st:preferredLink></td>
                             <td>${version.published ? version.publishedAt.dateString : 'DRAFT'}</td>
                             <td>${version.published ? version.logEntry : version.draftName}</td>
                             <td>
