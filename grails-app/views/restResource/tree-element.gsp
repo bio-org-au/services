@@ -58,14 +58,15 @@
 
   </h1>
 
-%{--  <st:preferredLink target="${treeVersionElement.treeVersion}"--}%
-%{--                    title="Go to tree version ${treeVersionElement.treeVersion.id}">--}%
+  <st:preferredLink target="${treeVersionElement.treeVersion}"
+                    title="Go to tree version ${treeVersionElement.treeVersion.id}"
+                    useButton="${true}">
     ${treeVersionElement.treeVersion.tree.name} (version ${treeVersionElement.treeVersion.id})
     <g:if test="${treeVersionElement.treeVersion.published}">
       published ${treeVersionElement.treeVersion.publishedAt.dateString} by ${treeVersionElement.treeVersion.publishedBy}
     </g:if>
     <g:else>DRAFT</g:else>
-%{--  </st:preferredLink>--}%
+  </st:preferredLink>
   <div class="timeline">
     <b>Changes:</b>
     <tree:history element="${treeVersionElement}">

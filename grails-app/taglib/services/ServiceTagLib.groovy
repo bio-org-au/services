@@ -122,17 +122,23 @@ class ServiceTagLib {
     def preferredLink = { attrs, body ->
         def target = attrs.target
         def api = attrs.api
+        Boolean useButton = attrs.useButton
         if (target) {
-//            target = HibernateDomainUtils.initializeAndUnproxy(target)
             try {
                 String link = linkService.getPreferredLinkForObject(target)
                 if (link) {
                     if (api) {
                         link += "/$api"
                     }
-                    out << "<a href='${link}'>".toString()
-                    out << body(link: link)
-                    out << "</a>"
+                    if (useButton && useButton.booleanValue()) {
+                        out << "<form action='${link}'".toString()
+                        out << "<input type='submit' value='${body(link: link)}'/>"
+                        out << "</form>"
+                    } else {
+                        out << "<a href='${link}'>".toString()
+                        out << body(link: link)
+                        out << "</a>"
+                    }
                 } else {
                     out << body(link: '/')
                 }
