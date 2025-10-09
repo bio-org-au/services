@@ -131,7 +131,7 @@ class ServiceTagLib {
                         link += "/$api"
                     }
                     if (useButton && useButton.booleanValue()) {
-                        out << "<form action='${link}'>".toString()
+                        out << "<form action='${link}' style='display: inline-block'>".toString()
                         out << "<button class='linkbutton' type='submit'>${body(link: link)}</button>"
                         out << "</form>"
                     } else {

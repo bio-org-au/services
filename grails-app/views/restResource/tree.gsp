@@ -35,14 +35,14 @@
 
     <div class="row">
         <div class="col">
-            <div>
+            <p>
                 <g:if test="${treeVersion == currentTreeVersion}">
                     <h3>${treeVersion.tree.name} <span class="text-muted">(${treeVersion.id})</span></h3>
                 </g:if>
                 <g:elseif test="${!treeVersion.published}">
                     <h3><span class="draftStamp"></span> Draft Version of ${treeVersion.tree.name}</h3>
 
-                    <div style="display: inline-block">
+                    <div>
                         This is a draft version of APC. The <b>current version</b> is
                     <st:preferredLink target="${currentTreeVersion}"
                                       useButton="${true}">${currentTreeVersion.id}</st:preferredLink>
@@ -51,7 +51,7 @@
                 <g:else>
                     <h3>Version ${treeVersion.id} of ${treeVersion.tree.name} (OLD)</h3>
 
-                    <div style="display: inline-block">
+                    <div>
                         This is an old version of APC. The current version is
                         <st:preferredLink target="${currentTreeVersion}"
                                           useButton="${true}">${currentTreeVersion.id}</st:preferredLink>
@@ -79,11 +79,11 @@
             <div>
                 <h3>Other versions</h3>
 
-                <p>Below are all revisions of the ${treeVersion.tree.name}. Versions older than
+                <div>Below are all revisions of the ${treeVersion.tree.name}. Versions older than
                 <st:preferredLink
                         target="${currentTreeVersion}"
                         useButton="${true}">${currentTreeVersion.id} published ${currentTreeVersion.publishedAt.dateString}</st:preferredLink>
-                are for reference only.</p>
+                are for reference only.</div>
                 <table class="table">
                     <tr><th>Version</th><th>published</th><th>Notes</th><th>Remove action</th></tr>
                     <g:each in="${versions}" var="version">
