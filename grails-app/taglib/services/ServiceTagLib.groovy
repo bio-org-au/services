@@ -122,7 +122,7 @@ class ServiceTagLib {
     def preferredLink = { attrs, body ->
         def target = attrs.target
         def api = attrs.api
-        Boolean useButton = attrs.useButton
+        boolean useButton = attrs.useButton ? attrs.useButton.booleanValue() : false
         if (target) {
             try {
                 String link = linkService.getPreferredLinkForObject(target)
@@ -130,7 +130,7 @@ class ServiceTagLib {
                     if (api) {
                         link += "/$api"
                     }
-                    if (useButton && useButton.booleanValue()) {
+                    if (useButton) {
                         out << "<form action='${link}' style='display: inline-block'>".toString()
                         out << "<button class='linkbutton' type='submit'>${body(link: link)}</button>"
                         out << "</form>"
@@ -152,10 +152,16 @@ class ServiceTagLib {
 
     def editorLink = { attrs, body ->
         def nameId = attrs.nameId
+        boolean useButton = attrs.useButton ? attrs.useButton.booleanValue() : true
         if (nameId) {
             try {
                 String link = configService.editorlink +
                         "/search?query=id:${nameId}&query_field=name-instances&query_on=instance"
+                if (useButton) {
+                    out << "<form action='${link}' style='display: inline-block'>".toString()
+                    out << "<button class='linkbutton' type='submit'>${body(link: link)}</button>"
+                    out << "</form>"
+                }
                 if (link) {
                     out << "<a href='${link}'>"
                     out << body(link: link)

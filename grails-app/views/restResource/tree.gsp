@@ -57,7 +57,7 @@
                                           useButton="${true}">${currentTreeVersion.id}</st:preferredLink>
                     </div>
                 </g:else>
-                <div style="display: inline-block">
+                <div>
                     <tree:versionStats version="${treeVersion}">
                         ${elements} elements
                     </tree:versionStats>
