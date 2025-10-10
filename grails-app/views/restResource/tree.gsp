@@ -35,7 +35,7 @@
 
     <div class="row">
         <div class="col">
-            <p>
+            <div>
                 <g:if test="${treeVersion == currentTreeVersion}">
                     <h3>${treeVersion.tree.name} <span class="text-muted">(${treeVersion.id})</span></h3>
                 </g:if>
@@ -57,19 +57,17 @@
                                           useButton="${true}">${currentTreeVersion.id}</st:preferredLink>
                     </div>
                 </g:else>
-                <div>
-                    <tree:versionStats version="${treeVersion}">
-                        ${elements} elements
-                    </tree:versionStats>
+                <tree:versionStats version="${treeVersion}">
+                    ${elements} elements
+                </tree:versionStats>
 
-                    <g:if test="${treeVersion.published}">
-                        <st:preferredLink target="${treeVersion}"
-                                          useButton="${true}">
-                            published ${treeVersion.publishedAt.dateString} by ${treeVersion.publishedBy}
-                        </st:preferredLink>
-                    </g:if>
-                    <g:else>NOT PUBLISHED</g:else>
-                </div>
+                <g:if test="${treeVersion.published}">
+                    <st:preferredLink target="${treeVersion}"
+                                      useButton="${true}">
+                        published ${treeVersion.publishedAt.dateString} by ${treeVersion.publishedBy}
+                    </st:preferredLink>
+                </g:if>
+                <g:else>NOT PUBLISHED</g:else>
 
                 <h4>Notes</h4>
 
@@ -88,7 +86,8 @@
                     <tr><th>Version</th><th>published</th><th>Notes</th><th>Remove action</th></tr>
                     <g:each in="${versions}" var="version">
                         <tr>
-                            <td><st:preferredLink target="${version}" useButton="${true}">${version.id}</st:preferredLink></td>
+                            <td><st:preferredLink target="${version}"
+                                                  useButton="${true}">${version.id}</st:preferredLink></td>
                             <td>${version.published ? version.publishedAt.dateString : 'DRAFT'}</td>
                             <td>${version.published ? version.logEntry : version.draftName}</td>
                             <td>
