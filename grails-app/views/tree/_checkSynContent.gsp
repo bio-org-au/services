@@ -77,16 +77,6 @@
             </tree:diffSynonyms>
           </g:each>
         </table>
-        <shiro:hasRole name="treebuilder">
-          <g:if test="${treeVersion}">
-            <g:submitButton class="btn btn-primary"
-                            name="Update selected in draft '${treeVersion.draftName}'"/>
-          </g:if>
-          <g:else>
-            <h2 class="text-warning"><i class="fa fa-exclamation-triangle"></i> Please create a draft tree to update.
-            </h2>
-          </g:else>
-        </shiro:hasRole>
       </g:form>
     </g:if>
     <g:else>

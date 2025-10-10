@@ -28,10 +28,6 @@
                   model="[diffs: payload.conflicts, before: payload.to.draftName, after: payload.from.tree.name]"/>
       </div>
 
-      <shiro:hasRole name="treebuilder">
-        <g:submitButton class="btn btn-primary"
-                        name="Merge selected in to draft '${payload.to.draftName}'"/>
-      </shiro:hasRole>
     </g:form>
   </g:else>
 </div>
