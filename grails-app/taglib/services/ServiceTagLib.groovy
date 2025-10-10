@@ -155,18 +155,20 @@ class ServiceTagLib {
         boolean useButton = attrs.useButton ? attrs.useButton.booleanValue() : true
         if (nameId) {
             try {
-                String link = configService.editorlink +
-                        "/search?query=id:${nameId}&query_field=name-instances&query_on=instance"
-                if (link) {
-                    if (useButton) {
-                        out << "<form action='${link}' style='display: inline-block'>".toString()
-                        out << "<button class='linkbutton' type='submit'>${body(link: link)}</button>"
-                        out << "</form>"
-                    } else {
-                        out << "<a href='${link}'>"
-                        out << body(link: link)
-                        out << "</a>"
-                    }
+                if (useButton) {
+                    String link = configService.editorlink + "/search"
+                    out << "<form action='${link}' style='display: inline-block'>".toString()
+                    out << "<input type='hidden' name='query' value='id:${nameId}'>"
+                    out << "<input type='hidden' name='query_field' value='name-instances'>"
+                    out << "<input type='hidden' name='query_on' value='instance'>"
+                    out << "<button class='linkbutton' type='submit'>${body(link: link)}</button>"
+                    out << "</form>"
+                } else {
+                    String link = configService.editorlink +
+                            "/search?query=id:${nameId}&query_field=name-instances&query_on=instance"
+                    out << "<a href='${link}'>"
+                    out << body(link: link)
+                    out << "</a>"
                 }
             } catch (e) {
                 log.debug e.message
