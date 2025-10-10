@@ -157,15 +157,16 @@ class ServiceTagLib {
             try {
                 String link = configService.editorlink +
                         "/search?query=id:${nameId}&query_field=name-instances&query_on=instance"
-                if (useButton) {
-                    out << "<form action='${link}' style='display: inline-block'>".toString()
-                    out << "<button class='linkbutton' type='submit'>${body(link: link)}</button>"
-                    out << "</form>"
-                }
                 if (link) {
-                    out << "<a href='${link}'>"
-                    out << body(link: link)
-                    out << "</a>"
+                    if (useButton) {
+                        out << "<form action='${link}' style='display: inline-block'>".toString()
+                        out << "<button class='linkbutton' type='submit'>${body(link: link)}</button>"
+                        out << "</form>"
+                    } else {
+                        out << "<a href='${link}'>"
+                        out << body(link: link)
+                        out << "</a>"
+                    }
                 }
             } catch (e) {
                 log.debug e.message
