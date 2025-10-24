@@ -1168,7 +1168,7 @@ INSERT INTO tree_version_element (tree_version_id,
      */
 
     TreeVersionElement editProfile(TreeVersionElement treeVersionElement, Map profile, String userName) {
-        if (!tve.treeVersion.tree.config) { // profile still exists but is deprecated
+        if (!treeVersionElement.treeVersion.tree.config) { // profile still exists but is deprecated
             return treeVersionElement
         }
         mustHave(treeVersionElement: treeVersionElement, userName: userName)
@@ -1338,7 +1338,7 @@ INSERT INTO tree_version_element (tree_version_id,
         Map elementComparators = comparators(treeVersionElement.treeElement)
         elementComparators.excluded = excluded
 
-        if (treeVersionELement.treeVersion.tree.config) { // profile still exists but is deprecated
+        if (treeVersionElement.treeVersion.tree.config) { // profile still exists but is deprecated
             excludedValidation(excluded, elementComparators.profile, distributionKey(treeVersionElement))
         }
 
@@ -1945,7 +1945,9 @@ and regex(namePath, :newPath) = true
 
         List<String> warnings = checkNameValidity(taxonData)
 
-        excludedValidation(taxonData.excluded, taxonData.profile, distributionKey(parentElement))
+        if (parentElement.treeVersion.tree.config) {
+            excludedValidation(taxonData.excluded, taxonData.profile, distributionKey(parentElement))
+        }
 
         NameRank taxonRank = NameRank.findByName(taxonData.rank)
         NameRank parentRank = NameRank.findByName(parentElement.treeElement.rank)
