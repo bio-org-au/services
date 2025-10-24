@@ -883,9 +883,11 @@ INSERT INTO tree_version_element (tree_version_id,
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, null, userName)
 
-        String distKey = distributionKey(parentElement)
-        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString, userName)
+        if (parentElement.treeVersion.tree.config) { // profile still exists but is deprecated
+            String distKey = distributionKey(parentElement)
+            String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+            distributionService.reconstructDistribution(treeElement, distString, userName)
+        }
 
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, parentElement, nextSequenceId(), null, userName)
         updateParentTaxonId(parentElement)
@@ -923,9 +925,11 @@ INSERT INTO tree_version_element (tree_version_id,
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, null, userName)
 
-        String distKey = distributionKey(treeVersion)
-        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString, userName)
+        if (treeVersion.tree.config) { // profile still exists but is deprecated
+            String distKey = distributionKey(treeVersion)
+            String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+            distributionService.reconstructDistribution(treeElement, distString, userName)
+        }
 
         TreeVersionElement childElement = saveTreeVersionElement(treeElement, null, treeVersion, nextSequenceId(), null, userName)
 
@@ -966,13 +970,15 @@ INSERT INTO tree_version_element (tree_version_id,
         taxonData.excluded = excluded
         taxonData.profile = profile
 
-        List<String> warnings = validateReplacementElement(parentTve, currentTve, taxonData)
+        List<String> warnings = validateReplacementpElement(parentTve, currentTve, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, currentTve.treeElement, userName)
         log.debug "replaceTaxon: treeElement is ${treeElement}"
-        String distKey = distributionKey(currentTve)
-        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        distributionService.reconstructDistribution(treeElement, distString, userName)
+        if (currentTve.treeVersion.tree.config) { // profile still exists but is deprecated
+            String distKey = distributionKey(currentTve)
+            String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+            distributionService.reconstructDistribution(treeElement, distString, userName)
+        }
 
         TreeVersionElement replacementTve = saveTreeVersionElement(treeElement, parentTve, nextSequenceId(), null, userName)
         log.debug "replaceTaxon: replacementTve is ${replacementTve}"
@@ -1162,6 +1168,9 @@ INSERT INTO tree_version_element (tree_version_id,
      */
 
     TreeVersionElement editProfile(TreeVersionElement treeVersionElement, Map profile, String userName) {
+        if (!tve.treeVersion.tree.config) { // profile still exists but is deprecated
+            return treeVersionElement
+        }
         mustHave(treeVersionElement: treeVersionElement, userName: userName)
         notPublished(treeVersionElement)
         treeVersionElement.refresh()
@@ -1256,6 +1265,9 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     TreeVersionElement minorEditDistribution(TreeVersionElement treeVersionElement, String distribution, String reason, String userName) {
+        if (!treeVersionElement.treeVersion.tree.config) { // profile still exists but is deprecated
+            return treeVersionElement
+        }
         excludedValidation(treeVersionElement.treeElement.excluded, distribution)
         String distKey = distributionKey(treeVersionElement)
         //this will throw an exception if the distribution string is bad.
@@ -1267,11 +1279,17 @@ INSERT INTO tree_version_element (tree_version_id,
     }
 
     TreeVersionElement minorEditComment(TreeVersionElement treeVersionElement, String comment, String reason, String userName) {
+        if (!treeVersionElement.treeVersion.tree.config) { // profile still exists but is deprecated
+            return treeVersionElement
+        }
         String commentKey = commentKey(treeVersionElement)
         return minorEditProfile(treeVersionElement, comment, reason, userName, commentKey)
     }
 
     TreeVersionElement minorEditProfile(TreeVersionElement treeVersionElement, String value, String reason, String userName, String key) {
+        if (!treeVersionElement.treeVersion.tree.config) { // profile still exists but is deprecated
+            return treeVersionElement
+        }
         mustHave(treeVersionElement: treeVersionElement, value: value, reason: reason, userName: userName)
         published(treeVersionElement)
         treeVersionElement.treeElement.refresh()
@@ -1320,7 +1338,9 @@ INSERT INTO tree_version_element (tree_version_id,
         Map elementComparators = comparators(treeVersionElement.treeElement)
         elementComparators.excluded = excluded
 
-        excludedValidation(excluded, elementComparators.profile, distributionKey(treeVersionElement))
+        if (treeVersionELement.treeVersion.tree.config) { // profile still exists but is deprecated
+            excludedValidation(excluded, elementComparators.profile, distributionKey(treeVersionElement))
+        }
 
         TreeElement foundElement = findTreeElement(elementComparators)
         if (foundElement) {
@@ -1384,10 +1404,12 @@ INSERT INTO tree_version_element (tree_version_id,
             treeVersionElement = changeElement(treeVersionElement, updatedElement, userName)
             // don't update taxonId above as the instance hasn't changed, and other taxon changes will have already
             // updated the taxon id
-            Map profile = updatedElement.profile
-            String distKey = distributionKey(treeVersionElement)
-            String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-            distributionService.reconstructDistribution(updatedElement, distString, userName)
+            if (treeVersionElement.treeVersion.tree.config) { // profile still exists but is deprecated
+                Map profile = updatedElement.profile
+                String distKey = distributionKey(treeVersionElement)
+                String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+                distributionService.reconstructDistribution(updatedElement, distString, userName)
+            }
         } else {
             treeVersionElement.treeElement.synonyms = taxonData.synonyms.asMap()
             treeVersionElement.treeElement.synonymsHtml = taxonData.synonymsHtml
@@ -1751,14 +1773,16 @@ and regex(namePath, :newPath) = true
                 createdAt: new Timestamp(System.currentTimeMillis()),
                 updatedBy: userName,
                 updatedAt: new Timestamp(System.currentTimeMillis()))
-        Map profile = treeElement.profile
-        String distKey = distributionKey(tve)
-        String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
-        // setting these references here because of a bug? setting in the map above where the parentElement
-        // changes to this new element.
-        treeElement.previousElement = source
-        treeElement.save()
-        distributionService.reconstructDistribution(treeElement, distString, userName)
+        if (tve.treeVersion.tree.config) { // profile still exists but is deprecated
+            Map profile = treeElement.profile
+            String distKey = distributionKey(tve)
+            String distString = (profile && profile[distKey] && profile[distKey].value) ? profile[distKey].value : ''
+            // setting these references here because of a bug? setting in the map above where the parentElement
+            // changes to this new element.
+            treeElement.previousElement = source
+            treeElement.save()
+            distributionService.reconstructDistribution(treeElement, distString, userName)
+        }
         return treeElement
     }
 
