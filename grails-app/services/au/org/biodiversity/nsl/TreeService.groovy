@@ -970,7 +970,7 @@ INSERT INTO tree_version_element (tree_version_id,
         taxonData.excluded = excluded
         taxonData.profile = profile
 
-        List<String> warnings = validateReplacementpElement(parentTve, currentTve, taxonData)
+        List<String> warnings = validateReplacementElement(parentTve, currentTve, taxonData)
 
         TreeElement treeElement = findTreeElement(taxonData) ?: makeTreeElementFromTaxonData(taxonData, currentTve.treeElement, userName)
         log.debug "replaceTaxon: treeElement is ${treeElement}"
