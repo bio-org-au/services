@@ -2287,6 +2287,11 @@ and tve.element_link not in ($excludedLinks)
                 and tve.treeElement.instanceId = :id""", [id: instance.id])
     }
 
+    /*
+ NSL-5608
+ We will not remove the code BUT I would like it clear that the functionality is on hold until
+ we can find a use case for it. At this stage it can stay in the code base.
+  */
     Map merge(TreeVersion draftVersion, MergeReport report, String userName) {
         if (draftVersion.published) {
             throw new ServiceException("Error: $userName tried to merge into published version of ${draftVersion.tree.name}")
@@ -2315,6 +2320,11 @@ and tve.element_link not in ($excludedLinks)
      * @param userName
      * @return
      */
+    /*
+ NSL-5608
+ We will not remove the code BUT I would like it clear that the functionality is on hold until
+ we can find a use case for it. At this stage it can stay in the code base.
+  */
     private Map doMerge(TreeVersion draftVersion, MergeReport report, String userName) {
         List<String> mergeLog = []
 

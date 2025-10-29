@@ -125,6 +125,11 @@ class TreeVersionController extends BaseApiController {
         ]
     }
 
+    /*
+        NSL-5608
+    We will not remove the code BUT I would like it clear that the functionality is on hold until
+    we can find a use case for it. At this stage it can stay in the code base.
+     */
     def mergeReport(Long draftId, Boolean embed) {
         ResultObject results = require('Draft Version ID': draftId)
 
@@ -138,6 +143,11 @@ class TreeVersionController extends BaseApiController {
         }
     }
 
+    /*
+    NSL-5608
+    We will not remove the code BUT I would like it clear that the functionality is on hold until
+    we can find a use case for it. At this stage it can stay in the code base.
+     */
     def merge() {
         println params
         ResultObject results = require('Draft Version ID': params.draftVersion, 'Changeset': params.changeset)

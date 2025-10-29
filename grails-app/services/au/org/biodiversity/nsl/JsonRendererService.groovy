@@ -39,7 +39,13 @@ class JsonRendererService {
         JSON.registerObjectMarshaller(Tree) { Tree tree -> marshallTree(tree) }
         JSON.registerObjectMarshaller(TreeVersion) { TreeVersion treeVersion -> marshallTreeVersion(treeVersion) }
         JSON.registerObjectMarshaller(TreeElement) { TreeElement treeElement -> marshallTreeElement(treeElement) }
+//        NSL-5608
+//        We will not remove the code BUT I would like it clear that the functionality is on hold until
+//        we can find a use case for it. At this stage it can stay in the code base.
         JSON.registerObjectMarshaller(TveDiff) { TveDiff tveDiff -> marshallTveDiff(tveDiff) }
+//            NSL-5608
+//            We will not remove the code BUT I would like it clear that the functionality is on hold until
+//            we can find a use case for it. At this stage it can stay in the code base.f(tveDiff) }
         JSON.registerObjectMarshaller(MergeReport) { MergeReport mergeReport -> marshallMergReport(mergeReport) }
         //todo remove
         JSON.registerObjectMarshaller(TreeVersionElement) { TreeVersionElement treeVersionElement -> marshallTreeVersionElement(treeVersionElement) }
@@ -489,6 +495,9 @@ class JsonRendererService {
         ]
     }
 
+//        NSL-5608
+//        We will not remove the code BUT I would like it clear that the functionality is on hold until
+//        we can find a use case for it. At this stage it can stay in the code base.
     Map marshallMergReport(MergeReport mergeReport) {
         return [mergeReport: [
                 class        : mergeReport.class.name,
@@ -500,6 +509,9 @@ class JsonRendererService {
         ]]
     }
 
+//        NSL-5608
+//        We will not remove the code BUT I would like it clear that the functionality is on hold until
+//        we can find a use case for it. At this stage it can stay in the code base.
     Map marshallTveDiff(TveDiff tveDiff) {
         return [tveDiff: [
                 class         : tveDiff.class.name,

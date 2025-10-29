@@ -31,6 +31,11 @@ class TreeReportService implements ValidationUtils {
         new TreeChangeSet(first, second, getSql(), 1000)
     }
 
+    /*
+        NSL-5608
+    We will not remove the code BUT I would like it clear that the functionality is on hold until
+    we can find a use case for it. At this stage it can stay in the code base.
+     */
     MergeReport mergeReport(TreeVersion draft) {
         if (isBehindHead(draft)) {
             Sql sql = getSql()
@@ -54,6 +59,11 @@ class TreeReportService implements ValidationUtils {
         )
     }
 
+    /*
+        NSL-5608
+    We will not remove the code BUT I would like it clear that the functionality is on hold until
+    we can find a use case for it. At this stage it can stay in the code base.
+     */
     MergeReport rehydrateReport(String jsonChangeset) {
         JSONObject changeset = JSON.parse(jsonChangeset) as JSONObject
         MergeReport report = new MergeReport(
@@ -66,6 +76,11 @@ class TreeReportService implements ValidationUtils {
         return report
     }
 
+    /*
+        NSL-5608
+    We will not remove the code BUT I would like it clear that the functionality is on hold until
+    we can find a use case for it. At this stage it can stay in the code base.
+     */
     private static TveDiff diffFromData(Map diffData) {
         TreeVersionElement from = diffData.from ? TreeVersionElement.get(diffData.from) : null
         TreeVersionElement to = diffData.to ? TreeVersionElement.get(diffData.to) : null
@@ -83,6 +98,11 @@ class TreeReportService implements ValidationUtils {
      * @param head
      * @param draft
      * @return a set of diffs from draft to head
+     */
+    /*
+        NSL-5608
+    We will not remove the code BUT I would like it clear that the functionality is on hold until
+    we can find a use case for it. At this stage it can stay in the code base.
      */
     List<TveDiff> findNonConflictingChanges(TreeChangeSet head, TreeChangeSet draft, TreeVersion draftVersion) {
         List<Long> nonConflictingNameIds = head.all.collect { it.treeElement.nameId } - draft.all.collect {
@@ -104,6 +124,11 @@ class TreeReportService implements ValidationUtils {
         return diffs
     }
 
+    /*
+        NSL-5608
+    We will not remove the code BUT I would like it clear that the functionality is on hold until
+    we can find a use case for it. At this stage it can stay in the code base.
+     */
     List<TveDiff> markConflicts(List<TveDiff> conflicts) {
         conflicts.each { TveDiff diff ->
             diff.to.mergeConflict = true
@@ -125,6 +150,11 @@ class TreeReportService implements ValidationUtils {
         return diffs
     }
 
+    /*
+        NSL-5608
+    We will not remove the code BUT I would like it clear that the functionality is on hold until
+    we can find a use case for it. At this stage it can stay in the code base.
+     */
     List<TveDiff> conflictSet(List<TveDiff> diffs, List<TreeVersionElement> head, TreeChangeSet draft, int fromType) {
         conflictSet(diffs, head, draft.added, fromType, TveDiff.ADDED)
         if (fromType != TveDiff.REMOVED) { //both removed this name, not a conflict
@@ -134,6 +164,11 @@ class TreeReportService implements ValidationUtils {
         return diffs
     }
 
+    /*
+        NSL-5608
+    We will not remove the code BUT I would like it clear that the functionality is on hold until
+    we can find a use case for it. At this stage it can stay in the code base.
+     */
     List<TveDiff> conflictSet(List<TveDiff> diffs, List<TreeVersionElement> head, List<TreeVersionElement> draft, int fromType, int toType) {
         head.each { TreeVersionElement headTve ->
             draft.each { TreeVersionElement draftTve ->

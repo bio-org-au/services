@@ -1,4 +1,7 @@
 <%@ page import="au.org.biodiversity.nsl.TveDiff" %>
+%{--NSL-5608--}%
+%{--We will not remove the code BUT I would like it clear that the functionality is on hold until--}%
+%{--we can find a use case for it. At this stage it can stay in the code base.--}%
 <div class="rest-resource-content tree-gsp">
   <h2>Merge changes from ${payload.from.tree.name} in to ${payload.to.draftName}</h2>
 

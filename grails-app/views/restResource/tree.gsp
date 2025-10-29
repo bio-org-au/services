@@ -105,8 +105,11 @@
                                                title="Diff from current version">&Delta;&nbsp;current</a>,
                                             <a href="${createLink(namespace: 'api', controller: 'tree', action: 'checkCurrentSynonymy', params: [treeVersionId: version.id])}"
                                                title="Check Events">synonymy</a>,
-                                            <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'mergeReport', params: [draftId: version.id])}"
-                                               title="Check Events">merge</a>,
+%{--    NSL-5608--}%
+%{--    We will not remove the code BUT I would like it clear that the functionality is on hold until--}%
+%{--    we can find a use case for it. At this stage it can stay in the code base.--}%
+%{--                                            <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'mergeReport', params: [draftId: version.id])}"--}%
+%{--                                               title="Check Events">merge</a>,--}%
                                         </g:else>
                                     </g:if>
                                 </g:if>

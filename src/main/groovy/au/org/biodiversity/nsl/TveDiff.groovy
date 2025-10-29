@@ -5,6 +5,11 @@ package au.org.biodiversity.nsl
  * Date: 16/10/18
  *
  */
+/*
+NSL-5608
+We will not remove the code BUT I would like it clear that the functionality is on hold until
+we can find a use case for it. At this stage it can stay in the code base.
+ */
 class TveDiff {
 
     static final int ADDED = 1
