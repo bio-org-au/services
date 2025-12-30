@@ -711,6 +711,14 @@ DROP TABLE IF EXISTS orphans;''')
                 instance.reference.publicationDate = today
                 instance.reference.isoPublicationDate = now[Calendar.YEAR]
                 instance.reference.save()
+                ProfileItem profileItem = ProfileItem.findByInstance(instance)
+                if (profileItem.isDraft) {
+                    profileItem.isDraft = false
+                    profileItem.publishedDate = now
+                    profileItem.updatedAt = timeStamp
+                    profileItem.updatedBy = publishedBy
+                    profileItem.save()
+                }
             }
             instance.updatedAt = timeStamp
             instance.updatedBy = publishedBy
