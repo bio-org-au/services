@@ -728,15 +728,13 @@ DROP TABLE IF EXISTS orphans;''')
         Timestamp timeStamp = new Timestamp(System.currentTimeMillis())
         draftInstances.each { Instance instance ->
             instance.draft = false
-            if (!instance.reference.published) {
-                if (product.hasDefaultReference) {
-                    instance.reference = childRef
-                } else {
-                    instance.reference.published = true
-                    instance.reference.publicationDate = today
-                    instance.reference.isoPublicationDate = now[Calendar.YEAR]
-                    instance.reference.save()
-                }
+            if (product.hasDefaultReference) {
+                instance.reference = childRef
+            } else if (!instance.reference.published) {
+                instance.reference.published = true
+                instance.reference.publicationDate = today
+                instance.reference.isoPublicationDate = now[Calendar.YEAR]
+                qinstance.reference.save()
             }
             ProfileItem profileItem = ProfileItem.findByInstance(instance)
             if (profileItem && profileItem.isDraft) {
