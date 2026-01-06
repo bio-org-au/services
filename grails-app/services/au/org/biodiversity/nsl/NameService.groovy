@@ -102,6 +102,10 @@ class NameService implements AsyncHelper {
                     name.resources.each { resource ->
                         name.removeFromResources(resource)
                     }
+                    new HashSet(name.nameResources).each { NameResource nameResource ->
+                        name.removeFromNameResources(nameResource)
+                        nameResource.delete()
+                    }
                     name.delete()
                     Map response = linkService.deleteNameLinks(name, reason)
                     if (!response.success) {

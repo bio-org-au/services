@@ -133,7 +133,7 @@ dependencies {
 //    implementation project(":nsl-domain-plugin-g3")
     implementation "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.5.1-SNAPSHOT"
     // application plugins
-    implementation "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.6.0"
+    implementation "au.org.biodiversity.grails.plugins:nsl-domain-plugin-g3:3.6.2"
     implementation "org.apache.shiro:shiro-core:1.13.0"
     implementation "org.apache.shiro:shiro-web:1.13.0"
 
