@@ -27,7 +27,7 @@ class TreeVersionController extends BaseApiController {
             setDefaultDraftTreeVersion: ['PUT', 'POST'],
             editTreeVersion           : ['POST'],
             validate                  : ['GET'],
-            publish                   : ['PUT', 'POST', 'GET'],
+            publish                   : ['PUT', 'POST'],
             diff                      : ['GET']
     ]
 
