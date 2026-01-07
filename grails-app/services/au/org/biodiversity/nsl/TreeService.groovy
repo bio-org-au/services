@@ -699,7 +699,12 @@ DROP TABLE IF EXISTS orphans;''')
     def publishDraftInstances(TreeVersion treeVersion, String publishedBy) {
         Product product = Product.findByTree(treeVersion.tree)
         Reference childRef
-        if (product && product.hasDefaultReference) {
+        Timestamp timeStamp = new Timestamp(System.currentTimeMillis())
+        List<Instance> draftInstances = Instance.executeQuery('''select i from TreeVersionElement tve, Instance i 
+             where tve.treeVersion = :treeVersion  
+               and tve.treeElement.instanceId = i.id 
+               and i.draft = true''', [treeVersion: treeVersion])
+        if (product && product.hasDefaultReference && draftInstances.size() > 0) {
             childRef = new Reference(
                     reference: product.reference,
                     author: product.reference.author,
@@ -714,18 +719,17 @@ DROP TABLE IF EXISTS orphans;''')
                     refType: RefType.findByName('Database Record'),
                     title: 'Not set',
                     year: treeVersion.publishedAt.year,
-                    isoPublicationDate: new Date(treeVersion.publishedAt).format('yyyy-MM-dd')
+                    isoPublicationDate: treeVersion.publishedAt.format('yyyy-MM-dd'),
+                    createdBy: publishedBy,
+                    updatedBy: publishedBy,
+                    createdAt: timeStamp,
+                    updatedAt: timeStamp
             )
             childRef.save()
         }
 
-        List<Instance> draftInstances = Instance.executeQuery('''select i from TreeVersionElement tve, Instance i 
-             where tve.treeVersion = :treeVersion  
-               and tve.treeElement.instanceId = i.id 
-               and i.draft = true''', [treeVersion: treeVersion])
         Date now = new Date()
         String today = now.format('dd MMM YYYY')
-        Timestamp timeStamp = new Timestamp(System.currentTimeMillis())
         draftInstances.each { Instance instance ->
             instance.draft = false
             if (product && product.hasDefaultReference) {
@@ -739,7 +743,7 @@ DROP TABLE IF EXISTS orphans;''')
             ProfileItem profileItem = ProfileItem.findByInstance(instance)
             if (profileItem && profileItem.isDraft) {
                 profileItem.isDraft = false
-                profileItem.publishedDate = now
+                profileItem.publishedDate = timeStamp
                 profileItem.updatedAt = timeStamp
                 profileItem.updatedBy = publishedBy
                 profileItem.save()
