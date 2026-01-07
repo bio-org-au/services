@@ -27,7 +27,7 @@ class TreeVersionController extends BaseApiController {
             setDefaultDraftTreeVersion: ['PUT', 'POST'],
             editTreeVersion           : ['POST'],
             validate                  : ['GET'],
-            publish                   : ['PUT', 'POST'],
+            publish                   : ['PUT', 'POST', 'GET'],
             diff                      : ['GET']
     ]
 
@@ -53,7 +53,8 @@ class TreeVersionController extends BaseApiController {
         Map data = request.JSON as Map
         Long versionId = (data.versionId ?: null) as Long
         String logEntry = data.logEntry
-
+//        String logEntry = null
+//        Long versionId = params.versionId as Long
         TreeVersion treeVersion = TreeVersion.get(versionId)
         ResultObject results = requireTarget(treeVersion, "No Tree version with id: $versionId found")
         handleResults(results) {
