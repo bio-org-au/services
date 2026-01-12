@@ -32,6 +32,7 @@ class TreeService implements ValidationUtils, AsyncHelper {
     EventService eventService
     DistributionService distributionService
     SessionFactory sessionFactory
+    ReferenceService referenceService
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)
 
     /**
@@ -726,6 +727,7 @@ DROP TABLE IF EXISTS orphans;''')
                     updatedAt: timeStamp
             )
             childRef.save()
+            referenceService.reconstructChildCitations(product.reference)
         }
 
         Date now = new Date()
