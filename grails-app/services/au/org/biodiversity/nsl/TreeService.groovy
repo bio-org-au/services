@@ -743,7 +743,7 @@ DROP TABLE IF EXISTS orphans;''')
                 instance.reference.save()
             }
             ProfileItem.findAllByInstance(instance).each { profileItem ->
-                if (profileItem && profileItem.isDraft) {
+                if (profileItem.isDraft) {
                     profileItem.isDraft = false
                     profileItem.publishedDate = timeStamp
                     profileItem.updatedAt = timeStamp
