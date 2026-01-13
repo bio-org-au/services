@@ -697,6 +697,28 @@ DROP TABLE IF EXISTS orphans;''')
     }
 
     def publishDraftInstances(TreeVersion treeVersion, String publishedBy) {
+        Product product = Product.findByTree(treeVersion.tree)
+        Reference childRef
+        if (product && product.hasDefaultReference) {
+            childRef = new Reference(
+                    reference: product.reference,
+                    author: product.reference.author,
+                    displayTitle: 'Not set',
+                    language: product.reference.language,
+                    namespace: product.reference.namespace,
+                    parent: product.reference,
+                    publicationDate: treeVersion.publishedAt,
+                    published: true,
+                    publisher: product.reference.publisher,
+                    refAuthorRole: RefAuthorRole.findByName('Editor'),
+                    refType: RefType.findByName('Database Record'),
+                    title: 'Not set',
+                    year: treeVersion.publishedAt.year,
+                    isoPublicationDate: new Date(treeVersion.publishedAt).format('yyyy-MM-dd')
+            )
+            childRef.save()
+        }
+
         List<Instance> draftInstances = Instance.executeQuery('''select i from TreeVersionElement tve, Instance i 
              where tve.treeVersion = :treeVersion  
                and tve.treeElement.instanceId = i.id 
@@ -707,10 +729,14 @@ DROP TABLE IF EXISTS orphans;''')
         draftInstances.each { Instance instance ->
             instance.draft = false
             if (!instance.reference.published) {
-                instance.reference.published = true
-                instance.reference.publicationDate = today
-                instance.reference.isoPublicationDate = now[Calendar.YEAR]
-                instance.reference.save()
+                if (product.hasDefaultReference) {
+                    instance.reference = childRef
+                } else {
+                    instance.reference.published = true
+                    instance.reference.publicationDate = today
+                    instance.reference.isoPublicationDate = now[Calendar.YEAR]
+                    instance.reference.save()
+                }
                 ProfileItem profileItem = ProfileItem.findByInstance(instance)
                 if (profileItem.isDraft) {
                     profileItem.isDraft = false
