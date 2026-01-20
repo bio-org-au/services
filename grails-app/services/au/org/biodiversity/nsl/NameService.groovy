@@ -28,7 +28,6 @@ import org.springframework.transaction.TransactionStatus
 import javax.sql.DataSource
 import java.sql.Timestamp
 
-@Transactional
 class NameService implements AsyncHelper {
 
     DataSource dataSource
@@ -47,6 +46,7 @@ class NameService implements AsyncHelper {
     static String CREATED_EVENT = 'created'
     static String UPDATED_EVENT = 'updated'
 
+    @Transactional
     def nameUpdated(Name name, Notification note) {
         if (seen.contains(note.id)) {
             log.info "seen note, skipping $note"
@@ -58,6 +58,7 @@ class NameService implements AsyncHelper {
         name.discard() // make sure we don't update name in this TX
     }
 
+    @Transactional
     def nameCreated(Name name, Notification note) {
         if (seen.contains(note.id)) {
             log.info "seen note, skipping $note"
@@ -90,6 +91,7 @@ class NameService implements AsyncHelper {
      * @param name
      */
     @RequiresRoles('admin')
+    @Transactional
     Map deleteName(Name name, String reason) {
         Map canWeDelete = canDelete(name, reason)
         if (canWeDelete.ok) {
@@ -203,15 +205,16 @@ class NameService implements AsyncHelper {
         return report
     }
 
-    @RequiresRoles('admin')
-    Map deduplicate(Name duplicate, Name target, String user) {
-        if (!user) {
-            return [success: false, errors: ['You must supply a user.']]
-        }
-        Map results = dedup(duplicate, target, user)
-        return results
-    }
+//    @RequiresRoles('admin')
+//    Map deduplicate(Name duplicate, Name target, String user) {
+//        if (!user) {
+//            return [success: false, errors: ['You must supply a user.']]
+//        }
+//        Map results = dedup(duplicate, target, user)
+//        return results
+//    }
 
+    @Transactional
     private Map dedup(Name dupe, Name target, String user) {
         Map result = [:]
         Boolean success = true
