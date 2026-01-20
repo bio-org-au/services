@@ -244,7 +244,7 @@ class NameService implements AsyncHelper {
                         log.error "$result.errors"
                     }
                 } catch (e) {
-                    result.error = "Name deduplication failed: ($e.message)"
+                    result.error = "Name deduplication failed for dupe $dupe.id target $target.id : ($e.message ${e.cause?.message} ${e.cause?.cause?.message})"
                     log.error(result.error)
                     e.printStackTrace()
                     tx.setRollbackOnly()
