@@ -214,8 +214,7 @@ class NameService implements AsyncHelper {
 //        return results
 //    }
 
-    @Transactional
-    private Map dedup(Name dupe, Name target, String user) {
+        private Map dedup(Name dupe, Name target, String user) {
         Map result = [:]
         Boolean success = true
         if (dupe != target) {
