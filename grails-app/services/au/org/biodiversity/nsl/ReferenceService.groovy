@@ -84,6 +84,12 @@ class ReferenceService implements AsyncHelper {
 
             String edition = edition(reference, volume)
 
+            String versionLabel = versionLabel(reference)
+
+            String publisher = publisher(reference)
+
+            String url = url(reference)
+
             List<String> bits = []
             //prefix
             bits << authorName.wrap('<author>', '</author>')
@@ -109,10 +115,10 @@ class ReferenceService implements AsyncHelper {
             bits << edition.wrap('<edition>', '</edition>')
             bits << volume.wrap('<volume>', '</volume>')
             if (reference.refType.name == 'Dataset series' || reference.refType.name == 'Dataset version') {
-                bits << ('[Version] ' + reference.versionLabel).wrap('<ref-version>', '</ref-version>')
+                bits << ('[Version] ' + versionLabel).wrap('<ref-version>', '</ref-version>')
                 bits << '[Dataset]'.wrap('<ref-type>', '</ref-type>')
-                bits << reference.publisher.wrap('<ref-publisher>', '</ref-publisher>')
-                bits << reference.url.wrap('<ref-url>', '</ref-url>')
+                bits << publisher.wrap('<ref-publisher>', '</ref-publisher>')
+                bits << url.wrap('<ref-url>', '</ref-url>')
             }
 
             //postfix
@@ -229,6 +235,27 @@ class ReferenceService implements AsyncHelper {
             return reference.parent.isoPublicationDate
         }
         return null
+    }
+
+    private static String versionLabel(Reference reference) {
+        if (reference.versionLabel) {
+            return reference.versionLabel.trim()
+        }
+        return ''
+    }
+
+    private static String publisher(Reference reference) {
+        if (reference.publisher) {
+            return reference.publisher.trim()
+        }
+        return ''
+    }
+
+    private static String url(Reference reference) {
+        if (reference.url) {
+            return reference.url.trim()
+        }
+        return ''
     }
 
     void checkReferenceChanges(Reference reference) {
