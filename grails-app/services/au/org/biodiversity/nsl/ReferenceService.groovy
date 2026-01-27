@@ -108,6 +108,12 @@ class ReferenceService implements AsyncHelper {
             bits << parentTitle.wrap('<i>', '</i>').wrap('<par-title>', '</par-title>')
             bits << edition.wrap('<edition>', '</edition>')
             bits << volume.wrap('<volume>', '</volume>')
+            if (reference.refType.name == 'Dataset series' || reference.refType.name == 'Dataset version') {
+                bits << ('[Version] ' + reference.versionLabel).wrap('<ref-version>', '</ref-version>')
+                bits << '[Dataset]'.wrap('<ref-type>', '</ref-type>')
+                bits << reference.publisher.wrap('<ref-publisher>', '</ref-publisher>')
+                bits << reference.url.wrap('<ref-url>', '</ref-url>')
+            }
 
             //postfix
             switch (reference.refType.name) {
@@ -195,7 +201,7 @@ class ReferenceService implements AsyncHelper {
             if (reference.refType.useParentDetails && reference.parent) {
                 return pubDate(reference.parent)
             }
-            return ''
+            return 'n.d.'
         }
     }
 
