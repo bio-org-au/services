@@ -461,7 +461,7 @@ class TestUte {
                     name: name,
                     parentOptional: true,
                     parent: null,
-                    rdfId: 'blah',
+                    rdfId: name.toLowerCase().replace(' ', '-'),
                     descriptionHtml: 'blah',
                     useParentDetails: false
             )
