@@ -155,6 +155,18 @@ class NameService implements AsyncHelper {
         if (name.instances.size() > 0) {
             errors << 'There are instances that refer to this name'
         }
+        if (name.comments.size() > 0) {
+            errors << 'There are comments that refer to this name'
+        }
+        if (name.tags.size() > 0) {
+            errors << 'There are tags that refer to this name'
+        }
+        if (name.resources.size() > 0) {
+            errors << 'There are resources that refer to this name'
+        }
+        if (name.nameResources.size() > 0) {
+            errors << 'There are name_resources that refer to this name'
+        }
         Integer children = Name.countByParent(name)
         if (children > 0) {
             errors << "This name is a parent of $children names".toString()
