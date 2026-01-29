@@ -205,16 +205,7 @@ class NameService implements AsyncHelper {
         return report
     }
 
-//    @RequiresRoles('admin')
-//    Map deduplicate(Name duplicate, Name target, String user) {
-//        if (!user) {
-//            return [success: false, errors: ['You must supply a user.']]
-//        }
-//        Map results = dedup(duplicate, target, user)
-//        return results
-//    }
-
-        private Map dedup(Name dupe, Name target, String user) {
+    private Map dedup(Name dupe, Name target, String user) {
         Map result = [:]
         Boolean success = true
         if (dupe != target) {
@@ -264,42 +255,42 @@ class NameService implements AsyncHelper {
         log.debug "rewiring associations from $duplicate to $target"
         Timestamp now = new Timestamp(System.currentTimeMillis())
 
-        Name.findByParent(duplicate).each { Name child ->
+        Name.findAllByParent(duplicate).each { Name child ->
             child.parent = target
             child.updatedAt = now
             child.updatedBy = user
             child.save()
         }
 
-        Name.findBySecondParent(duplicate).each { Name child ->
+        Name.findAllBySecondParent(duplicate).each { Name child ->
             child.secondParent = target
             child.updatedAt = now
             child.updatedBy = user
             child.save()
         }
 
-        Name.findByFamily(duplicate).each { Name child ->
+        Name.findAllByFamily(duplicate).each { Name child ->
             child.family = target
             child.updatedAt = now
             child.updatedBy = user
             child.save()
         }
 
-        Name.findByDuplicateOf(duplicate).each { Name child ->
+        Name.findAllByDuplicateOf(duplicate).each { Name child ->
             child.duplicateOf = target
             child.updatedAt = now
             child.updatedBy = user
             child.save()
         }
 
-        Instance.findByName(duplicate).each { Instance instance ->
+        Instance.findAllByName(duplicate).each { Instance instance ->
             instance.name = target
             instance.updatedAt = now
             instance.updatedBy = user
             instance.save()
         }
 
-        TreeElement.findByNameId(duplicate.id).each { TreeElement te ->
+        TreeElement.findAllByNameId(duplicate.id).each { TreeElement te ->
             te.nameId = target.id
             te.simpleName = target.simpleName
             te.updatedAt = now
