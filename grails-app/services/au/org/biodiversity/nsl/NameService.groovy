@@ -210,8 +210,8 @@ class NameService implements AsyncHelper {
         Boolean success = true
         if (dupe != target) {
             //noinspection GroovyMissingReturnStatement
-            Name.withTransaction { tx ->
-                try {
+            try {
+                Name.withTransaction { tx ->
                     rewireDuplicateTo(target, dupe, user)
                     result.rewired = true
 
@@ -234,13 +234,13 @@ class NameService implements AsyncHelper {
                         success = false
                         log.error "$result.errors"
                     }
-                } catch (e) {
-                    result.error = "Name deduplication failed for dupe $dupe.id target $target.id : ($e.message ${e.cause?.message} ${e.cause?.cause?.message})"
-                    log.error(result.error)
-                    e.printStackTrace()
-                    tx.setRollbackOnly()
-                    success = false
                 }
+            } catch (e) {
+                result.error = "Name deduplication failed for dupe $dupe.id target $target.id : ($e.message ${e.cause?.message} ${e.cause?.cause?.message})"
+                log.error(result.error)
+                e.printStackTrace()
+                tx.setRollbackOnly()
+                success = false
             }
         } else {
             result.error = "Duplicate ($dupe) = Target ($target)"
