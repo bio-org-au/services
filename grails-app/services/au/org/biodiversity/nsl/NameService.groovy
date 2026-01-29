@@ -192,9 +192,10 @@ class NameService implements AsyncHelper {
         List<Name> namesMarkedAsDuplicates = Name.findAllByDuplicateOfIsNotNull()
         log.debug "duplicate names: $namesMarkedAsDuplicates"
         namesMarkedAsDuplicates.each { Name name ->
-            report.namesDeduplicated.add(name.duplicateOf)
             Map result = dedup(name, name.duplicateOf, user)
-            if (!result.success) {
+            if (result.success) {
+                report.namesDeduplicated.add(name.duplicateOf)
+            } else {
                 report.errors.add(result.error)
             }
         }
