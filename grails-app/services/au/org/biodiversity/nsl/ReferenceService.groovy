@@ -134,7 +134,7 @@ class ReferenceService implements AsyncHelper {
             String result = bits.findAll { it }
                                 .join(' ')
                                 .removeFullStop()
-                                .wrap("<ref-${reference.refType.name.toLowerCase().replace(' ', '-')}>", "</ref-${reference.refType.name.toLowerCase().replace(' ', '-')}>")
+                                .wrap("<ref-${reference.refType.rdfId}>", "</ref-${reference.refType.rdfId}>")
                                 .wrap("<ref data-id='${reference.id}'>", '</ref>')
             assert result != 'true'
             return result

@@ -717,7 +717,7 @@ DROP TABLE IF EXISTS orphans;''')
                     published: true,
                     publisher: product.reference.publisher,
                     refAuthorRole: RefAuthorRole.findByName('Editor'),
-                    refType: RefType.findByName('Database Record'),
+                    refType: RefType.findByRdfId('dataset-series'),
                     title: 'Not set',
                     year: treeVersion.publishedAt.year,
                     isoPublicationDate: treeVersion.publishedAt.format('yyyy-MM-dd'),
