@@ -224,7 +224,10 @@ class NameService implements AsyncHelper {
         if (dupe != target) {
             //noinspection GroovyMissingReturnStatement
             try {
-                Name.withTransaction { tx ->
+                Name.withTransaction { TransactionStatus tx ->
+                    if (!tx.isNewTransaction()) {
+                        log.error "dedup is not within a new transaction"
+                    }
                     rewireDuplicateTo(target, dupe, user)
                     result.rewired = true
 
