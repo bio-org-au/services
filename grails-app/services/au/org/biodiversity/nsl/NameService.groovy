@@ -593,6 +593,7 @@ or n.fullNameHtml is null""")?.first() as Integer
         }
     }
 
+    @Transactional
     void updateMissingUris() {
         Name.findAllByUriIsNull().each { Name name ->
             name.uri = linkService.getPreferredLinkForObjectSansHost(name)
