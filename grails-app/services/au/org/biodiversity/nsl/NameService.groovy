@@ -191,19 +191,22 @@ class NameService implements AsyncHelper {
                 namesDeduplicated: new HashSet<Name>(),
                 errors           : []
         ]
-
+        List<Long> ids = new ArrayList<>()
         //remove nested duplicates first
-        Name.findAllByDuplicateOfIsNotNull().each { Name name ->
-            int depth = 0
-            while (name.duplicateOf.duplicateOf && depth++ < 6) {
-                name.duplicateOf = name.duplicateOf.duplicateOf
-                name.save(flush: true)
+        Name.withTransaction {
+            Name.findAllByDuplicateOfIsNotNull().each { Name name ->
+                int depth = 0
+                while (name.duplicateOf.duplicateOf && depth++ < 6) {
+                    name.duplicateOf = name.duplicateOf.duplicateOf
+                    name.save(flush: true)
+                }
             }
         }
 
-        List<Name> namesMarkedAsDuplicates = Name.findAllByDuplicateOfIsNotNull()
+        List<Long> namesMarkedAsDuplicates = Name.findAllByDuplicateOfIsNotNull().id
         log.debug "duplicate names: $namesMarkedAsDuplicates"
-        namesMarkedAsDuplicates.each { Name name ->
+        namesMarkedAsDuplicates.each { Long id ->
+            Name name = Name.get(id)
             Map result = dedup(name, name.duplicateOf, user)
             if (result.success) {
                 report.namesDeduplicated.add(name.duplicateOf)
