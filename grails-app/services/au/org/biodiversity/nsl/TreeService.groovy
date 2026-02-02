@@ -719,7 +719,7 @@ DROP TABLE IF EXISTS orphans;''')
                     refAuthorRole: RefAuthorRole.findByName('Editor'),
                     refType: RefType.findByRdfId('dataset-series'),
                     title: product.reference.title,
-                    year: treeVersion.publishedAt.year,
+                    year: treeVersion.publishedAt.toLocalDateTime().year,
                     isoPublicationDate: treeVersion.publishedAt.format('yyyy-MM-dd'),
                     issn: product.reference.issn,
                     createdBy: publishedBy,
@@ -727,8 +727,11 @@ DROP TABLE IF EXISTS orphans;''')
                     createdAt: timeStamp,
                     updatedAt: timeStamp
             )
+            def unknownAuthor = saveAuthor(abbrev: '-', name: '-')
+            def editorRole = saveRefAuthorRole('Editor')
+            childRef.citationHtml = service.generateReferenceCitation(childRef, unknownAuthor, editorRole)
+            childRef.citation = NameConstructionService.stripMarkUp(childRef.citationHtml)
             childRef.save()
-            referenceService.reconstructChildCitations(product.reference)
         }
 
         Date now = new Date()
