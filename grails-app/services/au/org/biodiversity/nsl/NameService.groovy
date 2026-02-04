@@ -231,20 +231,21 @@ class NameService implements AsyncHelper {
                     if (!tx.isNewTransaction()) {
                         log.error "dedup is not within a new transaction"
                     }
-                    rewireDuplicateTo(target, dupe, user)
-                    result.rewired = true
 
-                    log.debug "move links to $target from $dupe"
-
-                    Map linkResult = linkService.moveTargetLinks(dupe, target)
-                    if (!linkResult.success) {
-                        throw new Exception("relinking [$dupe] failed. Linker error: ($linkResult.errors)")
-                    }
-
-                    result.relinked = true
                     log.info "About to delete $dupe"
                     Map canDelete = canDelete(dupe, 'duplicate')
                     if (canDelete.ok) {
+                        Map linkResult = linkService.moveTargetLinks(dupe, target)
+                        if (!linkResult.success) {
+                            throw new Exception("relinking [$dupe] failed. Linker error: ($linkResult.errors)")
+                        }
+                        result.relinked = true
+
+                        rewireDuplicateTo(target, dupe, user)
+                        result.rewired = true
+
+                        log.debug "move links to $target from $dupe"
+
                         dupe.delete()  //don't use delete name, we've already moved the links
                         target.duplicateOf = null
                         target.save()
