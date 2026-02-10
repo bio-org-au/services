@@ -701,7 +701,7 @@ DROP TABLE IF EXISTS orphans;''')
         Product product = Product.findByTree(treeVersion.tree)
         Reference childRef
         Timestamp timeStamp = new Timestamp(System.currentTimeMillis())
-        List<Object[]> draftInstances = Instance.executeQuery('''select i, tve.TreeElement from TreeVersionElement tve, Instance i 
+        List<Object[]> draftInstances = Instance.executeQuery('''select i, tve.treeElement from TreeVersionElement tve, Instance i 
              where tve.treeVersion = :treeVersion  
                and tve.treeElement.instanceId = i.id 
                and i.draft = true''', [treeVersion: treeVersion])
