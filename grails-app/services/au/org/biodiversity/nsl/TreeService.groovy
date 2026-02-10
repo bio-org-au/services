@@ -701,7 +701,7 @@ DROP TABLE IF EXISTS orphans;''')
         Product product = Product.findByTree(treeVersion.tree)
         Reference childRef
         Timestamp timeStamp = new Timestamp(System.currentTimeMillis())
-        List<Instance> draftInstances = Instance.executeQuery('''select i from TreeVersionElement tve, Instance i 
+        List<Object[]> draftInstances = Instance.executeQuery('''select i, tve.TreeElement from TreeVersionElement tve, Instance i 
              where tve.treeVersion = :treeVersion  
                and tve.treeElement.instanceId = i.id 
                and i.draft = true''', [treeVersion: treeVersion])
@@ -736,7 +736,7 @@ DROP TABLE IF EXISTS orphans;''')
 
         Date now = new Date()
         String today = now.format('dd MMM YYYY')
-        draftInstances.each { Instance instance ->
+        draftInstances.each { Instance instance, TreeElement treeElement ->
             instance.draft = false
             if (product && product.hasDefaultReference) {
                 instance.reference = childRef
@@ -758,6 +758,10 @@ DROP TABLE IF EXISTS orphans;''')
             instance.updatedAt = timeStamp
             instance.updatedBy = publishedBy
             instance.save()
+            treeElement.firstTreeVersion = treeVersion
+            treeElement.updatedAt = timeStamp
+            treeElement.updatedBy = publishedBy
+            treeElement.save()
         }
     }
 

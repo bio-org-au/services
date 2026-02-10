@@ -26,7 +26,6 @@ import org.apache.shiro.authz.annotation.RequiresRoles
 
 import static org.springframework.http.HttpStatus.*
 
-@Transactional
 class ReferenceController implements WithTarget {
 
     def referenceService

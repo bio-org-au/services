@@ -331,23 +331,27 @@ class ReferenceService implements AsyncHelper {
         reference.save()
     }
 
-    @Transactional
     Map deduplicateMarked(String user) {
         List<Map> refs = []
         //remove nested duplicates first
-        Reference.findAllByDuplicateOfIsNotNull().each { Reference reference ->
-            int depth = 0
-            while (reference.duplicateOf.duplicateOf && depth++ < 6) {
-                reference.duplicateOf = reference.duplicateOf.duplicateOf
-                reference.save(flush: true)
+        Reference.withTransaction {
+            Reference.findAllByDuplicateOfIsNotNull().each { Reference reference ->
+                int depth = 0
+                while (reference.duplicateOf.duplicateOf && depth++ < 6) {
+                    reference.duplicateOf = reference.duplicateOf.duplicateOf
+                    reference.save(flush: true)
+                }
             }
         }
-
-        Reference.findAllByDuplicateOfIsNotNull().each { Reference reference ->
-            Map result = [source: reference.id, target: reference.duplicateOf.id]
-            //noinspection GroovyAssignabilityCheck
-            result << moveReference(reference, reference.duplicateOf, user)
-            refs << result
+        List<Long> referenceIds = Reference.findAllByDuplicateOfIsNotNull().id
+        referenceIds.each { Long id
+            Reference.withTransaction {
+                Reference reference = Reference.get(id)
+                Map result = [source: reference.id, target: reference.duplicateOf.id]
+                //noinspection GroovyAssignabilityCheck
+                result << moveReference(reference, reference.duplicateOf, user)
+                refs << result
+            }
         }
         return [action: "deduplicate marked references", count: Reference.countByDuplicateOfIsNotNull(), references: refs]
     }
