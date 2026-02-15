@@ -727,9 +727,9 @@ DROP TABLE IF EXISTS orphans;''')
                     createdAt: timeStamp,
                     updatedAt: timeStamp
             )
-            def unknownAuthor = saveAuthor(abbrev: '-', name: '-')
-            def editorRole = saveRefAuthorRole('Editor')
-            childRef.citationHtml = service.generateReferenceCitation(childRef, unknownAuthor, editorRole)
+            Author unknownAuthor = Author.findByName('-')
+            RefAuthorRole editorRole = RefAuthorRole.findByName('Editor')
+            childRef.citationHtml = referenceService.generateReferenceCitation(childRef, unknownAuthor, editorRole)
             childRef.citation = NameConstructionService.stripMarkUp(childRef.citationHtml)
             childRef.save()
         }
