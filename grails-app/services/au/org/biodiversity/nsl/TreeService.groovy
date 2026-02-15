@@ -736,7 +736,9 @@ DROP TABLE IF EXISTS orphans;''')
 
         Date now = new Date()
         String today = now.format('dd MMM YYYY')
-        draftInstances.each { Instance instance, TreeElement treeElement ->
+        draftInstances.each { def res ->
+            Instance instance = res[0]
+            TreeElement treeElement = res[1]
             instance.draft = false
             if (product && product.hasDefaultReference) {
                 instance.reference = childRef
