@@ -114,9 +114,11 @@ class ReferenceService implements AsyncHelper {
             bits << parentTitle.wrap('<i>', '</i>').wrap('<par-title>', '</par-title>')
             bits << edition.wrap('<edition>', '</edition>')
             bits << volume.wrap('<volume>', '</volume>')
-            if (reference.refType.name == 'Dataset series' || reference.refType.name == 'Dataset version') {
-                bits << ('[Version] ' + versionLabel).wrap('<ref-version>', '</ref-version>')
-                bits << '[Dataset]'.wrap('<ref-type>', '</ref-type>')
+            if (reference.refType.rdfId == 'dataset-series' || reference.refType.rdfId == 'dataset-version') {
+                if (reference.refType.rdfId == 'dataset-version') {
+                    bits << ('(Version ' + versionLabel + ')').wrap('<ref-version>', '</ref-version>')
+                }
+                bits << '[Data set]'.wrap('<ref-type>', '</ref-type>')
                 bits << publisher.wrap('<ref-publisher>', '</ref-publisher>')
                 bits << url.wrap('<ref-url>', '</ref-url>')
             }
