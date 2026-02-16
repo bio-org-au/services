@@ -8,10 +8,11 @@ import org.apache.shiro.SecurityUtils
 import org.hibernate.SessionFactory
 
 import javax.sql.DataSource
-import java.sql.Timestamp
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import java.sql.Timestamp
+import java.time.format.DateTimeFormatter
 
 /**
  * The 2.0 Tree service. This service is the central location for all interaction with the tree.
@@ -697,6 +698,27 @@ DROP TABLE IF EXISTS orphans;''')
         return treeVersion
     }
 
+
+    def formatTimestamp(Timestamp ts) {
+        if (!ts) return ""
+
+        // Convert to LocalDateTime for the modern API
+        def ldt = ts.toLocalDateTime()
+
+        // 'd' gives 1, 2, 3... while 'dd' gives 01, 02, 03...
+        def day = ldt.format(DateTimeFormatter.ofPattern("d"))
+        def year = ldt.format(DateTimeFormatter.ofPattern("yyyy"))
+
+        // Get month names for comparison
+        def fullMonth = ldt.format(DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH))
+        def shortMonth = ldt.format(DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH))
+
+        // Apply the full-stop logic
+        def formattedMonth = fullMonth.length() > 3 ? "${shortMonth}." : shortMonth
+
+        return "${day} ${formattedMonth} ${year}"
+    }
+
     def publishDraftInstances(TreeVersion treeVersion, String publishedBy) {
         Product product = Product.findByTree(treeVersion.tree)
         Reference childRef
@@ -713,15 +735,17 @@ DROP TABLE IF EXISTS orphans;''')
                     language: product.reference.language,
                     namespace: product.reference.namespace,
                     parent: product.reference,
-                    publicationDate: treeVersion.publishedAt,
+                    publicationDate: formatTimestamp(treeVersion.publishedAt),
                     published: true,
+                    publishedLocation: product.reference.publishedLocation,
                     publisher: product.reference.publisher,
                     refAuthorRole: RefAuthorRole.findByName('Editor'),
-                    refType: RefType.findByRdfId('dataset-series'),
+                    refType: RefType.findByRdfId('dataset-version'),
                     title: product.reference.title,
                     year: treeVersion.publishedAt.toLocalDateTime().year,
                     isoPublicationDate: treeVersion.publishedAt.format('yyyy-MM-dd'),
                     issn: product.reference.issn,
+                    versionLabel: treeVersion.id as String,
                     createdBy: publishedBy,
                     updatedBy: publishedBy,
                     createdAt: timeStamp,
