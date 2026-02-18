@@ -132,7 +132,7 @@ class SynonymUnitSpec extends Specification implements DomainUnitTest<Name>, Dat
                 mis           : false,
                 syn           : true,
                 cites         : 'Author One (1999), reference one',
-                citesHtml     : '<ref data-id=\'1\'><ref-paper><author>Author One.</author> <year>(1999)</year>, <ref-title><i>reference one</i></ref-title></ref-paper></ref>',
+                citesHtml     : '<ref data-id=\'1\'><ref-paper><author>Author One</author> <year>(1999)</year>, <ref-title><i>reference one</i></ref-title></ref-paper></ref>',
                 cites_link    : "/reference/apni/${r1.id}",
                 year          : 1999
         ]

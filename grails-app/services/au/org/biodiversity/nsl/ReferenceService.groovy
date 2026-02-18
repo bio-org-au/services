@@ -92,9 +92,9 @@ class ReferenceService implements AsyncHelper {
 
             List<String> bits = []
             //prefix
-            bits << authorName.fullStop().wrap('<author>', '</author>')
+            bits << authorName.wrap('<author>', '</author>')
             if (!(reference.refType.rdfId == 'dataset-series' || reference.refType.rdfId == 'dataset-version')) {
-                bits << parentAuthorName.fullStop().wrap('<author>', '</author>')
+                bits << parentAuthorName.wrap('<author>', '</author>')
             }
             bits << pubDate.wrap('<year>', '</year>').comma()
 
