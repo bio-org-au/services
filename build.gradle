@@ -30,6 +30,9 @@ apply plugin:"com.bertramlabs.asset-pipeline"
 apply plugin: 'org.asciidoctor.convert'
 
 //war.archiveName("nsl#services##${rootProject.version}.war")
+war {
+    archiveFileName = "nsl#services-tomcat.war"
+}
 bootWar {
     archiveFileName = "nsl#services.war"
 }
