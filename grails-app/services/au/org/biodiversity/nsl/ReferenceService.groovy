@@ -92,26 +92,34 @@ class ReferenceService implements AsyncHelper {
 
             List<String> bits = []
             //prefix
-            bits << authorName.wrap('<author>', '</author>')
-            bits << parentAuthorName.wrap('<author>', '</author>')
+            bits << authorName.fullStop().wrap('<author>', '</author>')
+            if (!(reference.refType.rdfId == 'dataset-series' || reference.refType.rdfId == 'dataset-version')) {
+                bits << parentAuthorName.fullStop().wrap('<author>', '</author>')
+            }
             bits << pubDate.wrap('<year>', '</year>').comma()
 
-            if (superReferenceTitle) {  //only in book
-                bits << '<ref-title>'
-                bits << referenceTitle.comma()
-                bits << "in"
-                bits << superReferenceTitle.fullStop()
-                bits << '</ref-title>'
+            if (reference.refType.rdfId == 'dataset-series' || reference.refType.rdfId == 'dataset-version') {
+                bits << referenceTitle.wrap('<i>', '</i>').wrap('<ref-title>', '</ref-title>')
             } else {
-                if (parentTitle) {
-                    bits << referenceTitle.fullStop().wrap('<ref-title>', '</ref-title>')
+                if (superReferenceTitle) {  //only in book
+                    bits << '<ref-title>'
+                    bits << referenceTitle.comma()
+                    bits << "in"
+                    bits << superReferenceTitle.fullStop()
+                    bits << '</ref-title>'
                 } else {
-                    bits << referenceTitle.wrap('<i>', '</i>').wrap('<ref-title>', '</ref-title>')
+                    if (parentTitle) {
+                        bits << referenceTitle.fullStop().wrap('<ref-title>', '</ref-title>')
+                    } else {
+                        bits << referenceTitle.wrap('<i>', '</i>').wrap('<ref-title>', '</ref-title>')
+                    }
                 }
             }
 
             //middle
-            bits << parentTitle.wrap('<i>', '</i>').wrap('<par-title>', '</par-title>')
+            if (!(reference.refType.rdfId == 'dataset-series' || reference.refType.rdfId == 'dataset-version')) {
+                bits << parentTitle.wrap('<i>', '</i>').wrap('<par-title>', '</par-title>')
+            }
             bits << edition.wrap('<edition>', '</edition>')
             bits << volume.wrap('<volume>', '</volume>')
             if (reference.refType.rdfId == 'dataset-series' || reference.refType.rdfId == 'dataset-version') {
@@ -119,7 +127,7 @@ class ReferenceService implements AsyncHelper {
                     bits << ('(Version ' + versionLabel + ')').wrap('<ref-version>', '</ref-version>')
                 }
                 bits << '[Data set]'.wrap('<ref-type>', '</ref-type>')
-                bits << publisher.wrap('<ref-publisher>', '</ref-publisher>')
+                bits << publisher.fullStop().wrap('<ref-publisher>', '</ref-publisher>')
                 bits << url.wrap('<ref-url>', '</ref-url>')
             }
 
