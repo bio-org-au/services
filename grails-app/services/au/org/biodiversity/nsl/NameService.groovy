@@ -141,44 +141,56 @@ class NameService implements AsyncHelper {
         if (!reason) {
             errors << 'You need to supply a reason for deleting this name.'
         }
-        List<TreeVersionElement> currentTves = treeService.nameInAnyCurrentTree(name)
-        if (currentTves.size()) {
-            List<String> trees = currentTves.collect { tve ->
-                if (tve.treeVersion.published) {
-                    "Currently published tree $tve.treeVersion.tree.name"
-                } else {
-                    "Draft $tve.treeVersion.tree.name: $tve.treeVersion.draftName."
-                }
-            } as List<String>
-            errors << "This name is in ${trees.join(', ')}.".toString()
-        }
-        if (name.instances.size() > 0) {
-            errors << 'There are instances that refer to this name'
-        }
-        if (name.comments.size() > 0) {
-            errors << 'There are comments that refer to this name'
-        }
-        if (name.tags.size() > 0) {
-            errors << 'There are tags that refer to this name'
-        }
-        if (name.resources.size() > 0) {
-            errors << 'There are resources that refer to this name'
-        }
         if (name.nameResources.size() > 0) {
-            errors << 'There are name_resources that refer to this name'
+            errors << 'There are nameResources ${name.nameResources} that refer to this name'
         }
-        Integer children = Name.countByParent(name)
-        if (children > 0) {
-            errors << "This name is a parent of $children names".toString()
-        }
-        Integer stepChildren = Name.countBySecondParent(name)
-        if (stepChildren > 0) {
-            errors << "This name is a second parent of $stepChildren names".toString()
-        }
-        Integer duplicates = Name.countByDuplicateOf(name)
-        if (duplicates > 0) {
-            errors << "This name $duplicates duplicates names. Delete them first?".toString()
-        }
+//        List<TreeVersionElement> currentTves = treeService.nameInAnyCurrentTree(name)
+//        if (currentTves.size()) {
+//            List<String> trees = currentTves.collect { tve ->
+//                if (tve.treeVersion.published) {
+//                    "Currently published tree $tve.treeVersion.tree.name"
+//                } else {
+//                    "Draft $tve.treeVersion.tree.name: $tve.treeVersion.draftName."
+//                }
+//            } as List<String>
+//            errors << "This name is in ${trees.join(', ')}.".toString()
+//        }
+//        if (name.instances.size() > 0) {
+//            errors << 'There are instances that refer to this name'
+//        }
+//        if (name.comments.size() > 0) {
+//            errors << 'There are comments that refer to this name'
+//        }
+//        if (name.tags.size() > 0) {
+//            errors << 'There are tags that refer to this name'
+//        }
+//        if (name.resources.size() > 0) {
+//            errors << 'There are resources that refer to this name'
+//        }
+//        if (name.nameResources.size() > 0) {
+//            errors << 'There are name_resources that refer to this name'
+//        }
+//        Integer children = Name.countByParent(name)
+//        if (children > 0) {
+//            errors << "This name is a parent of $children names".toString()
+//        }
+//        Integer stepChildren = Name.countBySecondParent(name)
+//        if (stepChildren > 0) {
+//            errors << "This name is a second parent of $stepChildren names".toString()
+//        }
+//        Integer duplicates = Name.countByDuplicateOf(name)
+//        if (duplicates > 0) {
+//            errors << "This name $duplicates duplicates names. Delete them first?".toString()
+//        }
+//        Integer comments = Name.countByComments(name)
+//        if (comments > 0) {
+//            errors << "This name has comments $comments".toString()
+//        }
+//        Integer tags = Name.countByTags(name)
+//        if (comments > 0) {
+//            errors << "This name has tags $tags".toString()
+//        }
+
 
         if (errors.size() > 0) {
             return [ok: false, errors: errors]
@@ -316,6 +328,42 @@ class NameService implements AsyncHelper {
             te.updatedAt = now
             te.updatedBy = user
             te.save()
+        }
+
+        Comment.findAllByName(duplicate).each { Comment co ->
+            co.name = target
+            co.updatedAt = now
+            co.updatedBy = user
+            co.save()
+        }
+
+        new ArrayList<>(duplicate.tags).each {dupTag ->
+            if (!target.tags.contains(dupTag)) {
+                target.addToTags(dupTag)
+            }
+            duplicate.removeFromTags(dupTag)
+        }
+
+        new ArrayList<>(duplicate.nameResources).each { dupRes ->
+            boolean alreadyExists = target.nameResources.any { it.value == dupRes.value }
+
+            if (!alreadyExists) {
+                // Move it: Add to target, then remove from duplicate
+                target.addToNameResources(dupRes)
+                duplicate.removeFromNameResources(dupRes)
+                // Note: Removing here is safe because it's the
+                // original collection and we aren't using an iterator yet
+            } else {
+                // Collision! Leave it on the duplicate.
+                // This can't happen because of the previous canDelete check
+            }
+        }
+
+        new ArrayList<>(duplicate.resources).each { dupRes ->
+            if (!target.resources.contains(dupRes)) {
+                target.addToResources(dupRes)
+            }
+            duplicate.removeFromResources(dupRes)
         }
 
         Name.withSession {
