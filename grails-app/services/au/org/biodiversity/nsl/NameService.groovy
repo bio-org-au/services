@@ -245,16 +245,16 @@ class NameService implements AsyncHelper {
                     }
 
                     log.info "About to delete $dupe"
+                    Map linkResult = linkService.moveTargetLinks(dupe, target)
+                    if (!linkResult.success) {
+                        throw new Exception("relinking [$dupe] failed. Linker error: ($linkResult.errors)")
+                    }
+                    result.relinked = true
+
+                    rewireDuplicateTo(target, dupe, user)
+                    result.rewired = true
                     Map canDelete = canDelete(dupe, 'duplicate')
                     if (canDelete.ok) {
-                        Map linkResult = linkService.moveTargetLinks(dupe, target)
-                        if (!linkResult.success) {
-                            throw new Exception("relinking [$dupe] failed. Linker error: ($linkResult.errors)")
-                        }
-                        result.relinked = true
-
-                        rewireDuplicateTo(target, dupe, user)
-                        result.rewired = true
 
                         log.debug "move links to $target from $dupe"
 
