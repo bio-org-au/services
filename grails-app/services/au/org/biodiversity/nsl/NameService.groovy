@@ -349,8 +349,8 @@ class NameService implements AsyncHelper {
 
             if (!alreadyExists) {
                 // Move it: Add to target, then remove from duplicate
-                target.addToNameResources(dupRes)
                 duplicate.removeFromNameResources(dupRes)
+                target.addToNameResources(dupRes)
                 dupRes.name = target
             } else {
                 // Collision! Leave it on the duplicate.
