@@ -357,6 +357,7 @@ class ReferenceService implements AsyncHelper {
         referenceIds.each { Long id
             Reference.withTransaction {
                 Reference reference = Reference.get(id)
+                log.debug "ReferenceService.dedpulicateMarked: id:$id did:${reference?.duplicateOf?.id}"
                 Map result = [source: reference.id, target: reference.duplicateOf.id]
                 //noinspection GroovyAssignabilityCheck
                 result << moveReference(reference, reference.duplicateOf, user)
