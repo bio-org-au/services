@@ -359,11 +359,12 @@ class NameService implements AsyncHelper {
         }
 
         new ArrayList<>(duplicate.resources).each { dupRes ->
+            duplicate.removeFromResources(dupRes)
             if (!target.resources.contains(dupRes)) {
                 target.addToResources(dupRes)
+            } else {
+                dupRes.delete()
             }
-            duplicate.removeFromResources(dupRes)
-            dupRes.delete()
         }
 
         Name.withSession {
