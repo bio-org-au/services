@@ -111,7 +111,7 @@ class NameService implements AsyncHelper {
                     name.delete()
                     Map response = linkService.deleteNameLinks(name, reason)
                     if (!response.success) {
-                        List<String> errors = ["Error deleting link from the mapper"]
+                        List<String> errors = ["Error deleting link from the mapper. " + response.errors]
                         errors.addAll(response.errors as String)
                         t.setRollbackOnly()
                         return [ok: false, errors: errors]

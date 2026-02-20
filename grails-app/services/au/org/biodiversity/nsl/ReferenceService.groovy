@@ -457,7 +457,7 @@ class ReferenceService implements AsyncHelper {
                     Map response = linkService.moveTargetLinks(source, target)
 
                     if (!response.success) {
-                        List<String> errors = ["Error moving the link in the mapper."]
+                        List<String> errors = ["Error moving the link in the mapper. " + response.errors]
                         log.error "Setting rollback only: $response.errors"
                         t.setRollbackOnly()
                         return [ok: false, errors: errors]
@@ -495,7 +495,7 @@ class ReferenceService implements AsyncHelper {
 
                     reference.delete()
                     if (!response.success) {
-                        List<String> errors = ["Error deleting link from the mapper"]
+                        List<String> errors = ["Error deleting link from the mapper. " + response.errors]
                         errors.addAll(response.errors as List<String>)
                         t.setRollbackOnly()
                         return [ok: false, errors: errors]
