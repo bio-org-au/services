@@ -353,9 +353,9 @@ class ReferenceService implements AsyncHelper {
                     reference.save(flush: true)
                 }
             }
-            referenceIds = Reference.findAllByDuplicateOfIsNotNull().id
         }
-        referenceIds.each { Long id
+        referenceIds = Reference.findAllByDuplicateOfIsNotNull().id
+        referenceIds.each { Long id ->
             Reference.withTransaction {
                 Reference reference = Reference.get(id)
                 log.debug "ReferenceService.dedpulicateMarked: id:$id did:${reference?.duplicateOf?.id}"
