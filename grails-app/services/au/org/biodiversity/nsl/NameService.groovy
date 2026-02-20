@@ -351,10 +351,7 @@ class NameService implements AsyncHelper {
                 // Move it: Add to target, then remove from duplicate
                 target.addToNameResources(dupRes)
                 duplicate.removeFromNameResources(dupRes)
-                dupRes.name = null
-                dupRes.delete()
-                // Note: Removing here is safe because it's the
-                // original collection and we aren't using an iterator yet
+                dupRes.name = target
             } else {
                 // Collision! Leave it on the duplicate.
                 // This can't happen because of the previous canDelete check
