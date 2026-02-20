@@ -344,6 +344,7 @@ class ReferenceService implements AsyncHelper {
     Map deduplicateMarked(String user) {
         List<Map> refs = []
         //remove nested duplicates first
+        List<Long> referenceIds = []
         Reference.withTransaction {
             Reference.findAllByDuplicateOfIsNotNull().each { Reference reference ->
                 int depth = 0
@@ -352,8 +353,8 @@ class ReferenceService implements AsyncHelper {
                     reference.save(flush: true)
                 }
             }
+            referenceIds = Reference.findAllByDuplicateOfIsNotNull().id
         }
-        List<Long> referenceIds = Reference.findAllByDuplicateOfIsNotNull().id
         referenceIds.each { Long id
             Reference.withTransaction {
                 Reference reference = Reference.get(id)
