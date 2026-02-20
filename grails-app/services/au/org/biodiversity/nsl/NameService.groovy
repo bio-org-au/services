@@ -351,6 +351,7 @@ class NameService implements AsyncHelper {
                 // Move it: Add to target, then remove from duplicate
                 target.addToNameResources(dupRes)
                 duplicate.removeFromNameResources(dupRes)
+                dupRes.delete()
                 // Note: Removing here is safe because it's the
                 // original collection and we aren't using an iterator yet
             } else {
@@ -364,6 +365,7 @@ class NameService implements AsyncHelper {
                 target.addToResources(dupRes)
             }
             duplicate.removeFromResources(dupRes)
+            dupRes.delete()
         }
 
         Name.withSession {
