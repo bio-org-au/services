@@ -303,7 +303,7 @@ class NameService implements AsyncHelper {
         if (tableExists) {
 
             String updateQuery = "UPDATE loader.loader_name_match SET name_id = ? WHERE name_id = ?"
-            log.info "QUERY: $updateQuery"
+            log.error "QUERY: $updateQuery"
             int updatedRows = sql.executeUpdate(updateQuery, [target.id, duplicate.id])
             log.info "Successfully updated ${updatedRows} rows in loader.loader_name_match"
         } else {
