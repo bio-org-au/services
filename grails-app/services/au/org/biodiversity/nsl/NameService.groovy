@@ -26,10 +26,13 @@ import org.quartz.Scheduler
 import org.springframework.transaction.TransactionStatus
 
 import javax.sql.DataSource
+import java.sql.DatabaseMetaData
+import java.sql.ResultSet
 import java.sql.Timestamp
 
 class NameService implements AsyncHelper {
 
+    def sessionFactory
     DataSource dataSource
     def restCallService
     def nameConstructionService
@@ -280,6 +283,31 @@ class NameService implements AsyncHelper {
         }
         result.success = success
         return result
+    }
+
+
+    /**
+     * Updates loader_name_match table using portable JDBC metadata.
+     */
+    void rewireLoader(Name name) {
+        def connection = sessionFactory.currentSession.connection()
+        Sql sql = new Sql(connection)
+
+        DatabaseMetaData metaData = connection.getMetaData()
+
+        ResultSet resultSet = metaData.getTables(null, "loader", "loader_name_match", null)
+
+        boolean tableExists = resultSet.next()
+        resultSet.close() // Always close the cursor
+
+        if (tableExists) {
+            String updateQuery = "UPDATE loader.loader_name_match SET name_id = ? WHERE name_id = ?"
+
+            int updatedRows = sql.executeUpdate(updateQuery, [name.id, name.duplicateOf.id])
+            log.info "Successfully updated ${updatedRows} rows in loader.loader_name_match"
+        } else {
+            log.debug "Table loader.loader_name_match not found via JDBC metadata."
+        }
     }
 
     @SuppressWarnings("GrMethodMayBeStatic")
