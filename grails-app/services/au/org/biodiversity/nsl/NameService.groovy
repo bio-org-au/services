@@ -289,7 +289,7 @@ class NameService implements AsyncHelper {
     /**
      * Updates loader_name_match table using portable JDBC metadata.
      */
-    void rewireLoader(Name name) {
+    void rewireLoader(Name target, Name duplicate) {
         def connection = sessionFactory.currentSession.connection()
         Sql sql = new Sql(connection)
 
@@ -303,7 +303,7 @@ class NameService implements AsyncHelper {
         if (tableExists) {
             String updateQuery = "UPDATE loader.loader_name_match SET name_id = ? WHERE name_id = ?"
 
-            int updatedRows = sql.executeUpdate(updateQuery, [name.id, name.duplicateOf.id])
+            int updatedRows = sql.executeUpdate(updateQuery, [target.id, duplicate.id])
             log.info "Successfully updated ${updatedRows} rows in loader.loader_name_match"
         } else {
             log.debug "Table loader.loader_name_match not found via JDBC metadata."
@@ -395,6 +395,7 @@ class NameService implements AsyncHelper {
             }
         }
 
+        rewireLoader(target, duplicate)
         Name.withSession {
             it.flush()
         }
