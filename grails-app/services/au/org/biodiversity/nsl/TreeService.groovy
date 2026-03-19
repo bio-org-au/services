@@ -449,7 +449,7 @@ select tve.treeElement.displayHtml, tve.elementLink, tve.treeElement.nameLink, t
     from TreeVersionElement tve, Instance i
     where tve.treeVersion = :version
     and tve.treeElement.instanceId = i.id
-    and regex(tve.treePath, :pattern) = true 
+    and regex_raw(tve.treePath, :pattern) = true 
     order by tve.namePath
 ''', [version: treeVersion, pattern: pattern]).collect { data ->
             new DisplayElement(data as List, hostPart)
