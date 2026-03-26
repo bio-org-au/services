@@ -2154,7 +2154,7 @@ and regex(namePath, :newPath) = true
         if (!existingSynonyms.empty) {
             String message = "Can’t place this concept "
             existingSynonyms.each { Map s ->
-                message += "- synonym ${s.synonym} is also a synonym of **${s.displayHtml}**\n"
+                message += "- synonym ${s.synonym} is also a synonym of ${s.simpleName}\n"
             }
             throw new BadArgumentsException("$message")
         }
