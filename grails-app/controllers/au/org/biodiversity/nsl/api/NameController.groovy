@@ -351,14 +351,15 @@ order by n.simpleName asc''',
                                 instanceService.sortInstances(instance.instancesForCitedBy.findAll {
                                     it.instanceType.misapplied
                                 } as List<Instance>).each { Instance missapp ->
-                                    String rel = "${missapp.instanceType.name.replaceAll('misapplied', 'misapplication')}" +
-                                            " $missapp.cites.name.fullNameHtml" +
-                                            " by ${missapp?.cites?.reference?.citationHtml}: ${missapp?.cites?.page ?: '-'}"
-
+                                    String rel = "${missapp.instanceType.name.replaceAll('misapplied', 'misapplication')}"
+                                    if (missapp.cites) {
+                                        rel += " $missapp.cites.name.fullNameHtml" +
+                                                " by ${missapp?.cites?.reference?.citationHtml}: ${missapp?.cites?.page ?: '-'}"
+                                    }
                                     inst.relationships << jsonRendererService.brief(missapp, [
                                             page        : instancePage(missapp),
                                             relationship: rel,
-                                            name        : missapp.cites.name.fullName
+                                            name        : missapp.name.fullName
                                     ])
                                 }
 
