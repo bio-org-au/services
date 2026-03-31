@@ -404,7 +404,7 @@ WHERE tve.tree_version_id = :versionId
 	List<DisplayElement> displayElementsToDepth(TreeVersion treeVersion, int depth) {
 		mustHave(treeElement: treeVersion)
 		String pattern = "^[^/]*(/[^/]*){0,$depth}\$"
-		fetchDisplayElements(pattern, treeVersion)
+		fetchDisplayElementsRE(pattern, treeVersion)
 	}
 
 	@SuppressWarnings("unused")
@@ -428,7 +428,7 @@ WHERE tve.tree_version_id = :versionId
 			count = countElementsAtDepth(treeVersion, prefix, depth)
 		}
 		String pattern = "$prefix(/[^/]*){0,$depth}\$"
-		fetchDisplayElements(pattern, treeVersion)
+		fetchDisplayElementsRE(pattern, treeVersion)
 	}
 
 	/**
