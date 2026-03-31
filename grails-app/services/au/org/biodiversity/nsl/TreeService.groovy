@@ -516,7 +516,7 @@ select count(tve)
 select count(tve) 
 	from TreeVersionElement tve
 	where tve.treeVersion = :version
-	and regex(tve.treePath, :pattern) = true
+	and regex_raw(tve.treePath, :pattern) = true
 ''', [version: parent, pattern: pattern]).first() as int
 		return count
 	}
