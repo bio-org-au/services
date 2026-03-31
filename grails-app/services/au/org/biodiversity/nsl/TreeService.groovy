@@ -371,7 +371,7 @@ WHERE tve.tree_version_id = :versionId
 	@Transactional(readOnly = true)
 	int countAllChildElements(TreeVersionElement parent) {
 		mustHave(parent: parent, 'parent.treeElement': parent.treeElement, 'parent.treeVersion': parent.treeVersion)
-		String pattern = "^${parent.treePath}/.*"
+		String pattern = "^${parent.treePath}/%"
 		countElementsByPath(parent.treeVersion, pattern)
 	}
 
@@ -379,7 +379,7 @@ WHERE tve.tree_version_id = :versionId
 	int countElementsAtDepth(TreeVersion treeVersion, String prefix, int depth) {
 		mustHave(treeVersion: treeVersion, prefix: prefix)
 		String pattern = "$prefix(/[^/]*){0,$depth}\$"
-		countElementsByPath(treeVersion, pattern)
+		countElementsByPathRE(treeVersion, pattern)
 	}
 
 	/**
@@ -495,6 +495,20 @@ select tve
 
 	@Transactional(readOnly = true)
 	int countElementsByPath(TreeVersion parent, String pattern) {
+		mustHave(parent: parent, pattern: pattern)
+		log.debug("countElementsByPath: counting $pattern")
+
+		int count = TreeElement.executeQuery('''
+select count(tve) 
+	from TreeVersionElement tve
+	where tve.treeVersion = :version
+	and tve.treePath LIKE :pattern
+''', [version: parent, pattern: pattern]).first() as int
+		return count
+	}
+
+	@Transactional(readOnly = true)
+	int countElementsByPathRE(TreeVersion parent, String pattern) {
 		mustHave(parent: parent, pattern: pattern)
 		log.debug("countElementsByPath: counting $pattern")
 
