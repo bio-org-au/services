@@ -1677,17 +1677,29 @@ where te.display_html <> ('<data>' || n.full_name_html || ' <citation>' || r.cit
 		log.debug "refreshDisplayHtml: Started"
 		Sql sql = getSql()
 		sql.executeUpdate('''
-		   update tree_element te
-			 set display_html = '<data>' || n.full_name_html ||
-			 '<name-status class="' || ns.name|| '">, ' || ns.name ||
-			 '</name-status> <citation>' || r.citation_html || '</citation></data>',
-			synonyms_html = coalesce(synonyms_as_html(i.id), '<synonyms></synonyms>')
-		   from name n join name_status ns on n.name_status_id = ns.id,
-		   instance i, reference r
-		   where te.name_id = n.id
-			 and te.instance_id = i.id
-			 and i.reference_id = r.id;
-		   ''')
+UPDATE tree_element te
+SET 
+    display_html = sub.new_display_html,
+    synonyms_html = sub.new_synonyms_html
+FROM (
+    SELECT 
+        te.id AS te_id,
+        '<data>' || n.full_name_html ||
+        '<name-status class="' || ns.name || '">, ' || ns.name ||
+        '</name-status> <citation>' || r.citation_html || '</citation></data>' AS new_display_html,
+        COALESCE(synonyms_as_html(i.id), '<synonyms></synonyms>') AS new_synonyms_html
+    FROM tree_element te
+    JOIN name n ON te.name_id = n.id
+    JOIN name_status ns ON n.name_status_id = ns.id
+    JOIN instance i ON te.instance_id = i.id
+    JOIN reference r ON i.reference_id = r.id
+) sub
+WHERE te.id = sub.te_id
+  -- avoid audit records...
+  AND (
+    te.display_html IS DISTINCT FROM sub.new_display_html OR 
+    te.synonyms_html IS DISTINCT FROM sub.new_synonyms_html
+  )''')
 		log.debug "refreshDisplayHtml: Finished"
 	}
 
