@@ -21,6 +21,7 @@ class UrlMappings {
     static excludes = ["/metrics/*", "/monitoring", "/monitoring/*"]
 
     static mappings = {
+        "/robots.txt" (view: "/robots")
         "/search"(controller: 'search', action: 'index')
         "/search/form"(controller: 'search', action: 'searchForm')
         "/auth/$action"(controller: 'auth')
