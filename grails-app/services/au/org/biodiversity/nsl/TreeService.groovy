@@ -2190,18 +2190,18 @@ and regex(namePath, :newPath) = true
 		}
 	}
 
-	private void checkSynonymsAreNotSynonymsOnTheTree(TaxonData taxonData, TreeVersion treeVersion, List<TreeVersionElement> excluding) {
-		//a name can't be already in the tree as a synonym
-		List<Long> nameIdList = taxonData.synonyms.filtered().collect { it.nameId }
-		List<Map> existingSynonyms = checkNameIdsAgainstAllSynonyms(nameIdList, treeVersion, excluding)
-		if (!existingSynonyms.empty) {
-			String message = "Can’t place this concept "
-			existingSynonyms.each { Map s ->
-				message += "- synonym ${s.synonym} is also a synonym of ${s.simpleName}\n"
-			}
-			throw new BadArgumentsException("$message")
-		}
-	}
+    private void checkSynonymsAreNotSynonymsOnTheTree(TaxonData taxonData, TreeVersion treeVersion, List<TreeVersionElement> excluding) {
+        //a name can't be already in the tree as a synonym
+        List<Long> nameIdList = taxonData.synonyms.filtered().collect { it.nameId }
+        List<Map> existingSynonyms = checkNameIdsAgainstAllSynonyms(nameIdList, treeVersion, excluding)
+        if (!existingSynonyms.empty) {
+            String message = "Can’t place this concept "
+            existingSynonyms.each { Map s ->
+                message += "- synonym ${s.synonym} is also a synonym of **${s.displayHtml}**\n"
+            }
+            throw new BadArgumentsException("$message")
+        }
+    }
 
 	private void checkNameNotAnExistingSynonym(TaxonData taxonData, TreeVersion treeVersion, List<TreeVersionElement> excluding) {
 		//a name can't be already in the tree as a synonym
