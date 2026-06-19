@@ -60,8 +60,7 @@ class ServiceTagLib {
         def v = attrs.v
         if (v instanceof Map) {
             out << displayMap(map: v)
-        } else if (v instanceof List) {
-
+        } else if (v instanceof Collection) {
             out << '<ul>'
             v.each { sv ->
                 out << "<li>"
