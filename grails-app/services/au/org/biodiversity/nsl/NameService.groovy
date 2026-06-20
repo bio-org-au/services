@@ -258,10 +258,8 @@ class NameService implements AsyncHelper {
                     result.rewired = true
                     Map canDelete = canDelete(dupe, 'duplicate')
                     if (canDelete.ok) {
-
                         log.debug "move links to $target from $dupe"
-
-                        dupe.delete()  //don't use delete name, we've already moved the links
+                        Name.executeUpdate("delete from Name n where n.id = :id", [id: dupe.id]) // avoids some optimisitic locking madness
                         target.duplicateOf = null
                         target.save()
                     } else {
