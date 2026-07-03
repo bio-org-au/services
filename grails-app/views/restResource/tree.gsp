@@ -83,7 +83,7 @@
                         useButton="${true}">${currentTreeVersion.id} published ${currentTreeVersion.publishedAt.dateString}</st:preferredLink>
                 are for reference only.</div>
                 <table class="table">
-                    <tr><th>Version</th><th>published</th><th>Notes</th><th>Remove action</th></tr>
+                    <tr><th>Version</th><th>Published</th><th>Notes</th><th>Remove action</th></tr>
                     <g:each in="${versions}" var="version">
                         <tr>
                             <td><st:preferredLink target="${version}"
@@ -94,15 +94,31 @@
                                 <g:if test="${currentTreeVersion}">
                                     <g:if test="${version.id != currentTreeVersion.id}">
                                         <g:if test="${version.published}">
-                                            <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v1: version.id, v2: currentTreeVersion.id])}"
-                                               title="Diff to current version">&Delta;&nbsp;current</a>,<g:if
-                                                test="${version.previousVersion}">
-                                            <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v2: version.id, v1: version.previousVersion.id])}"
-                                               title="Diff to current version">&Delta;&nbsp;previous</a>,</g:if>
+%{--                                            <a href="${g.createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v1: version.id, v2: currentTreeVersion.id])}"--}%
+%{--                                               title="Diff to current version">&Delta;&nbsp;current</a>,<g:if--}%
+%{--                                                test="${version.previousVersion}">--}%
+%{--                                            <a href="${g.createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v2: version.id, v1: version.previousVersion.id])}"--}%
+%{--                                               title="Diff to current version">&Delta;&nbsp;previous</a>,</g:if>--}%
+
+                                            <g:form method="GET" namespace="api" controller="treeVersion" action="diff" style="display: inline-block;">
+                                                <g:hiddenField name="v1" value="${version?.id}"/>
+                                                <g:hiddenField name="v2" value="${currentTreeVersion?.id}"/>
+                                                <button class="linkbutton" type="submit" title="Diff to current version">&Delta;&nbsp;current</button>
+                                            </g:form>
+                                            <g:form method="GET" namespace="api" controller="treeVersion" action="diff" style="display: inline-block;">
+                                                <g:hiddenField name="v1" value="${version.previousVersion?.id}"/>
+                                                <g:hiddenField name="v2" value="${version?.id}"/>
+                                                <button class="linkbutton" type="submit" title="Diff to previous version">&Delta;&nbsp;previous</button>
+                                            </g:form>
                                         </g:if>
                                         <g:else>
-                                            <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v1: currentTreeVersion.id, v2: version.id])}"
-                                               title="Diff from current version">&Delta;&nbsp;current</a>,
+                                            <g:form method="GET" namespace="api" controller="treeVersion" action="diff" style="display: inline-block;">
+                                                <g:hiddenField name="v1" value="${currentTreeVersion?.id}"/>
+                                                <g:hiddenField name="v2" value="${version?.id}"/>
+                                                <button class="linkbutton" type="submit" title="Diff to current version">&Delta;&nbsp;current</button>
+                                            </g:form>,
+%{--                                            <a href="${createLink(namespace: 'api', controller: 'treeVersion', action: 'diff', params: [v1: currentTreeVersion.id, v2: version.id])}"--}%
+%{--                                               title="Diff from current version">&Delta;&nbsp;current</a>,--}%
                                             <a href="${createLink(namespace: 'api', controller: 'tree', action: 'checkCurrentSynonymy', params: [treeVersionId: version.id])}"
                                                title="Check Events">synonymy</a>,
 %{--    NSL-5608--}%
