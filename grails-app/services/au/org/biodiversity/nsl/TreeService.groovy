@@ -211,19 +211,27 @@ class TreeService implements ValidationUtils, AsyncHelper {
 				'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId order by treeVersion.id desc',
 				[tree: tree, instanceId: instance.id])
 	}
-
+//	SELECT tve.element_link as element_link
+//	FROM tree_element el join tree_version_element tve on el.id = tve.tree_element_id,
+//	jsonb_array_elements(synonyms -> 'list') AS tax_syn join instance i on (tax_syn ->> 'instance_id'):: NUMERIC :: BIGINT = i.id
+//			WHERE tve.tree_version_id = :versionId
+//	AND synonyms is not null
+//	AND synonyms ->> 'list' is not null
+//	and i.name_id = :nameId
 	@Transactional(readOnly = true)
 	List<TreeVersionElement> findElementsForSynonym(Long nameId, TreeVersion treeVersion, Sql sql = getSql()) {
 		if (nameId && treeVersion) {
 			List<TreeVersionElement> tves = []
 			sql.eachRow('''
-		SELECT tve.element_link as element_link
-FROM tree_element el join tree_version_element tve on el.id = tve.tree_element_id,
-	 jsonb_array_elements(synonyms -> 'list') AS tax_syn join instance i on (tax_syn ->> 'instance_id'):: NUMERIC :: BIGINT = i.id
-WHERE tve.tree_version_id = :versionId
-  AND synonyms is not null
-  AND synonyms ->> 'list' is not null
-  and i.name_id = :nameId''', [versionId: treeVersion.id, nameId: nameId]) { row ->
+SELECT tve.element_link
+FROM instance i
+     join tree_element e on i.cited_by_id = e.instance_id
+     join instance_type it on i.instance_type_id = it.id
+     join tree_version_element tve on tve.tree_element_id = e.id
+where i.name_id = :nameId
+  and it.synonym and not it.unsourced
+  and tve.tree_version_id = :versionId
+''', [versionId: treeVersion.id, nameId: nameId]) { row ->
 				tves.add(TreeVersionElement.get(row.element_link as String))
 			}
 			return tves
