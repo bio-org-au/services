@@ -119,12 +119,7 @@ class ReferenceController implements WithTarget {
     
     @RequiresRoles('admin')
     def deduplicateMarked(String user) {
-        if (!user) {
-            user = SecurityUtils.subject.principal.toString()
-        }
         ResultObject results = new ResultObject(referenceService.deduplicateMarked(user))
-        //noinspection GroovyAssignabilityCheck
-
         respond(results, [status: OK, view: '/common/serviceResult', model: [data: results,]])
     }
 }

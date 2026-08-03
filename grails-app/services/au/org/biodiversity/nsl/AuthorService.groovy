@@ -113,6 +113,8 @@ class AuthorService implements AsyncHelper {
                     log.info "About to delete $dupeAuthor"
                     dupeAuthor.delete()
                     targetAuthor.duplicateOf = null
+                    targetAuthor.apiName = user
+                    targetAuthor.apiAt = new Timestamp(System.currentTimeMillis())
                     targetAuthor.save()
                 } catch (e) {
                     result.error = "Author deduplication failed: ($e.message)"
@@ -144,61 +146,61 @@ class AuthorService implements AsyncHelper {
         duplicate.namesForAuthor.each { Name name ->
             log.debug "setting author on name $name to $target from $duplicate"
             name.author = target
-            name.updatedAt = now
-            name.updatedBy = user
+            name.apiName = user
+            name.apiAt = now
             name.save()
         }
         duplicate.namesForBaseAuthor.each { Name name ->
             log.debug "setting base author on name $name to $target from $duplicate"
             name.baseAuthor = target
-            name.updatedAt = now
-            name.updatedBy = user
+            name.apiName = user
+            name.apiAt = now
             name.save()
         }
         duplicate.namesForExAuthor.each { Name name ->
             log.debug "setting ex author on name $name to $target from $duplicate"
             name.exAuthor = target
-            name.updatedAt = now
-            name.updatedBy = user
+            name.apiName = user
+            name.apiAt = now
             name.save()
         }
         duplicate.namesForExBaseAuthor.each { Name name ->
             log.debug "setting ex base author on name $name to $target from $duplicate"
             name.exBaseAuthor = target
-            name.updatedAt = now
-            name.updatedBy = user
+            name.apiName = user
+            name.apiAt = now
             name.save()
         }
         duplicate.namesForSanctioningAuthor.each { Name name ->
             log.debug "setting sanctioning author on name $name to $target from $duplicate"
             name.sanctioningAuthor = target
-            name.updatedAt = now
-            name.updatedBy = user
+            name.apiName = user
+            name.apiAt = now
             name.save()
         }
         duplicate.references.each { Reference reference ->
             log.debug "setting author on reference $reference to $target from $duplicate"
             reference.author = target
-            reference.updatedAt = now
-            reference.updatedBy = user
+            reference.apiName = user
+            reference.apiAt = now
             reference.save()
         }
         duplicate.comments.each { Comment comment ->
             log.debug "setting author on comment $comment to $target from $duplicate"
             comment.author = target
-            comment.updatedAt = now
-            comment.updatedBy = user
+            comment.apiName = user
+            comment.apiAt = now
             comment.save()
         }
         duplicate.save()
         log.debug "setting duplicates for $duplicate to $target"
         Author.findAllByDuplicateOf(duplicate)*.duplicateOf = target
         duplicate.duplicateOf = target
-        target.updatedAt = now
-        target.updatedBy = user
+        target.apiName = user
+        target.apiAt = now
         target.save()
-        duplicate.updatedAt = now
-        duplicate.updatedBy = user
+        duplicate.apiName = user
+        duplicate.apiAt = now
         duplicate.save()
         log.debug "have set duplicates for $duplicate to $target"
     }

@@ -409,10 +409,12 @@ class ReferenceService implements AsyncHelper {
                                     value: source.notes,
                                     instanceNoteKey: refNote,
                                     namespace: configService.nameSpace,
-                                    updatedBy: user,
-                                    updatedAt: now,
-                                    createdBy: user,
-                                    createdAt: now
+                                    updatedBy: source.updatedBy,
+                                    updatedAt: source.updatedAt,
+                                    createdBy: source.createdBy,
+                                    createdAt: source.createdAt,
+                                    apiName: user,
+                                    apiAt: now
                             )
                             source.instances.each { instance ->
                                 instance.addToInstanceNotes(note)
@@ -435,22 +437,22 @@ class ReferenceService implements AsyncHelper {
                     instances.each { instance ->
                         log.info "Moving instance $instance to $target"
                         instance.reference = target
-                        instance.updatedAt = now
-                        instance.updatedBy = user
+                        instance.apiName = user
+                        instance.apiAt = now
                         instance.save(flush: true)
                     }
                     source.referencesForParent.each { ref ->
                         log.info "Moving parent of $ref to $target"
                         ref.parent = target
-                        ref.parent.updatedAt = now
-                        ref.parent.updatedBy = user
+                        ref.parent.apiName = user
+                        ref.parent.apiAt = now
                         ref.save(flush: true)
                     }
                     source.comments.each { comment ->
                         log.info "Moving comment $comment to $target"
                         comment.reference = target
-                        comment.updatedAt = now
-                        comment.updatedBy = user
+                        comment.apiName = user
+                        comment.apiAt = now
                         comment.save(flush: true)
                     }
 
@@ -464,8 +466,8 @@ class ReferenceService implements AsyncHelper {
                     }
                     target.refresh()
                     source.refresh()
-                    target.updatedAt = now
-                    target.updatedBy = user
+                    target.apiName = user
+                    target.apiAt = now
                     target.save(flush: true)
                     source.save(flush: true)
                     log.debug "instances on reference ${source.instances.size()}"

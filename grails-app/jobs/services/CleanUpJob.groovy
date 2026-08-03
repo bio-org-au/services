@@ -20,10 +20,10 @@ class CleanUpJob {
 
     def execute() {
         println "Running cleanup."
-        referenceService.deduplicateMarked('cleanUpJob')
+        referenceService.deduplicateMarked('reference.dedup')
         instanceService.updateMissingUris()
         nameService.updateMissingUris()
-        authorService.autoDeduplicate('cleanUpJob')
+        authorService.autoDeduplicate('author.dedup')
         treeService.refreshDisplayHtml()
     }
 }

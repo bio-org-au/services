@@ -1589,8 +1589,8 @@ INSERT INTO tree_version_element (tree_version_id,
 		update instance
 		set
 			cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>'),
-			updated_by = 'SynonymyUpdateJob',
-			updated_at = now()
+			api_name = 'refreshSynonymHtmlCache',
+			api_at = now()
 		where
 			id in (select distinct instance_id from tree_element)
 		and
@@ -1688,7 +1688,9 @@ where te.display_html <> ('<data>' || n.full_name_html || ' <citation>' || r.cit
 UPDATE tree_element te
 SET 
     display_html = sub.new_display_html,
-    synonyms_html = sub.new_synonyms_html
+    synonyms_html = sub.new_synonyms_html,
+    apiAt = CURRENT_TIMESTAMP,
+    apiName = 'refreshDisplayHtml'
 FROM (
     SELECT 
         te.id AS te_id,

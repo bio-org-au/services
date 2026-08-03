@@ -141,15 +141,13 @@ class AdminController {
 
     @RequiresRoles('admin')
     deduplicateMarkedReferences() {
-        String user = SecurityUtils.subject.principal.toString()
-        ResultObject results = new ResultObject(referenceService.deduplicateMarked(user))
+        ResultObject results = new ResultObject(referenceService.deduplicateMarked('reference.dedup'))
         serviceResponse(results)
     }
 
     @RequiresRoles('admin')
     deduplicateMarkedNames() {
-        String user = SecurityUtils.subject.principal.toString()
-        ResultObject results = new ResultObject(nameService.deduplicateMarked(user))
+        ResultObject results = new ResultObject(nameService.deduplicateMarked('name.dedup'))
         serviceResponse(results)
     }
 

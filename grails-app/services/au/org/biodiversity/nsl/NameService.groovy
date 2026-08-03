@@ -261,6 +261,8 @@ class NameService implements AsyncHelper {
                         log.debug "move links to $target from $dupe"
                         Name.executeUpdate("delete from Name n where n.id = :id", [id: dupe.id]) // avoids some optimisitic locking madness
                         target.duplicateOf = null
+                        target.apiName = user
+                        target.apiAt = new Timestamp(System.currentTimeMillis())
                         target.save()
                     } else {
                         result.error = "Can't delete $dupe.simpleName, $dupe.id after rewiring: ${canDelete.errors.join('\n')}"
@@ -677,6 +679,8 @@ or n.fullNameHtml is null""")?.first() as Integer
     void updateMissingUris() {
         Name.findAllByUriIsNull().each { Name name ->
             name.uri = linkService.getPreferredLinkForObjectSansHost(name)
+            name.apiName = 'updateMissingUris'
+            name.apiAt = new Timestamp(System.currentTimeMillis())
             name.save()
         }
     }

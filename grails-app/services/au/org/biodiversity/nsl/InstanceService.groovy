@@ -20,6 +20,8 @@ import grails.gorm.transactions.Transactional
 import org.apache.shiro.authz.annotation.RequiresRoles
 import org.springframework.transaction.TransactionStatus
 
+import java.sql.Timestamp
+
 @Transactional
 class InstanceService implements AsyncHelper {
 
@@ -272,6 +274,8 @@ class InstanceService implements AsyncHelper {
     def updateMissingUris() {
         Instance.findAllByUriIsNull().each { Instance instance ->
             instance.uri = linkService.getPreferredLinkForObjectSansHost(instance)
+            instance.apiName = 'updateMissingUris'
+            instance.apiAt = new Timestamp(System.currentTimeMillis())
             instance.save()
         }
     }
