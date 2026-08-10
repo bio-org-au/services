@@ -56,7 +56,7 @@
           <af:getTypeNotes instance="${instance}" var="instanceNote">
             <li>
               <instance-note-key
-                  class="${instanceNote.instanceNoteKey.name}">${instanceNote.instanceNoteKey.name}XXXX:YYYY</instance-note-key>
+                  class="${instanceNote.instanceNoteKey.name}">${instanceNote.instanceNoteKey.name}</instance-note-key>
               <instance-note>${instanceNote.value}</instance-note>
             </li>
           </af:getTypeNotes>
