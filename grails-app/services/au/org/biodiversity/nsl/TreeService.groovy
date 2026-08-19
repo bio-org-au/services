@@ -1691,8 +1691,8 @@ UPDATE tree_element te
 SET 
     display_html = sub.new_display_html,
     synonyms_html = sub.new_synonyms_html,
-    apiAt = CURRENT_TIMESTAMP,
-    apiName = 'refreshDisplayHtml'
+    api_at = CURRENT_TIMESTAMP,
+    api_name = 'refreshDisplayHtml'
 FROM (
     SELECT 
         te.id AS te_id,
