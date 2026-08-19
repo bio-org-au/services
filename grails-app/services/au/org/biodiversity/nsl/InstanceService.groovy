@@ -224,6 +224,8 @@ class InstanceService implements AsyncHelper {
                     String newValue = ApniFormatService.transformXicsToUTF8(note.value)
                     if (newValue != note.value) {
                         note.value = newValue
+                        note.apiName = 'replaceXICSinInstanceNotes'
+                        note.apiAt = new Timestamp(System.currentTimeMillis())
                         note.save()
                         changed++
                     }

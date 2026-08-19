@@ -90,7 +90,9 @@ class DistributionService {
                     treeElement: element,
                     distEntry: entry,
                     updatedAt: new Timestamp(System.currentTimeMillis()),
-                    updatedBy: userName
+                    updatedBy: userName,
+                    apiName: 'addMissingDistEntries',
+                    apiAt: new Timestamp(System.currentTimeMillis())
             )
             log.debug "creating: $entry : $element"
             ent.save()

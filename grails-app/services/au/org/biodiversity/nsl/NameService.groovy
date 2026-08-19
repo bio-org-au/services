@@ -520,6 +520,8 @@ class NameService implements AsyncHelper {
                                 name.simpleNameHtml = constructedName.simpleMarkedUpName
                                 name.simpleName = constructedName.plainSimpleName
                                 name.sortName = nameConstructionService.makeSortName(name, name.simpleName)
+                                name.apiName = 'reconstructAllNames'
+                                name.apiAt = new Timestamp(System.currentTimeMillis())
                                 name.save()
                             }
                             itemNo++
@@ -591,6 +593,8 @@ class NameService implements AsyncHelper {
                             String sortName = nameConstructionService.makeSortName(name, name.simpleName)
                             if (!(name.sortName) || name.sortName != sortName) {
                                 name.sortName = sortName
+                                name.apiName = 'reconstructSortNames'
+                                name.apiAt = new Timestamp(System.currentTimeMillis())
                                 name.save()
                             }
                         } catch (e) {
@@ -633,6 +637,8 @@ or n.fullNameHtml is null""", params)
                             name.fullName = constructedNames.plainFullName
                             name.simpleNameHtml = constructedNames.simpleMarkedUpName
                             name.simpleName = constructedNames.plainSimpleName
+                            name.apiName = 'constructMissingNames'
+                            name.apiAt = new Timestamp(System.currentTimeMillis())
                             name.save()
                             log.debug "saved $name.fullName"
                         } catch (e) {
@@ -695,7 +701,9 @@ or n.fullNameHtml is null""")?.first() as Integer
         log.info("Fixing name paths")
         Sql sql = getSql()
         sql.executeUpdate('''update name n
-set name_path = broken.newpath
+set name_path = broken.newpath,
+    api_name = 'fixNamePaths',
+    api_at = now()
 from (select child.id id, parent.name_path || '/' || coalesce(child.name_element, '') newpath
       from name child
                join name parent on child.parent_id = parent.id
@@ -747,6 +755,8 @@ where s.name = :nameStatusString
                             name.fullName = constructedNames.plainFullName
                             name.simpleNameHtml = constructedNames.simpleMarkedUpName
                             name.simpleName = constructedNames.plainSimpleName
+                            name.apiName = 'constructManuscriptNames'
+                            name.apiAt = new Timestamp(System.currentTimeMillis())
                             name.save()
                             // log.debug "saved $name.fullName"
                         } catch (e) {

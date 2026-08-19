@@ -1567,7 +1567,9 @@ INSERT INTO tree_version_element (tree_version_id,
 
 			sql.executeUpdate('''
 			UPDATE tree_version_element AS tve
-			SET tree_path = get_tree_path(tve.tree_element_id, :tvId)
+			SET tree_path = get_tree_path(tve.tree_element_id, :tvId),
+			api_name = 'updateInvalidTreePaths',
+			api_at = now()
 			FROM searchByName('%', :tvId) as s
 			WHERE tve.tree_path <> get_tree_path(tve.tree_element_id, :tvId)
 			AND tve.element_link = s.element_link;
@@ -1591,7 +1593,7 @@ INSERT INTO tree_version_element (tree_version_id,
 			cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>'),
 			api_name = 'refreshSynonymHtmlCache',
 			api_at = now()
-		where
+Z		where
 			id in (select distinct instance_id from tree_element)
 		and
 			 cached_synonymy_html <> coalesce(synonyms_as_html(id), '<synonyms></synonyms>');''')

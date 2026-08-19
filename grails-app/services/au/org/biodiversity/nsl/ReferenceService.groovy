@@ -315,6 +315,8 @@ class ReferenceService implements AsyncHelper {
                             if (reference.citationHtml != citationHtml) {
                                 reference.citationHtml = citationHtml
                                 reference.citation = NameConstructionService.stripMarkUp(citationHtml)
+                                reference.apiName = 'reconstructAllCitations'
+                                reference.apiAt new Timestamp(System.currentTimeMillis())
                                 reference.save()
                             }
                         } catch (e) {
@@ -565,6 +567,8 @@ class ReferenceService implements AsyncHelper {
                     String newValue = ApniFormatService.transformXicsToUTF8(reference.title)
                     if (newValue != reference.title) {
                         reference.title = newValue
+                        reference.apiName = 'replaceXICSinReferenceTitles'
+                        reference.apiAt = new Timestamp(System.currentTimeMillis())
                         reference.save()
                         changed++
                     }
