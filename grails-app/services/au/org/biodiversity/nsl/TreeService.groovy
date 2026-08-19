@@ -1593,7 +1593,7 @@ INSERT INTO tree_version_element (tree_version_id,
 			cached_synonymy_html = coalesce(synonyms_as_html(id), '<synonyms></synonyms>'),
 			api_name = 'refreshSynonymHtmlCache',
 			api_at = now()
-Z		where
+		where
 			id in (select distinct instance_id from tree_element)
 		and
 			 cached_synonymy_html <> coalesce(synonyms_as_html(id), '<synonyms></synonyms>');''')
