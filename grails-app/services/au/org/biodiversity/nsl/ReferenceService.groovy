@@ -316,7 +316,7 @@ class ReferenceService implements AsyncHelper {
                                 reference.citationHtml = citationHtml
                                 reference.citation = NameConstructionService.stripMarkUp(citationHtml)
                                 reference.apiName = 'reconstructAllCitations'
-                                reference.apiAt new Timestamp(System.currentTimeMillis())
+                                reference.apiAt = new Timestamp(System.currentTimeMillis())
                                 reference.save()
                             }
                         } catch (e) {
