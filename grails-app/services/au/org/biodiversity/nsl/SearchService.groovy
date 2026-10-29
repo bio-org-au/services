@@ -342,8 +342,8 @@ order by sortName
         if (allRanksAbove) {
             return 0
         }
-        if (rank.name == 'Genus') {
-            return NameRank.findByName('Familia').sortOrder
+        if (rank.rdfId == 'genus') {
+            return NameRank.findByRdfId('family').sortOrder
         }
         return RankUtils.parentOrMajor(rank)?.sortOrder ?: 0
     }

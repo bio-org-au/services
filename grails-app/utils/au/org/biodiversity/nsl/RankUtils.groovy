@@ -18,7 +18,7 @@ package au.org.biodiversity.nsl
 /**
  * This is best used as a Category e.g.
  *
- * use(RankUtils) {*     name.nameAtRankOrLower('Genus');
+ * use(RankUtils) {*     name.nameAtRankOrLower('genus');
  *}*
  * User: pmcneil
  * Date: 3/12/14
@@ -26,67 +26,66 @@ package au.org.biodiversity.nsl
  */
 class RankUtils {
 
-
-    private static Integer rankOrder(String rankName){
-        NameRank.findByName(rankName).sortOrder
+    private static Integer rankOrder(String rdfId){
+        NameRank.findByRdfId(rdfId).sortOrder
     }
-    
+
     /**
      * Checks if the NameRank provided is higher than the rank of Name rankName.
      * Higher ranks have a lower rank sort order, so Genus is higher that Species.
      *
-     * assert rankHigherThan(NameRank.findByName('Genus'), 'Species') == true
-     * assert rankHigherThan(NameRank.findByName('Species'), 'Genus') == false
-     * assert rankHigherThan(NameRank.findByName('Genus'), 'Genus') == false
+     * assert rankHigherThan(NameRank.findByRdfId('genus'), 'species') == true
+     * assert rankHigherThan(NameRank.findByRdfId('species'), 'genus') == false
+     * assert rankHigherThan(NameRank.findByRdfId('genus'), 'genus') == false
      *
      * @param rank
-     * @param rankName
-     * @return true if rank is higher than the rank with the name rankName
+     * @param rdfId
+     * @return true if rank is higher than the rank with the name rdfId
      */
-    static Boolean rankHigherThan(NameRank rank, String rankName) {
-        return rankOrder(rankName) > rank.sortOrder
+    static Boolean rankHigherThan(NameRank rank, String rdfId) {
+        return rankOrder(rdfId) > rank.sortOrder
     }
 
     static Boolean rankHigherThan(NameRank rankA, NameRank rankB) {
         return rankB.sortOrder > rankA.sortOrder
     }
 
-    static Boolean rankLowerThan(NameRank rank, String rankName) {
-        return rankOrder(rankName) < rank.sortOrder
+    static Boolean rankLowerThan(NameRank rank, String rdfId) {
+        return rankOrder(rdfId) < rank.sortOrder
     }
 
     /**
-     * Checks if the NameRank provided is lower than the rank of Name rankName.
+     * Checks if the NameRank provided is lower than the rank of Name rdfId.
      * Lower ranks have a higher rank sort order, so Species is lower that Genus.
      *
-     * assert rankLowerThan(NameRank.findByName('Genus'), 'Species') == false
-     * assert rankLowerThan(NameRank.findByName('Species'), 'Genus') == true
+     * assert rankLowerThan(NameRank.findByRdfId('genus'), 'gpecies') == false
+     * assert rankLowerThan(NameRank.findByRdfId('species'), 'senus') == true
      *
      * This ranks with a sort order of 500 (or above) will always return false
      * as they are effectively unranked.
      *
      * @param rank
-     * @param rankName
-     * @return true if rank is lower than the rank with the name rankName
+     * @param rdfId
+     * @return true if rank is lower than the rank with the name rdfId
      */
-    static Boolean nameAtRankOrHigher(Name name, String rankName) {
-        return rankOrder(rankName) >= name.nameRank.sortOrder
+    static Boolean nameAtRankOrHigher(Name name, String rdfId) {
+        return rankOrder(rdfId) >= name.nameRank.sortOrder
     }
 
-    static Boolean nameAtRankOrLower(Name name, String rankName) {
-        return rankOrder(rankName) <= name.nameRank.sortOrder
+    static Boolean nameAtRankOrLower(Name name, String rdfId) {
+        return rankOrder(rdfId) <= name.nameRank.sortOrder
     }
 
-    static Boolean nameLowerThanRank(Name name, String rankName) {
-        return rankOrder(rankName) < name.nameRank.sortOrder
+    static Boolean nameLowerThanRank(Name name, String rdfId) {
+        return rankOrder(rdfId) < name.nameRank.sortOrder
     }
 
     static Boolean nameLowerThanRank(Name name, NameRank rank) {
         return rank.sortOrder < name.nameRank.sortOrder
     }
 
-    static Boolean nameHigherThanRank(Name name, String rankName) {
-        return rankOrder(rankName) > name.nameRank.sortOrder
+    static Boolean nameHigherThanRank(Name name, String rdfId) {
+        return rankOrder(rdfId) > name.nameRank.sortOrder
     }
 
     static nextMajorRank(NameRank rank, Boolean up = true) {

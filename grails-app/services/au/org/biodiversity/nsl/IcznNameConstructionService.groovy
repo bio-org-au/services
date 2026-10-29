@@ -75,7 +75,7 @@ class IcznNameConstructionService implements NameConstructor {
 
     private ConstructedName constructScientificName(Name name) {
         use(NameConstructionUtils) {
-            Name nameParent = (RankUtils.rankLowerThan(name.nameRank, 'Genus')) ? name.parent : null
+            Name nameParent = (RankUtils.rankLowerThan(name.nameRank, 'genus')) ? name.parent : null
             String precedingName = constructPrecedingNameString(nameParent, name)
 
             if (nameParent && !precedingName) {

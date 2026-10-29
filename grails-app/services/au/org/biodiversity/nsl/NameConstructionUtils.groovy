@@ -6,14 +6,19 @@ package au.org.biodiversity.nsl
  *
  */
 class NameConstructionUtils {
+    static def unrankedRdfs = ['unranked', 'cv-species', 'cv-subsp', 'cv-var']
+
+    static boolean isUnranked(String rdfId) {
+        return unrankedRdfs.contains(rdfId)
+    }
 
     static Name nameParent(Name name) {
         use(RankUtils) {
-            if (name.nameRank.name == '[unranked]') {
+            if (isUnranked(name.nameRank.rdfId)) {
                 return firstMajorRankedParent(name)
             }
             Name next = name
-            if (next.nameLowerThanRank('Genus') || next.nameRank.visibleInName) {
+            if (next.nameLowerThanRank('genus') || next.nameRank.visibleInName) {
                 NameRank parentRank = next.nameRank.parentRank
                 int count = 9 //count to prevent recursive parents causing issues
                 if (parentRank) {
@@ -35,7 +40,7 @@ class NameConstructionUtils {
     static Name firstMajorRankedParent(Name name) {
         int count = 5
         while (name && name.parent && count-- > 0) {
-            if (name.parent.nameRank.name != '[unranked]' && name.parent.nameRank.major) {
+            if (!isUnranked(name.parent.nameRank.rdfId) && name.parent.nameRank.major) {
                 return name.parent
             }
             name = name.parent

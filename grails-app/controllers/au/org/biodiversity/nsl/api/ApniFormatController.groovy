@@ -57,7 +57,7 @@ class ApniFormatController {
             }
 
             String photoSearch = null
-            if (RankUtils.nameAtRankOrLower(name, 'Species') && photoService.hasPhoto(name.simpleName)) {
+            if (RankUtils.nameAtRankOrLower(name, 'species') && photoService.hasPhoto(name.simpleName)) {
                 photoSearch = photoService.searchUrl(name.simpleName)
             }
 
@@ -82,7 +82,7 @@ class ApniFormatController {
             log.info "getting ${configService.nameTreeName} name $name"
             ResultObject model = new ResultObject(apniFormatService.getNameModel(name, TreeVersion.get(versionId), drafts))
             String photoSearch = null
-            if (RankUtils.nameAtRankOrLower(name, 'Species') && photoService.hasPhoto(name.simpleName)) {
+            if (RankUtils.nameAtRankOrLower(name, 'species') && photoService.hasPhoto(name.simpleName)) {
                 photoSearch = photoService.searchUrl(name.simpleName)
             }
             model << [drafts   : drafts,
