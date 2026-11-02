@@ -53,13 +53,13 @@ class TreeService implements ValidationUtils, AsyncHelper {
 
 	@Transactional(readOnly = true)
 	TreeVersionElement getTreeVersionElement(Long versionId, Long elementId) {
-		find('from TreeVersionElement where treeVersion.id = :versionId and treeElement.id = :elementId',
+		TreeVersionElement.find('from TreeVersionElement where treeVersion.id = :versionId and treeElement.id = :elementId',
 				[versionId: versionId, elementId: elementId])
 	}
 
 	@Transactional(readOnly = true)
 	TreeVersionElement findElementBySimpleName(String simpleName, TreeVersion treeVersion) {
-		find("from TreeVersionElement tve where tve.treeElement.simpleName = :simpleName and treeVersion= :version", [simpleName: simpleName, version: treeVersion])
+		TreeVersionElement.find("from TreeVersionElement tve where tve.treeElement.simpleName = :simpleName and treeVersion= :version", [simpleName: simpleName, version: treeVersion])
 	}
 
 	/**
@@ -96,7 +96,7 @@ class TreeService implements ValidationUtils, AsyncHelper {
 	@Transactional(readOnly = true)
 	TreeVersionElement findElementForNameId(Long nameId, TreeVersion treeVersion) {
 		if (nameId && treeVersion) {
-			return find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.nameId = :nameId',
+			return TreeVersionElement.find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.nameId = :nameId',
 					[treeVersion: treeVersion, nameId: nameId])
 		}
 		return null
@@ -105,7 +105,7 @@ class TreeService implements ValidationUtils, AsyncHelper {
 	@Transactional(readOnly = true)
 	TreeVersionElement findElementForNameLink(String nameLink, TreeVersion treeVersion) {
 		if (nameLink && treeVersion) {
-			return find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.nameLink = :nameLink',
+			return TreeVersionElement.find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.nameLink = :nameLink',
 					[treeVersion: treeVersion, nameLink: nameLink])
 		}
 		return null
@@ -139,7 +139,7 @@ class TreeService implements ValidationUtils, AsyncHelper {
 	@Transactional(readOnly = true)
 	TreeVersionElement findElementForInstanceId(Long instanceId, TreeVersion treeVersion) {
 		if (instanceId && treeVersion) {
-			return find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.instanceId = :instanceId',
+			return TreeVersionElement.find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.instanceId = :instanceId',
 					[treeVersion: treeVersion, instanceId: instanceId])
 		}
 		return null
@@ -148,7 +148,7 @@ class TreeService implements ValidationUtils, AsyncHelper {
 	@Transactional(readOnly = true)
 	TreeVersionElement findElementForInstanceLink(String instanceLink, TreeVersion treeVersion) {
 		if (instanceLink && treeVersion) {
-			return find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.instanceLink = :instanceLink',
+			return TreeVersionElement.find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.instanceLink = :instanceLink',
 					[treeVersion: treeVersion, instanceLink: instanceLink])
 		}
 		return null
@@ -163,7 +163,7 @@ class TreeService implements ValidationUtils, AsyncHelper {
 	@Transactional(readOnly = true)
 	TreeVersionElement findLatestElementForInstance(Instance instance, Tree tree) {
 		if (instance && tree) {
-			return find(
+			return TreeVersionElement.find(
 					'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.publishedAt desc',
 					[tree: tree, instanceId: instance.id])
 		}
@@ -183,28 +183,28 @@ class TreeService implements ValidationUtils, AsyncHelper {
 	@Transactional(readOnly = true)
 	TreeVersionElement firstPublished(Instance instance, Tree tree) {
 		// note bug in GORM find, it doesn't seem to like new lines which is why I haven't used multiline strings here
-		find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id asc',
+		TreeVersionElement.find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id asc',
 				[tree: tree, instanceId: instance.id])
 	}
 
 	@Transactional(readOnly = true)
 	TreeVersionElement firstAnyVersion(Instance instance, Tree tree) {
 		// note bug in GORM find, it doesn't seem to like new lines which is why I haven't used multiline strings here
-		find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId order by treeVersion.id asc',
+		TreeVersionElement.find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId order by treeVersion.id asc',
 				[tree: tree, instanceId: instance.id])
 	}
 
 	@Transactional(readOnly = true)
 	TreeVersionElement lastPublished(Instance instance, Tree tree) {
 		// note bug in GORM find, it doesn't seem to like new lines which is why I haven't used multiline strings here
-		find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id desc',
+		TreeVersionElement.find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id desc',
 				[tree: tree, instanceId: instance.id])
 	}
 
 	@Transactional(readOnly = true)
 	TreeVersionElement lastAnyVersion(Instance instance, Tree tree) {
 		// note bug in GORM find, it doesn't seem to like new lines which is why I haven't used multiline strings here
-		find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId order by treeVersion.id desc',
+		TreeVersionElement.find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId order by treeVersion.id desc',
 				[tree: tree, instanceId: instance.id])
 	}
 //	SELECT tve.element_link as element_link
@@ -239,7 +239,7 @@ where i.name_id = :nameId
 	TreeVersionElement lastChangeVersion(TreeVersionElement tve) {
 		TreeElement previousElement = tve.treeElement.previousElement
 		if (previousElement) {
-			return find(
+			return TreeVersionElement.find(
 					'from TreeVersionElement where treeVersion.tree = :tree and treeElement = :element order by treeVersion.id desc',
 					[tree: tve.treeVersion.tree, element: previousElement])
 		} else {
@@ -2191,7 +2191,7 @@ and regex(namePath, :newPath) = true
 	void checkSynonymsOfNameNotOnTheTree(TaxonData taxonData, TreeVersion treeVersion, TreeVersionElement excluding) {
 		List<Synonym> synonyms = taxonData.synonyms.filtered()
 		synonyms.each { Synonym synonym ->
-			TreeVersionElement tve = find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.nameId = :nameId and tve.elementLink <> :excluding',
+			TreeVersionElement tve = TreeVersionElement.find('from TreeVersionElement tve where tve.treeVersion = :treeVersion and tve.treeElement.nameId = :nameId and tve.elementLink <> :excluding',
 							[treeVersion: treeVersion, nameId: synonym.nameId, excluding: excluding?.elementLink ?: ''])
 			if (tve) {
 				String message = "Can’t place this concept - synonym is accepted concept **${tve.treeElement.displayHtml}**"
