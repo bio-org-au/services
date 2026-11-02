@@ -50,7 +50,7 @@ class ConfigService {
     GrailsApplication grailsApplication
 
     private String nameSpaceName
-    private Map shardConfig = null
+    private volatile Map shardConfig = null
 //    private Map appConfigMap = null
 //
 //    private Map appConfig() {
@@ -71,13 +71,22 @@ class ConfigService {
         }
     }
 
-    private fetchShardConfig() {
-        Sql sql = getSqlForNSLDB()
-        shardConfig = [:]
-        sql.eachRow('SELECT * FROM shard_config') { row ->
-            shardConfig.put(row.name, row.value)
+    // Build the map locally and publish it only once fully loaded, so concurrent requests never see a
+    // partially filled map and a failed query doesn't leave an empty map cached forever.
+    private synchronized fetchShardConfig() {
+        if (shardConfig != null) {
+            return
         }
-        sql.close()
+        Map config = [:]
+        Sql sql = getSqlForNSLDB()
+        try {
+            sql.eachRow('SELECT * FROM shard_config') { row ->
+                config.put(row.name, row.value)
+            }
+        } finally {
+            sql.close()
+        }
+        shardConfig = config
     }
 
     String getNameSpaceName() {
