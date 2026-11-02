@@ -183,32 +183,28 @@ class TreeService implements ValidationUtils, AsyncHelper {
 	@Transactional(readOnly = true)
 	TreeVersionElement firstPublished(Instance instance, Tree tree) {
 		// note bug in GORM find, it doesn't seem to like new lines which is why I haven't used multiline strings here
-		find(
-				'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id asc',
+		find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id asc',
 				[tree: tree, instanceId: instance.id])
 	}
 
 	@Transactional(readOnly = true)
 	TreeVersionElement firstAnyVersion(Instance instance, Tree tree) {
 		// note bug in GORM find, it doesn't seem to like new lines which is why I haven't used multiline strings here
-		find(
-				'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId order by treeVersion.id asc',
+		find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId order by treeVersion.id asc',
 				[tree: tree, instanceId: instance.id])
 	}
 
 	@Transactional(readOnly = true)
 	TreeVersionElement lastPublished(Instance instance, Tree tree) {
 		// note bug in GORM find, it doesn't seem to like new lines which is why I haven't used multiline strings here
-		find(
-				'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id desc',
+		find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId and treeVersion.published = true order by treeVersion.id desc',
 				[tree: tree, instanceId: instance.id])
 	}
 
 	@Transactional(readOnly = true)
 	TreeVersionElement lastAnyVersion(Instance instance, Tree tree) {
 		// note bug in GORM find, it doesn't seem to like new lines which is why I haven't used multiline strings here
-		find(
-				'from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId order by treeVersion.id desc',
+		find('from TreeVersionElement where treeVersion.tree = :tree and treeElement.instanceId = :instanceId order by treeVersion.id desc',
 				[tree: tree, instanceId: instance.id])
 	}
 //	SELECT tve.element_link as element_link
