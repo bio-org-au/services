@@ -50,7 +50,7 @@ class ConfigService {
     GrailsApplication grailsApplication
 
     private String nameSpaceName
-    private Map shardConfig = null
+    private volatile Map shardConfig = null
 //    private Map appConfigMap = null
 //
 //    private Map appConfig() {
@@ -71,13 +71,14 @@ class ConfigService {
         }
     }
 
-    private fetchShardConfig() {
-        Sql sql = getSqlForNSLDB()
-        shardConfig = [:]
-        sql.eachRow('SELECT * FROM shard_config') { row ->
-            shardConfig.put(row.name, row.value)
+    private synchronized fetchShardConfig() {
+        try (Sql sql = getSqlForNSLDB()) {
+            def config = [:]
+            sql.eachRow('SELECT * FROM shard_config') { row ->
+                config.put(row.name, row.value)
+            }
+            shardConfig = config
         }
-        sql.close()
     }
 
     String getNameSpaceName() {
