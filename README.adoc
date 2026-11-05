@@ -68,17 +68,29 @@ To create a runnable war, or a war that can be installed in Tomcat run `./gradle
 The services work nicely within IntelliJ IDEA just import the project.
 
 === Building and deploying docker image.
-To build a war file you can use `grails war` or you can use `./gradlew assemble`. This will build a war file and put it
-in the `build/libs` directory.
 
-To publish to docker use the gradle task `./gradlew dockerPublish`. Note you will have to be logged into docker hub to
-publish.
+The image is built on the official `tomcat:9.0-jdk17-corretto` image (AWS Corretto JDK 17, Tomcat 9) and runs the
+*container* war, `build/libs/nsl#services-tomcat.war`, deployed as `nsl#services.war` so Tomcat serves it under the
+`/nsl/services` context.
 
-WARNING: Note we're currently publishing to `biodiversity/` on docker hub. Change the `dockerRepo` property in the
-`gradle.properties` file to your own repository.
+`./gradlew buildDockerImage` builds `nsl-services:<version>` (plus `latest`). The build stages a minimal context in
+`build/docker` containing only the Dockerfile and the war, rather than sending the whole project to the daemon.
+
+To publish, run `./gradlew dockerPublish`. Note you will have to be logged into docker hub to publish.
+
+WARNING: Publishing goes to `biodiversity/` on docker hub by default. Override it with `-PdockerRepo=your/repo`.
 
 NOTE: The docker image runs the services as the nsl_user UID: 5000 GID: 5000 in the container. This user will be mapped
 to the host user:group with those IDs. It may be useful to assign a user to that ID in the host, but not essential.
+
+To run it, mount your config at `/etc/nsl`:
+
+[source, bash]
+----
+docker run -p 8080:8080 \
+  -v $HOME/.nsl:/etc/nsl:ro \
+  biodiversity/nsl-services:1.0236
+----
 
 === Developing with supporting services
 

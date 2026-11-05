@@ -13,3 +13,7 @@ out/
 .classpath
 etc/instances/
 
+
+# build artifacts / logs
+nsl*.log
+nsl.log

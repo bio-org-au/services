@@ -14,8 +14,11 @@ buildscript {
 
         classpath "org.grails.plugins:views-gradle:2.2.0"
         classpath "org.asciidoctor:asciidoctor-gradle-plugin:1.6.1"
+        classpath "com.bmuschko:gradle-docker-plugin:6.7.0"
     }
 }
+
+import com.bmuschko.gradle.docker.tasks.image.*
 
 version "1.0236"
 group "services3"
@@ -28,10 +31,16 @@ apply plugin:"com.github.erdi.webdriver-binaries"
 apply plugin: "org.grails.grails-gsp"
 apply plugin:"com.bertramlabs.asset-pipeline"
 apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+
 
 //war.archiveName("nsl#services##${rootProject.version}.war")
 war {
     archiveFileName = "nsl#services-tomcat.war"
+    // developmentOnly leaks into the war through runtimeClasspath; devtools has
+    // no business in a deployable war and restarts the app on redeploy.
+    rootSpec.exclude '**/spring-boot-devtools-*.jar'
 }
 bootWar {
     archiveFileName = "nsl#services.war"
@@ -64,7 +73,6 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-autoconfigure"
     implementation "org.grails:grails-core"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
-    implementation "org.springframework.boot:spring-boot-starter-tomcat"
     implementation "org.grails:grails-web-boot"
     implementation "org.grails:grails-logging"
     implementation "org.grails:grails-plugin-rest"
@@ -84,6 +92,14 @@ dependencies {
     runtimeOnly "org.glassfish.web:el-impl:2.2.1-b05"
     runtimeOnly "com.h2database:h2"
     runtimeOnly "org.apache.tomcat:tomcat-jdbc"
+    // starter-tomcat is providedRuntime (the container supplies Tomcat). The war
+    // task subtracts providedRuntime from its classpath by file, so anything we
+    // need at runtime has to be excluded there and declared in runtimeOnly.
+    // Micronaut's annotation metadata needs jakarta.annotation at runtime.
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat") {
+        exclude group: 'jakarta.annotation', module: 'jakarta.annotation-api'
+    }
+    runtimeOnly "jakarta.annotation:jakarta.annotation-api:2.0.0"
     runtimeOnly "javax.xml.bind:jaxb-api:2.3.1"
     runtimeOnly "com.bertramlabs.plugins:asset-pipeline-grails:3.4.7"
     testImplementation "io.micronaut:micronaut-inject-groovy"
@@ -203,31 +219,57 @@ asciidoctor {
     outputDir = file("build/docs")
 }
 
-task dockerPublish() {
-    dependsOn(assemble)
-    doFirst {
-        exec {
-            workingDir(projectDir)
-            ignoreExitValue(true)
-            commandLine '/usr/bin/docker', 'image', 'rm', 'nsl-services'
-        }
-    }
-    doLast {
-        exec {
-            workingDir(projectDir)
-            commandLine '/usr/bin/docker', 'build', '--tag=nsl-services', '.'
-        }
-        exec {
-            workingDir(projectDir)
-            commandLine "/usr/bin/docker", "tag", "nsl-services", "${dockerRepo}/nsl-services:${version}-SNAP"
-        }
-        exec {
-            workingDir(projectDir)
-            commandLine "/usr/bin/docker", "push", "${dockerRepo}/nsl-services:${version}-SNAP"
-        }
-    }
-}
 
 buildProperties {
     inputs.property("info.app.build.date", new Date().format('yyyy-MM-dd HH:mm:ss'))
+}
+
+
+// ---------------------------------------------------------------------------
+// Docker image
+//
+// The image runs the *container* war (the plain servlet war that expects an
+// external Tomcat), not the executable bootWar. Dockerfile at the project root
+// is the single source of truth; the build copies it plus that one war into a
+// small context directory so the daemon doesn't have to receive the whole
+// 300MB build/ tree.
+// ---------------------------------------------------------------------------
+
+// The AWS ECR repo `ibis-docker` holds every image we publish, so the image name
+// goes in the *tag* (e.g. apache-latest, ruby-3.4.8-rails-8.1.0), not the path.
+// Override the whole registry/repo with -PdockerRepo=<uri>.
+def dockerImageName = 'nsl-services'
+def dockerBuildDir = layout.buildDirectory.dir('docker')
+def dockerRepo = project.findProperty('dockerRepo') ?: '420181724456.dkr.ecr.ap-southeast-2.amazonaws.com/ibis-docker'
+
+task dockerContext(type: Sync, dependsOn: war) {
+    description = 'Assemble a minimal Docker build context (Dockerfile + war)'
+    group = 'Docker'
+    into dockerBuildDir
+    from(project.projectDir) {
+        include 'Dockerfile'
+    }
+    from(layout.buildDirectory.dir('libs')) {
+        include 'nsl#services-tomcat.war'
+        into 'build/libs'
+    }
+}
+
+task buildDockerImage(type: DockerBuildImage, dependsOn: dockerContext) {
+    description = 'Build the nsl-services Tomcat Docker image'
+    group = 'Docker'
+    inputDir = dockerBuildDir
+    // Local names
+    images.add("${dockerImageName}:${version}")
+    images.add("${dockerImageName}:latest")
+    // Registry tags: <repo>:<image>-<version>
+    images.add("${dockerRepo}:${dockerImageName}-${version}")
+    images.add("${dockerRepo}:${dockerImageName}-latest")
+}
+
+task dockerPublish(type: DockerPushImage, dependsOn: buildDockerImage) {
+    description = 'Push the nsl-services image to the configured registry'
+    group = 'Docker'
+    images.add("${dockerRepo}:${dockerImageName}-${version}")
+    images.add("${dockerRepo}:${dockerImageName}-latest")
 }

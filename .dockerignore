@@ -1,0 +1,13 @@
+# Only needed for manual `docker build .` — the Gradle dockerContext task
+# assembles a minimal context directory, so this just keeps manual builds sane.
+.git
+.gradle
+.idea
+build
+out
+grails-app
+src
+docs
+etc/instances
+*.log
+nsl*.log
