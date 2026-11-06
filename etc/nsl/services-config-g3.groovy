@@ -21,9 +21,9 @@ services {
     }
 
     photoService {
-        url = "http://www.anbg.gov.au/cgi-bin/apiiDigital?name=%&FORMAT=CSV"
+        url = "https://www.anbg.gov.au/cgi-bin/apiiDigital?name=%&FORMAT=CSV"
         search = { String name ->
-            "http://staging.anbg.gov.au/cgi-bin/apiiName2?name=${name.encodeAsURL()}"
+            "https://staging.anbg.gov.au/cgi-bin/apiiName2?name=${name.encodeAsURL()}"
         }
     }
     scriptAddOns = """Google analytics goes here
