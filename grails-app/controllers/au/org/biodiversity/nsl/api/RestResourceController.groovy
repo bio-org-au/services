@@ -137,7 +137,8 @@ class RestResourceController {
         TreeVersionElement treeVersionElement = treeService.getTreeVersionElement(shard, idNumber)
 
         if (treeVersionElement) {
-            List<DisplayElement> children = treeService.childDisplayElements(treeVersionElement)
+            // NSL-6008
+            List<DisplayElement> children = treeService.childDisplayElementsToDepth(treeVersionElement, 2)
             List<TreeVersionElement> path = treeService.getElementPath(treeVersionElement)
             respond(treeVersionElement, [model: [treeVersionElement: treeVersionElement, path: path, children: children, status: OK]])
             return
