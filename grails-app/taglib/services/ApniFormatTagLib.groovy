@@ -237,9 +237,10 @@ class ApniFormatTagLib {
             out << '<ul>'
             out << "<li>$treeName</li>"
             TreeVersionElement last = elementPath.last()
+            int genusOrder = NameRank.findByRdfId('genus').sortOrder
             elementPath.each { TreeVersionElement tve ->
                 // NSL-6007
-                boolean higherThanGenus = (tve.treeElement.instance.name.nameRank.sortOrder < 120)
+                boolean higherThanGenus = (tve.treeElement.instance.name.nameRank.sortOrder < genusOrder)
                 String link = tve.fullElementLink()
                 if (link && (!higherThanGenus || tve == last)) {
                     out << "<li><a href='${link}'>${tve.treeElement.name?.nameElement}</a><span class=\"text-muted\">(${tve.treeElement.name?.nameRank?.abbrev})</span></li>"
