@@ -99,7 +99,8 @@ class RestResourceController {
         treeVersion = tree.currentTreeVersion ?: versions.first()
 
         if (response.format == 'all') {
-            List<DisplayElement> children = treeService.displayElementsToLimit(treeVersion, 2000)
+            // NSL-6009
+            List<DisplayElement> children = treeService.displayElementsToLimit(treeVersion, 3)
             log.debug "Showing ${children.size()} child elements."
             respond treeVersion, [model: [treeVersion: treeVersion, versions: versions, children: children], status: OK]
         } else {
