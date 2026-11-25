@@ -40,7 +40,8 @@ class ServiceTagLib {
         out << '<ul>'
         map.each { k, v ->
             out << "<li>"
-            out << "<b>${k.encodeAsHTML()}:</b>&nbsp;"
+            out << "<b>${k.encodeAsHTML()}</b>&nbsp;"
+            out << ' -> '
             if (k =~ /(?i)html/) {
                 out << v
                 out << '<br><pre>' + v.encodeAsHTML() + '</pre>'
