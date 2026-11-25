@@ -203,7 +203,7 @@ class NameService implements AsyncHelper {
 
     Map deduplicateMarked(String user) {
         Map report = [
-                namesDeduplicated: new HashSet<Name>(),
+                namesDeduplicated: new HashMap<Name, Name>(),
                 errors           : []
         ]
         List<Long> ids = new ArrayList<>()
@@ -224,7 +224,7 @@ class NameService implements AsyncHelper {
             Name name = Name.get(id)
             Map result = dedup(name, name.duplicateOf, user)
             if (result.success) {
-                report.namesDeduplicated.add(name.duplicateOf)
+                report.namesDeduplicated.put(name, name.duplicateOf)
             } else {
                 report.errors.add(result.error)
             }
